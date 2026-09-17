@@ -1,0 +1,19 @@
+---
+import { contact } from "../data/siteSettings";
+
+interface Props {
+  label: string;
+  message?: string;
+  class?: string;
+}
+
+const { label, message = "Hello Cedars Trail Riding! I'd like to book a ride.", class: className = "" } =
+  Astro.props;
+
+const phoneDigits = contact.whatsapp.replace(/[^0-9]/g, "");
+const href = `https://wa.me/${phoneDigits}?text=${encodeURIComponent(message)}`;
+---
+
+<a href={href} target="_blank" rel="noopener noreferrer" class:list={["btn-primary", className]}>
+  {label}
+</a>

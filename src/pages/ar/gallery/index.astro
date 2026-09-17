@@ -1,0 +1,23 @@
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import GallerySection from "../../../sections/GallerySection.astro";
+
+import { useTranslations, type Locale } from "../../../i18n";
+
+const locale: Locale = "ar";
+const route = "/gallery/";
+const t = useTranslations(locale);
+---
+
+<BaseLayout
+  locale={locale}
+  route={route}
+  title={t("nav.gallery")}
+  
+  breadcrumbs={[
+    { name: t("nav.home"), url: "/" },
+    { name: t("nav.gallery"), url: route },
+  ]}
+>
+  <GallerySection locale={locale} />
+</BaseLayout>

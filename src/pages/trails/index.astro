@@ -1,0 +1,23 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import TrailsSection from "../../sections/TrailsSection.astro";
+
+import { useTranslations, type Locale } from "../../i18n";
+
+const locale: Locale = "en";
+const route = "/trails/";
+const t = useTranslations(locale);
+---
+
+<BaseLayout
+  locale={locale}
+  route={route}
+  title={t("nav.trails")}
+  
+  breadcrumbs={[
+    { name: t("nav.home"), url: "/" },
+    { name: t("nav.trails"), url: route },
+  ]}
+>
+  <TrailsSection locale={locale} />
+</BaseLayout>

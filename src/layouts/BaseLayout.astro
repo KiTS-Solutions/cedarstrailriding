@@ -1,0 +1,123 @@
+---
+import "../styles/global.css";
+import { DIR, LOCALES, path, useTranslations, type Locale } from "../i18n";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+import JsonLd from "../components/JsonLd.astro";
+import { breadcrumbSchema } from "../data/jsonld";
+
+interface Props {
+  locale: Locale;
+  route: string;
+  title?: string;
+  description?: string;
+  jsonLd?: Record<string, unknown>[];
+  breadcrumbs?: { name: string; url: string }[];
+}
+
+const {
+  locale,
+  route,
+  title,
+  description,
+  jsonLd = [],
+  breadcrumbs,
+} = Astro.props;
+
+const t = useTranslations(locale);
+const pageTitle = title ? `${title} — ${t("meta.title")}` : t("meta.title");
+const pageDescription = description ?? t("meta.desc");
+const canonicalURL = new URL(path(route, locale), Astro.site);
+
+const ga4Id = import.meta.env.PUBLIC_GA4_ID;
+const metaPixelId = import.meta.env.PUBLIC_META_PIXEL_ID;
+
+const allSchemas = [
+  ...jsonLd,
+  ...(breadcrumbs ? [breadcrumbSchema(breadcrumbs)] : []),
+];
+
+// SEO collision guard (brief/04_seo_and_audit.md): never let "Cedars of Lebanon" +
+// Tennessee/US context slip into rendered copy or metadata.
+if (/tennessee/i.test(pageTitle) || /tennessee/i.test(pageDescription)) {
+  throw new Error("Refusing to render: Tennessee 'Cedars of Lebanon' collision detected in page metadata.");
+}
+---
+
+<!doctype html>
+<html lang={locale} dir={DIR[locale]}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="canonical" href={canonicalURL} />
+    <title>{pageTitle}</title>
+    <meta name="description" content={pageDescription} />
+
+    {
+      LOCALES.map((loc) => (
+        <link rel="alternate" hreflang={loc} href={new URL(path(route, loc), Astro.site)} />
+      ))
+    }
+    <link rel="alternate" hreflang="x-default" href={new URL(path(route, "en"), Astro.site)} />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={pageDescription} />
+    <meta property="og:url" content={canonicalURL} />
+    <meta property="og:image" content={new URL("/og-image.jpg", Astro.site)} />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    {allSchemas.map((schema) => <JsonLd data={schema} />)}
+
+    {
+      ga4Id && (
+        <>
+          <script async src={`https://www.googletagmanager.com/gtag/js?id=${ga4Id}`} />
+          <script define:vars={{ ga4Id }}>
+            window.dataLayer = window.dataLayer || [];
+            function gtag() {
+              dataLayer.push(arguments);
+            }
+            gtag("js", new Date());
+            gtag("config", ga4Id);
+          </script>
+        </>
+      )
+    }
+    {
+      metaPixelId && (
+        <script define:vars={{ metaPixelId }}>
+          !(function (f, b, e, v, n, t, s) {
+            if (f.fbq) return;
+            n = f.fbq = function () {
+              n.callMethod ? n.callMethod.apply(n, arguments) : n.queue.push(arguments);
+            };
+            if (!f._fbq) f._fbq = n;
+            n.push = n;
+            n.loaded = !0;
+            n.version = "2.0";
+            n.queue = [];
+            t = b.createElement(e);
+            t.async = !0;
+            t.src = v;
+            s = b.getElementsByTagName(e)[0];
+            s.parentNode.insertBefore(t, s);
+          })(window, document, "script", "https://connect.facebook.net/en_US/fbevents.js");
+          fbq("init", metaPixelId);
+          fbq("track", "PageView");
+        </script>
+      )
+    }
+  </head>
+  <body class="flex min-h-screen flex-col">
+    <a href="#main" class="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:bg-gold focus:px-4 focus:py-2">
+      Skip to content
+    </a>
+    <Header locale={locale} route={route} />
+    <main id="main" class="flex-1">
+      <slot />
+    </main>
+    <Footer locale={locale} />
+  </body>
+</html>

@@ -1,0 +1,25 @@
+---
+import { useTranslations, path, type Locale } from "../i18n";
+import ExperienceCard from "../components/ExperienceCard.astro";
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const t = useTranslations(locale);
+---
+
+<section class="mx-auto max-w-6xl px-4 py-16 sm:px-6">
+  <h1 class="text-center font-display text-4xl font-semibold text-cedar-deep">{t("home.groupsHeading")}</h1>
+
+  <div class="mt-10 grid gap-6 sm:grid-cols-3">
+    <ExperienceCard name={t("groups.hiking")} audience={t("groups.hikingNote")} />
+    <ExperienceCard name={t("groups.business")} audience={t("groups.businessNote")} />
+    <ExperienceCard name={t("groups.custom")} audience="" />
+  </div>
+
+  <div class="mt-10 text-center">
+    <a href={path("/contact/", locale)} class="btn-primary">{t("cta.tellUsYourIdea")}</a>
+  </div>
+</section>

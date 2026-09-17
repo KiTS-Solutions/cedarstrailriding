@@ -1,0 +1,16 @@
+---
+import type { Testimonial } from "../data/testimonials";
+
+interface Props {
+  testimonial: Testimonial;
+}
+
+const { testimonial } = Astro.props;
+---
+
+<figure class="card flex flex-col gap-3 p-6">
+  <blockquote class="font-display text-lg leading-snug text-cedar-deep">
+    “{testimonial.quote}”
+  </blockquote>
+  <figcaption class="text-sm text-ink/70">— {testimonial.attribution}</figcaption>
+</figure>

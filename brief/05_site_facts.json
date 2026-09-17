@@ -1,0 +1,302 @@
+{
+  "$schema_note": "Canonical machine-readable spec for the Cedars Trail Riding website build. Unknown fields carry null; do not invent values. UPDATED 2026-09-17 with client-supplied contact/location; UPDATED again 2026-09-17 with the received CTR + 3 sibling brand logos (see build_decisions.logo and build_decisions.brand_family_footer).",
+  "brand": {
+    "name": "Cedars Trail Riding",
+    "abbreviation": "CTR",
+    "legal_name_candidate": "Cedars Trail Riding Club",
+    "parent_brand": "Cedars Xtreme",
+    "parent_brand_email_domain": "cedarsxtreme.com",
+    "parent_instagram": "https://www.instagram.com/cedarsxtreme/",
+    "parent_website_note": "cedarsxtreme.com does NOT resolve as of 2026-09-17 (no live site)",
+    "website": "https://cedarstrailriding.com/",
+    "instagram": "https://www.instagram.com/cedarstrailriding/",
+    "facebook": "https://www.facebook.com/cedarstrailriding/",
+    "tagline": "Lebanon's First Equestrian Tourism Experience",
+    "secondary_tagline": "Explore Lebanon on horseback.",
+    "positioning": "The first eco-equestrian tourism experience in Lebanon.",
+    "mission": "To promote eco-tourism and help people reconnect with nature through meaningful horseback riding experiences.",
+    "founding_year": null,
+    "base": "Samqaniyeh, Beiteddine | Shouf District",
+    "coverage": "We operate all over Lebanon.",
+    "region": "Shouf (Chouf), Mount Lebanon, Lebanon",
+    "accelerator_credential": "Top 3 graduate, Batch 1 Phase 2, REAF program (per Berytech)",
+    "languages": ["Arabic", "English", "French"]
+  },
+  "contact": {
+    "phones": ["+961 70 211 041", "+961 76 004 686"],
+    "whatsapp": "+961 70 211 041",
+    "whatsapp_alt": "+961 76 004 686",
+    "wa_link": "https://wa.me/96170211041",
+    "email": "info@cedarsxtreme.com",
+    "address": "Samqaniyeh, Beiteddine, Shouf District, Lebanon",
+    "plus_code": "MHPXVG5V+FV (canonical)",
+    "plus_code_area_short": "MHPR+H3 Samqaniyeh (Google listing short code)",
+    "coordinates": { "lat": 33.6864028, "lng": 35.5902012 },
+    "coordinates_source": "Google Maps place URL",
+    "maps_url": "https://maps.app.goo.gl/8TBFZgxcnUNDyY746",
+    "google_place": "Cedars Trail Riding - Horse Riding Trek (Samqaniyeh)",
+    "google_rating": 4.9,
+    "hours": "Year-round, daily operation; seasonal trails & weather-dependent rescheduling",
+    "hours_note": "Google listing raw value says 'Open 24 hours'; client states year-round daily.",
+    "seasonality": "Seasonal trails; weather-dependent rescheduling"
+  },
+  "social": {
+    "instagram_main": {
+      "handle": "cedarstrailriding",
+      "display_name": "Cedars Trail Riding Horse Riding Trek",
+      "bio": "CTR 🇱🇧 1st Equestrian Tourism Experience 🇱🇧 · 🐎 Trails 1hr to 8 days 🏇 · 🌲 Cedars",
+      "followers_approx": 14000,
+      "following_approx": 1116,
+      "posts_approx": 260,
+      "note": "Figures from search-index snapshot; may lag."
+    },
+    "instagram_parent": {
+      "handle": "cedarsxtreme",
+      "note": "Parent/adventure brand account."
+    },
+    "facebook": {
+      "url": "https://www.facebook.com/cedarstrailriding/",
+      "note": "Exists (also linked from Google Maps listing); stats not retrievable (blocked)."
+    }
+  },
+  "offerings": {
+    "trail_rides": [
+      {
+        "name": "Marj Bisri Trail",
+        "duration": "1 to 3 days",
+        "difficulty": null,
+        "features": "riverside camping and activities"
+      },
+      {
+        "name": "Barouk Cedars Trail",
+        "duration": null,
+        "difficulty": null,
+        "features": "longest canter trail to the Barouk Cedars Reserve"
+      },
+      {
+        "name": "Pine Trail",
+        "duration": null,
+        "difficulty": "Beginner-Friendly",
+        "features": null
+      },
+      {
+        "name": "Beit Eddine Trail",
+        "duration": null,
+        "difficulty": "Beginner-Friendly",
+        "features": null
+      },
+      {
+        "name": "Panoramic Trail",
+        "duration": null,
+        "difficulty": "Scenic Ride",
+        "features": null
+      },
+      {
+        "name": "Rocky Trail",
+        "duration": null,
+        "difficulty": "Adventure/Challenging",
+        "features": null
+      },
+      {
+        "name": "Custom Trails",
+        "duration": "flexible (full day or multi-day)",
+        "difficulty": "Adventure/Challenging",
+        "features": "create your own trek"
+      }
+    ],
+    "duration_spectrum": "1 hour to 8 days",
+    "special_experiences": [
+      { "name": "Hiking with horses", "audience": "large groups or schools" },
+      {
+        "name": "Business events & team-building retreats",
+        "audience": "corporate"
+      },
+      {
+        "name": "Custom experiences",
+        "audience": "birthdays, proposals, and more"
+      }
+    ],
+    "included": [
+      "trained/certified guides",
+      "well-trained horses",
+      "helmets and proper gear",
+      "safety briefing before every ride"
+    ],
+    "tripadvisor_package_included": [
+      "hotel pickup & return",
+      "Arabic/English speaking driver",
+      "certified guide",
+      "horse safety gear",
+      "air-conditioned vehicle",
+      "entrance fee"
+    ],
+    "pricing": null
+  },
+  "audiences": [
+    "tourists",
+    "locals",
+    "expats",
+    "families",
+    "kids",
+    "couples",
+    "solo travelers",
+    "adventure seekers",
+    "beginners",
+    "seasoned riders",
+    "schools",
+    "large groups",
+    "corporate teams"
+  ],
+  "reviews_evidence": {
+    "google_rating": 4.9,
+    "tripadvisor_rating": 5.0,
+    "tripadvisor_review_count": 6,
+    "themes": [
+      "beginner-friendly",
+      "well-trained calm horses",
+      "great guides (Robin)",
+      "kind owner",
+      "Arabic & English",
+      "stunning mountain views",
+      "coffee after the ride"
+    ]
+  },
+  "values": [
+    "eco-tourism",
+    "sustainability",
+    "reconnect with nature",
+    "support local communities",
+    "confidence through bond with horses",
+    "inclusivity",
+    "safety"
+  ],
+  "seo": {
+    "primary_keywords": [
+      "horse riding Lebanon",
+      "horseback riding Lebanon",
+      "trail riding Lebanon",
+      "horse riding Shouf",
+      "horse trek Barouk",
+      "multi-day horse trek Lebanon",
+      "equestrian tourism Lebanon",
+      "eco tourism Lebanon"
+    ],
+    "collision_warning": "Name collides with 'Cedars of Lebanon' State Park + stables in Lebanon, Tennessee, USA. Always qualify with country/region keywords.",
+    "region_spelling_variants": ["Shouf", "Chouf"]
+  },
+  "site_audit": {
+    "platform": "WordPress (Cloudflare-fronted)",
+    "existing_pages": [
+      "home",
+      "trails",
+      "sample-page (default)",
+      "hello-world (default)",
+      "contact (404)"
+    ],
+    "missing": [
+      "pricing",
+      "contact page",
+      "booking form",
+      "gallery",
+      "FAQ",
+      "testimonials",
+      "horse profiles",
+      "map embed",
+      "blog"
+    ]
+  },
+  "build_decisions": {
+    "stack": "Astro (static)",
+    "hosting": "Vercel (domain DNS: cedarstrailriding.com — confirm access)",
+    "languages": ["en", "ar", "fr"],
+    "translations_status": "AR + FR drafted (MT-quality) in 12_translation_pack.md; client review before launch; fallback to EN",
+    "booking": "booking request form + WhatsApp + click-to-call",
+    "booking_form_backend": "Web3Forms → info@cedarsxtreme.com (access key to be created by client/agency)",
+    "analytics": ["GA4", "Meta Pixel"],
+    "pricing": "do NOT publish prices; use 'Contact us for pricing' CTAs and WhatsApp inquire",
+    "operating_hours": "year-round, daily (per client; seasons still shape trails)",
+    "transport": "Beirut pickup available on request (not a standard listed service)",
+    "brand_story": "pending from client (founder, year, horse + team names)",
+    "horses_section": {
+      "v1": "placeholder cards",
+      "status": "waiting on client horse names; render 'coming soon' until then"
+    },
+    "testimonials": {
+      "v1": "paraphrased themes from Google (4.9), TripAdvisor (5.0), Wikiloc; client approves wording",
+      "draft_quotes": [
+        "Amazing experience in the Shouf — the horses are well trained and easy to handle, even for beginners. The guide was patient and put everyone at ease.",
+        "Friendly, great vibes, and they truly know the best places. Arabic and English both spoken.",
+        "You can be accompanied by a local guide, so even children can do it."
+      ]
+    },
+    "contact_ctas": {
+      "primary": [
+        "WhatsApp (wa.me/96170211041)",
+        "Call (tel:+96170211041, tel:+96176004686)"
+      ],
+      "email_location": "footer + contact page",
+      "whatsapp_numbers_shown": ["+961 70 211 041", "+961 76 004 686"]
+    },
+    "gallery": {
+      "v1": true,
+      "seeds": [
+        "assets/tripadvisor_01_1440x960.jpg",
+        "assets/tripadvisor_02_1440x960.jpg",
+        "assets/tripadvisor_03_761x507.jpg"
+      ],
+      "note": "grid ships with 3 seeded photos + tasteful placeholders; client imagery replaces them"
+    },
+    "site_scope": "all 9 pages (Home, Trails, Multi-day Treks, Groups & Events, Horses, About, Gallery, FAQ, Contact/Book)",
+    "logo": {
+      "approach": "resolved — real transparent logo received and in use",
+      "local_file": "public/images/brand/ctr-logo.webp",
+      "note": "Received directly this session (not scraped — source file had a genuine alpha channel, verified). Used in the header. Confirm with the client that this is the final approved version before public launch.",
+      "final": "done, pending client sign-off"
+    },
+    "deliverables_out": [
+      "runnable Astro project",
+      "README + setup/deploy notes",
+      "vercel.json (+ any host config)",
+      "sitemap.xml + robots.txt",
+      ".env.example (WEB3FORMS_ACCESS_KEY, GA4 id, META_PIXEL id)",
+      "pre-launch SEO/QA checklist"
+    ],
+    "open_item_cadence": "BUILD NOW with placeholders; swap client data (brand list, horse names, founder story, IDs, logo) in later turns",
+    "assets_status": "3 rider photos in assets/; logo received (public/images/brand/ctr-logo.webp); hero + trail imagery still being collected from client",
+    "footer_map": {
+      "required": true,
+      "description": "Inline SVG outline of Lebanon + single pin at base coords, label 'We operate all over Lebanon.' Featured in marketing case study.",
+      "coords": { "lat": 33.6864028, "lng": 35.5902012 }
+    },
+    "brand_family_footer": {
+      "required": true,
+      "description": "Multi-brand footer strip linking Cedars Trail Riding to Cedars Xtreme + siblings.",
+      "confirmed_brands": [
+        {
+          "name": "Cedars Trail Riding",
+          "site": "https://cedarstrailriding.com/",
+          "logo": "public/images/brand/ctr-logo.webp"
+        },
+        {
+          "name": "Cedars Xtreme",
+          "instagram": "https://www.instagram.com/cedarsxtreme/",
+          "logo": "public/images/brand/cedars-xtreme-logo.webp"
+        },
+        {
+          "name": "Cedars Cycling",
+          "logo": "public/images/brand/cedars-cycling-logo.webp"
+        },
+        {
+          "name": "Cedars Outdoors",
+          "logo": "public/images/brand/cedars-outdoors-logo.webp"
+        }
+      ],
+      "note": "4 sibling-brand logos received directly this session, confirming the brand family is larger than the 2 previously evidenced from web research. URLs/Instagram handles for Cedars Cycling and Cedars Outdoors are still unconfirmed — see PRELAUNCH_CHECKLIST.md.",
+      "additional_brands": "possible — confirm with client whether these 4 are the complete list"
+    },
+    "css_recommendation": "deep olive/cedar green (#0E3B2E) + warm cream/sand (#F5EFE2) + gold accent (#C9A227); serif display headings + clean sans body; RTL-ready"
+  },
+  "known_team": [
+    { "name": "Robin", "role": "guide", "source": "TripAdvisor review" }
+  ]
+}

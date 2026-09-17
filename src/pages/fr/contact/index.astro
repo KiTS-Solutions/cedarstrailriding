@@ -1,0 +1,23 @@
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import ContactSection from "../../../sections/ContactSection.astro";
+import { localBusinessSchema, touristTripSchema } from "../../../data/jsonld";
+import { useTranslations, type Locale } from "../../../i18n";
+
+const locale: Locale = "fr";
+const route = "/contact/";
+const t = useTranslations(locale);
+---
+
+<BaseLayout
+  locale={locale}
+  route={route}
+  title={t("nav.contact")}
+  jsonLd={[localBusinessSchema(), touristTripSchema()]}
+  breadcrumbs={[
+    { name: t("nav.home"), url: "/" },
+    { name: t("nav.contact"), url: route },
+  ]}
+>
+  <ContactSection locale={locale} />
+</BaseLayout>

@@ -1,0 +1,24 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import FaqSection from "../../sections/FaqSection.astro";
+import { faqPageSchema } from "../../data/jsonld";
+import { localizedFaqItems } from "../../data/faq";
+import { useTranslations, type Locale } from "../../i18n";
+
+const locale: Locale = "en";
+const route = "/faq/";
+const t = useTranslations(locale);
+---
+
+<BaseLayout
+  locale={locale}
+  route={route}
+  title={t("nav.faq")}
+  jsonLd={[faqPageSchema(localizedFaqItems(t))]}
+  breadcrumbs={[
+    { name: t("nav.home"), url: "/" },
+    { name: t("nav.faq"), url: route },
+  ]}
+>
+  <FaqSection locale={locale} />
+</BaseLayout>

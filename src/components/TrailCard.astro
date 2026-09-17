@@ -1,0 +1,32 @@
+---
+import { useTranslations, type Locale } from "../i18n";
+import type { Trail } from "../data/trails";
+
+interface Props {
+  trail: Trail;
+  locale: Locale;
+}
+
+const { trail, locale } = Astro.props;
+const t = useTranslations(locale);
+
+const chipKey: Record<NonNullable<Trail["difficulty"]>, { label: string; class: string }> = {
+  "Beginner-Friendly": { label: t("chip.beginner"), class: "chip-beginner" },
+  "Scenic Ride": { label: t("chip.scenic"), class: "chip-scenic" },
+  "Adventure/Challenging": { label: t("chip.adventure"), class: "chip-adventure" },
+};
+
+const chip = trail.difficulty ? chipKey[trail.difficulty] : null;
+const descriptor = t(`trail.${trail.id}.descriptor`);
+const body = descriptor.startsWith("trail.") ? trail.summary : descriptor;
+---
+
+<article class="card flex flex-col gap-3 p-5">
+  <div class="flex items-center justify-between gap-2">
+    <h3 class="font-display text-lg font-semibold text-cedar-deep">{trail.name}</h3>
+    {trail.feature && <span class="chip bg-gold/20 text-cedar-deep">{t("chip.feature")}</span>}
+  </div>
+  {chip && <span class={chip.class}>{chip.label}</span>}
+  <p class="text-sm text-ink/80">{body}</p>
+  {trail.duration && <p class="text-xs font-medium uppercase tracking-wide text-cedar-soft">{trail.duration}</p>}
+</article>

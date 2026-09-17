@@ -1,0 +1,23 @@
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import GroupsSection from "../../../sections/GroupsSection.astro";
+
+import { useTranslations, type Locale } from "../../../i18n";
+
+const locale: Locale = "ar";
+const route = "/groups/";
+const t = useTranslations(locale);
+---
+
+<BaseLayout
+  locale={locale}
+  route={route}
+  title={t("nav.groups")}
+  
+  breadcrumbs={[
+    { name: t("nav.home"), url: "/" },
+    { name: t("nav.groups"), url: route },
+  ]}
+>
+  <GroupsSection locale={locale} />
+</BaseLayout>

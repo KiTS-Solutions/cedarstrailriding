@@ -1,0 +1,81 @@
+@import "tailwindcss";
+
+@theme {
+  --color-cedar-deep: #0e3b2e;
+  --color-cedar-soft: #2a5c4a;
+  --color-sand: #f5efe2;
+  --color-warm-white: #fbf7ee;
+  --color-gold: #c9a227;
+  --color-ink: #1c241f;
+  --color-terracotta: #b4552d;
+
+  --font-display: "Fraunces", "Playfair Display", serif;
+  --font-body: "Inter", "Source Sans 3", system-ui, sans-serif;
+  --font-arabic: "IBM Plex Sans Arabic", "Noto Naskh Arabic", sans-serif;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--color-warm-white);
+    color: var(--color-ink);
+    font-family: var(--font-body);
+  }
+
+  html[dir="rtl"] body {
+    font-family: var(--font-arabic);
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+
+    * {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center justify-center rounded-full px-6 py-3 font-medium transition-colors duration-200 bg-gold text-cedar-deep hover:bg-cedar-deep hover:text-warm-white;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center rounded-full border border-cedar-deep px-6 py-3 font-medium text-cedar-deep transition-colors duration-200 hover:bg-cedar-deep hover:text-warm-white;
+  }
+
+  .card {
+    @apply rounded-2xl bg-sand shadow-sm transition-shadow duration-200 hover:shadow-md;
+  }
+
+  .chip {
+    @apply inline-block rounded-full px-3 py-1 text-sm font-medium;
+  }
+
+  .chip-beginner {
+    @apply inline-block rounded-full bg-cedar-soft/20 px-3 py-1 text-sm font-medium text-cedar-deep;
+  }
+
+  .chip-scenic {
+    @apply inline-block rounded-full border border-gold px-3 py-1 text-sm font-medium text-gold;
+  }
+
+  .chip-adventure {
+    @apply inline-block rounded-full bg-terracotta/15 px-3 py-1 text-sm font-medium text-terracotta;
+  }
+}

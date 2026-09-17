@@ -1,0 +1,19 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "redirects": [
+    { "source": "/sample-page", "destination": "/", "permanent": true },
+    { "source": "/sample-page/", "destination": "/", "permanent": true },
+    { "source": "/hello-world", "destination": "/", "permanent": true },
+    { "source": "/hello-world/", "destination": "/", "permanent": true },
+    {
+      "source": "/category/uncategorized",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/category/uncategorized/",
+      "destination": "/",
+      "permanent": true
+    }
+  ]
+}

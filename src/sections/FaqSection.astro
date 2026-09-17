@@ -1,0 +1,27 @@
+---
+import { useTranslations, type Locale } from "../i18n";
+import { faqItems } from "../data/faq";
+import FaqAccordion from "../components/FaqAccordion.astro";
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const t = useTranslations(locale);
+
+const items = faqItems.map((_, index) => {
+  const n = index + 1;
+  return {
+    question: t(`faq.${n}.q`),
+    answer: t(`faq.${n}.a`),
+  };
+});
+---
+
+<section class="mx-auto max-w-3xl px-4 py-16 sm:px-6">
+  <h1 class="text-center font-display text-4xl font-semibold text-cedar-deep">{t("faq.heading")}</h1>
+  <div class="mt-10">
+    <FaqAccordion items={items} />
+  </div>
+</section>

@@ -1,0 +1,52 @@
+---
+import { useTranslations, type Locale } from "../i18n";
+import { contact } from "../data/siteSettings";
+import WhatsAppButton from "../components/WhatsAppButton.astro";
+import BookingForm from "../components/BookingForm.astro";
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const t = useTranslations(locale);
+
+const mapSrc = `https://www.google.com/maps?q=${contact.coordinates.lat},${contact.coordinates.lng}&z=13&output=embed`;
+---
+
+<section class="mx-auto max-w-5xl px-4 py-16 sm:px-6">
+  <h1 class="text-center font-display text-4xl font-semibold text-cedar-deep">{t("home.contactHeading")}</h1>
+  <p class="mx-auto mt-4 max-w-2xl text-center text-ink/80">{t("contact.body")}</p>
+
+  <div class="mt-8 flex flex-wrap items-center justify-center gap-4">
+    <WhatsAppButton label={t("cta.whatsapp")} />
+    <a href={`tel:${contact.phones[0]?.replace(/\s+/g, "")}`} class="btn-secondary">
+      {t("cta.call")} {contact.phones[0]}
+    </a>
+    <a href={`tel:${contact.phones[1]?.replace(/\s+/g, "")}`} class="btn-secondary">
+      {t("cta.call")} {contact.phones[1]}
+    </a>
+  </div>
+
+  <div class="mt-10 grid gap-8 lg:grid-cols-2">
+    <div>
+      <BookingForm locale={locale} />
+    </div>
+    <div class="flex flex-col gap-4">
+      <iframe
+        src={mapSrc}
+        class="h-64 w-full rounded-2xl border-0"
+        loading="lazy"
+        referrerpolicy="no-referrer-when-downgrade"
+        title="Cedars Trail Riding location"
+      ></iframe>
+      <div class="rounded-2xl bg-sand p-5 text-sm text-ink/80">
+        <p class="font-semibold text-cedar-deep">{t("contact.basedIn")}</p>
+        <p>{t("contact.operate")}</p>
+        <p class="mt-2">{contact.email}</p>
+        <p class="mt-2">{t("contact.hours")}</p>
+        <p class="mt-2">{t("contact.pickupNote")}</p>
+      </div>
+    </div>
+  </div>
+</section>

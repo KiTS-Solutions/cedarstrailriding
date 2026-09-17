@@ -1,0 +1,64 @@
+---
+import { path, useTranslations, type Locale } from "../i18n";
+import { brand, logoSrc } from "../data/siteSettings";
+import LanguageSwitcher from "./LanguageSwitcher.astro";
+
+interface Props {
+  locale: Locale;
+  route: string;
+}
+
+const { locale, route } = Astro.props;
+const t = useTranslations(locale);
+
+const navItems: { key: string; label: string; route: string }[] = [
+  { key: "trails", label: t("nav.trails"), route: "/trails/" },
+  { key: "treks", label: t("nav.treks"), route: "/treks/" },
+  { key: "groups", label: t("nav.groups"), route: "/groups/" },
+  { key: "about", label: t("nav.about"), route: "/about/" },
+  { key: "gallery", label: t("nav.gallery"), route: "/gallery/" },
+  { key: "faq", label: t("nav.faq"), route: "/faq/" },
+];
+---
+
+<header class="sticky top-0 z-50 border-b border-cedar-deep/10 bg-warm-white/95 backdrop-blur">
+  <div class="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
+    <a href={path("/", locale)} class="flex items-center gap-2">
+      <img src={logoSrc} alt={brand.name} class="h-10 w-auto" />
+      <span class="sr-only">{brand.name}</span>
+    </a>
+
+    <nav aria-label="Primary" class="hidden items-center gap-6 lg:flex">
+      {
+        navItems.map((item) => (
+          <a
+            href={path(item.route, locale)}
+            class="text-sm font-medium text-ink hover:text-cedar-deep"
+          >
+            {item.label}
+          </a>
+        ))
+      }
+    </nav>
+
+    <div class="flex items-center gap-3">
+      <LanguageSwitcher locale={locale} route={route} />
+      <a href={path("/contact/", locale)} class="btn-primary hidden sm:inline-flex">
+        {t("cta.book")}
+      </a>
+    </div>
+  </div>
+
+  <nav aria-label="Primary mobile" class="flex flex-wrap gap-x-4 gap-y-2 border-t border-cedar-deep/10 px-4 py-2 text-sm lg:hidden">
+    {
+      navItems.map((item) => (
+        <a href={path(item.route, locale)} class="text-ink hover:text-cedar-deep">
+          {item.label}
+        </a>
+      ))
+    }
+    <a href={path("/contact/", locale)} class="font-semibold text-cedar-deep">
+      {t("cta.book")}
+    </a>
+  </nav>
+</header>

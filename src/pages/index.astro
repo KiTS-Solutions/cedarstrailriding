@@ -1,0 +1,19 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import HomeSection from "../sections/HomeSection.astro";
+import { localBusinessSchema, touristTripSchema } from "../data/jsonld";
+import { useTranslations, type Locale } from "../i18n";
+
+const locale: Locale = "en";
+const route = "/";
+const t = useTranslations(locale);
+---
+
+<BaseLayout
+  locale={locale}
+  route={route}
+  jsonLd={[localBusinessSchema(), touristTripSchema()]}
+  breadcrumbs={[{ name: t("nav.home"), url: route }]}
+>
+  <HomeSection locale={locale} />
+</BaseLayout>

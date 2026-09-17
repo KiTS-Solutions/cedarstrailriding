@@ -1,0 +1,34 @@
+---
+// Simplified, stylized outline of Lebanon (not survey-accurate) with a single pin
+// projected from CTR's base coordinates (33.6864028, 35.5902012) — see
+// src/data/siteSettings.ts footerMap. Swap for a client-approved traced map later if
+// needed; this is a "we operate nationwide" visual, not a navigation tool.
+interface Props {
+  label: string;
+  class?: string;
+}
+
+const { label, class: className = "" } = Astro.props;
+---
+
+<figure class:list={["flex flex-col items-center gap-2 text-center", className]}>
+  <svg
+    viewBox="0 0 150 400"
+    role="img"
+    aria-labelledby="lebanon-map-title"
+    class="h-40 w-auto"
+  >
+    <title id="lebanon-map-title">{label}</title>
+    <path
+      d="M95,23.5 L85,61 L65,136 L50,190 L37,268 L19,336 L10,378 L68,333 L70,306 L85,282 L110,235 L90,200 L121,165 L139,71 L102,14 Z"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="3"
+      stroke-linejoin="round"
+      opacity="0.85"
+    />
+    <circle cx="59" cy="242" r="6" fill="currentColor" />
+    <circle cx="59" cy="242" r="10" fill="currentColor" opacity="0.3" />
+  </svg>
+  <figcaption class="text-sm font-medium">{label}</figcaption>
+</figure>

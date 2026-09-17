@@ -1,0 +1,157 @@
+---
+import { useTranslations, path, type Locale } from "../i18n";
+import { trails } from "../data/trails";
+import { testimonials } from "../data/testimonials";
+import { faqItems } from "../data/faq";
+import { horses, HORSE_PLACEHOLDER_COUNT } from "../data/horses";
+import TrailCard from "../components/TrailCard.astro";
+import TestimonialCard from "../components/TestimonialCard.astro";
+import HorseCard from "../components/HorseCard.astro";
+import FaqAccordion from "../components/FaqAccordion.astro";
+import WhatsAppButton from "../components/WhatsAppButton.astro";
+import BookingForm from "../components/BookingForm.astro";
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const t = useTranslations(locale);
+
+const previewFaq = faqItems.slice(0, 4).map((_, index) => {
+  const n = index + 1;
+  return { question: t(`faq.${n}.q`), answer: t(`faq.${n}.a`) };
+});
+const horseSlots = horses.length > 0 ? horses : Array.from({ length: HORSE_PLACEHOLDER_COUNT }, () => undefined);
+---
+
+<p class="bg-cedar-deep py-2 text-center text-xs font-medium text-warm-white sm:text-sm">
+  {t("home.trustBar")}
+</p>
+
+<section class="relative overflow-hidden bg-cedar-deep px-4 py-20 text-warm-white sm:px-6 sm:py-28">
+  <div class="mx-auto flex max-w-4xl flex-col items-center gap-6 text-center">
+    <p class="text-sm font-semibold uppercase tracking-widest text-gold">{t("home.eyebrow")}</p>
+    <h1 class="font-display text-4xl font-semibold leading-tight sm:text-6xl">{t("brand.hero")}</h1>
+    <p class="max-w-2xl text-lg text-warm-white/90">{t("home.heroSub")}</p>
+    <div class="flex flex-wrap items-center justify-center gap-4">
+      <a href={path("/contact/", locale)} class="btn-primary">{t("cta.book")}</a>
+      <a href="#trails" class="btn-secondary !border-warm-white !text-warm-white hover:!bg-warm-white hover:!text-cedar-deep">
+        {t("cta.explore")}
+      </a>
+    </div>
+    <div class="mt-4 flex flex-wrap items-center justify-center gap-3 text-sm text-warm-white/80">
+      <span class="chip bg-warm-white/10">{t("label.ratedGoogle")}</span>
+      <span class="chip bg-warm-white/10">{t("label.languages")}</span>
+      <span class="chip bg-warm-white/10">{t("label.operateAllLebanon")}</span>
+    </div>
+  </div>
+</section>
+
+<section class="mx-auto grid max-w-6xl gap-6 px-4 py-16 sm:px-6 md:grid-cols-3">
+  <article class="card p-6">
+    <h2 class="font-display text-xl font-semibold text-cedar-deep">{t("home.ridesTitle")}</h2>
+    <p class="mt-2 text-sm text-ink/80">{t("home.ridesDesc")}</p>
+  </article>
+  <article class="card p-6">
+    <h2 class="font-display text-xl font-semibold text-cedar-deep">{t("home.treksCardTitle")}</h2>
+    <p class="mt-2 text-sm text-ink/80">{t("home.treksCardDesc")}</p>
+  </article>
+  <article class="card p-6">
+    <h2 class="font-display text-xl font-semibold text-cedar-deep">{t("home.groupsCardTitle")}</h2>
+    <p class="mt-2 text-sm text-ink/80">{t("home.groupsCardDesc")}</p>
+  </article>
+</section>
+
+<section id="about" class="bg-sand px-4 py-16 sm:px-6">
+  <div class="mx-auto max-w-3xl text-center">
+    <h2 class="font-display text-3xl font-semibold text-cedar-deep">{t("home.aboutHeading")}</h2>
+    <p class="mt-4 text-ink/80">{t("home.aboutBody")}</p>
+    <blockquote class="mt-6 font-display text-xl italic text-cedar-soft">“{t("home.aboutQuote")}”</blockquote>
+    <a href={path("/about/", locale)} class="mt-6 inline-block font-semibold text-cedar-deep underline">
+      {t("cta.readStory")}
+    </a>
+  </div>
+</section>
+
+<section id="trails" class="mx-auto max-w-6xl px-4 py-16 sm:px-6">
+  <h2 class="text-center font-display text-3xl font-semibold text-cedar-deep">{t("home.trailsHeading")}</h2>
+  <div class="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+    {trails.filter((trail) => trail.id !== "custom-trails").map((trail) => <TrailCard trail={trail} locale={locale} />)}
+  </div>
+  <p class="mt-6 text-center text-sm text-ink/70">{t("home.customNote")}</p>
+  <div class="mt-4 text-center">
+    <a href={path("/contact/", locale)} class="btn-primary">{t("cta.plan")}</a>
+  </div>
+</section>
+
+<section id="treks" class="bg-cedar-deep px-4 py-16 text-warm-white sm:px-6">
+  <div class="mx-auto max-w-3xl text-center">
+    <h2 class="font-display text-3xl font-semibold">{t("home.treksHeading")}</h2>
+    <p class="mt-4 text-warm-white/85">{t("home.treksLead")}</p>
+    <div class="mt-6">
+      <a href={path("/treks/", locale)} class="btn-primary">{t("cta.learnMore")}</a>
+    </div>
+  </div>
+</section>
+
+<section id="groups" class="mx-auto max-w-6xl px-4 py-16 sm:px-6">
+  <h2 class="text-center font-display text-3xl font-semibold text-cedar-deep">{t("home.groupsHeading")}</h2>
+  <div class="mt-8 grid gap-6 sm:grid-cols-3">
+    <article class="card p-6">
+      <h3 class="font-display text-lg font-semibold text-cedar-deep">{t("groups.hiking")}</h3>
+      <p class="mt-2 text-sm text-ink/80">{t("groups.hikingNote")}</p>
+    </article>
+    <article class="card p-6">
+      <h3 class="font-display text-lg font-semibold text-cedar-deep">{t("groups.business")}</h3>
+    </article>
+    <article class="card p-6">
+      <h3 class="font-display text-lg font-semibold text-cedar-deep">{t("groups.custom")}</h3>
+    </article>
+  </div>
+  <div class="mt-6 text-center">
+    <a href={path("/contact/", locale)} class="btn-secondary">{t("cta.tellUsYourIdea")}</a>
+  </div>
+</section>
+
+<section id="horses" class="bg-sand px-4 py-16 sm:px-6">
+  <div class="mx-auto max-w-6xl text-center">
+    <h2 class="font-display text-3xl font-semibold text-cedar-deep">{t("home.horsesHeading")}</h2>
+    <p class="mx-auto mt-3 max-w-2xl text-ink/80">{t("home.horsesIntro")}</p>
+    <div class="mt-8 grid gap-6 sm:grid-cols-3">
+      {horseSlots.map((horse) => <HorseCard horse={horse} comingSoonLabel={t("horses.comingSoon")} />)}
+    </div>
+  </div>
+</section>
+
+<section class="mx-auto max-w-6xl px-4 py-16 sm:px-6">
+  <h2 class="text-center font-display text-3xl font-semibold text-cedar-deep">{t("home.testimonialsHeading")}</h2>
+  <div class="mt-8 grid gap-6 sm:grid-cols-3">
+    {testimonials.map((testimonial) => <TestimonialCard testimonial={testimonial} />)}
+  </div>
+  <p class="mt-6 text-center text-sm font-medium text-cedar-soft">{t("home.testimonialsSource")}</p>
+</section>
+
+<section id="faq" class="bg-sand px-4 py-16 sm:px-6">
+  <div class="mx-auto max-w-3xl">
+    <h2 class="text-center font-display text-3xl font-semibold text-cedar-deep">{t("nav.faq")}</h2>
+    <div class="mt-8">
+      <FaqAccordion items={previewFaq} />
+    </div>
+    <div class="mt-6 text-center">
+      <a href={path("/faq/", locale)} class="font-semibold text-cedar-deep underline">{t("cta.viewFullFaq")}</a>
+    </div>
+  </div>
+</section>
+
+<section id="contact" class="mx-auto max-w-4xl px-4 py-16 sm:px-6">
+  <h2 class="text-center font-display text-3xl font-semibold text-cedar-deep">{t("home.contactHeading")}</h2>
+  <p class="mx-auto mt-3 max-w-2xl text-center text-ink/80">{t("contact.body")}</p>
+  <div class="mt-6 flex flex-wrap items-center justify-center gap-4">
+    <WhatsAppButton label={t("cta.whatsapp")} />
+    <a href="tel:+96170211041" class="btn-secondary">{t("cta.call")} +961 70 211 041</a>
+  </div>
+  <div class="mt-10">
+    <BookingForm locale={locale} />
+  </div>
+</section>
