@@ -11,6 +11,7 @@
     "preview": "astro preview",
     "preview:static": "node scripts/static-server.mjs",
     "check": "astro check",
+    "test:unit": "node --experimental-strip-types --test tests/unit/*.test.ts",
     "test:e2e": "playwright test",
     "astro": "astro"
   },
