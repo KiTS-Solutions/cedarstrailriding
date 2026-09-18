@@ -22,3 +22,6 @@ Any key NOT present in `ar.json`/`fr.json` at all (e.g. most `about.*`, `treks.*
 copy) intentionally falls back to English via `useTranslations()` — per the translation
 pack's own instruction #3, don't ship broken/half-translated AR or FR. Extend the locale
 files as the client approves more translated copy.
+- `hero.*` (AR/FR, all 14 keys) — scroll-hero chapter labels, Act II/III story copy, skip link,
+  location caption and scroll cue. Not in the translation pack; fresh draft translations.
+  EN Act II/III copy is also new (not in the brief) and needs client sign-off.

@@ -45,6 +45,16 @@ it should be resolved before the site goes live publicly.
       `src/i18n/REVIEW_NOTES.md`. Any key not present in `src/i18n/locales/{ar,fr}.json`
       currently falls back to English by design — extend those files as translations are approved.
 
+## Hero video
+- [ ] Client sign-off on the hero clip: it is AI-generated ("Powerful Brown Horse Galloping
+      Through a Sunlit River in a Forest" by AMRULQAYS, Pixabay id 230717). Re-verify the Pixabay
+      Content License / attribution requirements at publish time and decide whether to disclose
+      "AI-generated" on the site. Replace with real CTR footage when available
+      (`scripts/encode-hero.sh` regenerates all hero assets from a new master; shipped command:
+      `DESKTOP_CRF=26 scripts/encode-hero.sh <master.mp4> 0.8 0.05`).
+- [ ] Native review of new hero copy (EN Act II/III + AR/FR `hero.*`), see `src/i18n/REVIEW_NOTES.md`.
+- [ ] Run Lighthouse on `/`, `/ar/`, `/fr/` at 375px and 1440px (LCP < 2.5s, CLS < 0.1).
+
 ## Technical QA before going live
 - [ ] Run Lighthouse (target LCP < 2.5s, CLS < 0.1 per KiTS standards) once real imagery
       replaces the placeholders — image weight will change the numbers.
