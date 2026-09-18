@@ -265,7 +265,8 @@
     "assets_status": "3 rider photos in assets/; logo received (public/images/brand/ctr-logo.webp); hero + trail imagery still being collected from client",
     "footer_map": {
       "required": true,
-      "description": "Inline SVG outline of Lebanon + single pin at base coords, label 'We operate all over Lebanon.' Featured in marketing case study.",
+      "description": "District-accurate Lebanon map (Mount Lebanon tinted, pin at base coords), label 'We operate all over Lebanon.' Sourced from the client's current live site (cedarstrailriding.com footer), which already renders this exact map on a matching dark-olive background.",
+      "asset": "public/images/brand/lebanon-map.webp",
       "coords": { "lat": 33.6864028, "lng": 35.5902012 }
     },
     "brand_family_footer": {
@@ -275,7 +276,7 @@
         {
           "name": "Cedars Trail Riding",
           "site": "https://cedarstrailriding.com/",
-          "logo": "public/images/brand/ctr-logo.webp"
+          "logo": "public/images/brand/ctr-badge-square.webp"
         },
         {
           "name": "Cedars Xtreme",

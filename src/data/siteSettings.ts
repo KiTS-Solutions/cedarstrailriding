@@ -16,6 +16,7 @@ export const buildDecisions = siteFacts.build_decisions;
 export const knownTeam = siteFacts.known_team;
 
 export const footerMap = buildDecisions.footer_map;
+export const footerMapSrc = toPublicPath(buildDecisions.footer_map.asset);
 
 /** `05_site_facts.json` stores asset paths relative to the repo root (e.g. "public/images/..."); strip the `public/` prefix to get the URL path Astro serves it at. */
 function toPublicPath(repoPath: string): string {
@@ -37,8 +38,8 @@ export const brandFamily =
   }));
 
 export const palette = {
-  cedarDeep: "#0E3B2E",
-  cedarSoft: "#2A5C4A",
+  cedarDeep: "#3C4710",
+  cedarSoft: "#596334",
   sand: "#F5EFE2",
   warmWhite: "#FBF7EE",
   gold: "#C9A227",
