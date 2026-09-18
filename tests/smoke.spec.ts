@@ -237,44 +237,72 @@ test.describe("Scroll hero", () => {
     test(`p=0 Book CTA is really clickable (${label})`, async ({ page }) => {
       await page.setViewportSize(viewport);
       await page.goto(path);
-      await expect(page.locator("[data-hero]")).toHaveAttribute("data-mode", "scrub");
+      await expect(page.locator("[data-hero]")).toHaveAttribute(
+        "data-mode",
+        "scrub",
+      );
       await page.locator('[data-hero] [data-hero-cta="book"]').click();
       await expect(page).toHaveURL(new RegExp(`${contact}$`));
     });
   }
 
-  test("at p=0.5 the river act, not the intro, receives pointer events", async ({ page }) => {
+  test("at p=0.5 the river act, not the intro, receives pointer events", async ({
+    page,
+  }) => {
     await page.goto("/");
-    await expect(page.locator("[data-hero]")).toHaveAttribute("data-mode", "scrub");
+    await expect(page.locator("[data-hero]")).toHaveAttribute(
+      "data-mode",
+      "scrub",
+    );
     await scrollToProgress(page, 0.5);
     await expect(page.locator('[data-act="river"]')).toHaveCSS("opacity", "1");
     await expect
       .poll(() =>
         page.evaluate(() => {
-          const r = document.querySelector('[data-act="river"]')!.getBoundingClientRect();
-          const hit = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+          const r = document
+            .querySelector('[data-act="river"]')!
+            .getBoundingClientRect();
+          const hit = document.elementFromPoint(
+            r.left + r.width / 2,
+            r.top + r.height / 2,
+          );
           return hit?.closest("[data-act]")?.getAttribute("data-act") ?? null;
         }),
       )
       .toBe("river");
   });
 
-  test("dock links are out of the tab order until the dock appears", async ({ page }) => {
+  test("dock links are out of the tab order until the dock appears", async ({
+    page,
+  }) => {
     await page.goto("/");
-    await expect(page.locator("[data-hero]")).toHaveAttribute("data-mode", "scrub");
+    await expect(page.locator("[data-hero]")).toHaveAttribute(
+      "data-mode",
+      "scrub",
+    );
     const tabindexes = () =>
-      page.locator("[data-hero-dock] a").evaluateAll((els) => els.map((e) => e.getAttribute("tabindex")));
+      page
+        .locator("[data-hero-dock] a")
+        .evaluateAll((els) => els.map((e) => e.getAttribute("tabindex")));
     expect(await tabindexes()).toEqual(["-1", "-1"]);
     await scrollToProgress(page, 0.5);
-    await expect(page.locator("[data-hero]")).toHaveAttribute("data-dock", "on");
+    await expect(page.locator("[data-hero]")).toHaveAttribute(
+      "data-dock",
+      "on",
+    );
     expect(await tabindexes()).toEqual([null, null]);
   });
 
-  test("deep link resyncs the video to the river frame once it is ready", async ({ page }) => {
+  test("deep link resyncs the video to the river frame once it is ready", async ({
+    page,
+  }) => {
     await page.addInitScript(() => {
       const w = window as unknown as { __seeks: number[] };
       w.__seeks = [];
-      const desc = Object.getOwnPropertyDescriptor(HTMLMediaElement.prototype, "currentTime")!;
+      const desc = Object.getOwnPropertyDescriptor(
+        HTMLMediaElement.prototype,
+        "currentTime",
+      )!;
       Object.defineProperty(HTMLMediaElement.prototype, "currentTime", {
         get() {
           return desc.get!.call(this);
@@ -286,7 +314,10 @@ test.describe("Scroll hero", () => {
       });
     });
     await page.goto("/#river");
-    await expect(page.locator("[data-hero]")).toHaveAttribute("data-ready", "true");
+    await expect(page.locator("[data-hero]")).toHaveAttribute(
+      "data-ready",
+      "true",
+    );
     // duration is read from the same element the controller seeks
     await expect
       .poll(() =>
@@ -305,11 +336,73 @@ test.describe("Scroll hero", () => {
     expect(last).toBeLessThan(3.5);
   });
 
-  test("snap does not fire while a pointer is held down, and may after release", async ({ page }) => {
+  test("fast scroll through the river paints droplets, which clear once still", async ({
+    page,
+  }) => {
+    const errors: string[] = [];
+    page.on("pageerror", (e) => errors.push(e.message));
+    page.on("console", (m) => {
+      if (m.type() === "error") errors.push(m.text());
+    });
     await page.goto("/");
-    await expect(page.locator("[data-hero]")).toHaveAttribute("data-mode", "scrub");
+    await expect(page.locator("[data-hero]")).toHaveAttribute(
+      "data-ready",
+      "true",
+    );
+
+    const painted = (): Promise<boolean> =>
+      page.evaluate(() => {
+        const c = document.querySelector<HTMLCanvasElement>("[data-hero-fx]")!;
+        const data = c
+          .getContext("2d")!
+          .getImageData(0, 0, c.width, c.height).data;
+        let n = 0;
+        for (let i = 3; i < data.length; i += 4) if (data[i] !== 0) n++;
+        // A 1x1 (unsized) canvas could "paint" one pixel; require a real droplet's worth.
+        return n >= 20;
+      });
+
+    // The canvas must be sized to the stage, not left at the 1x1 it has while display:none.
+    expect(
+      await page.evaluate(
+        () =>
+          document.querySelector<HTMLCanvasElement>("[data-hero-fx]")!.width,
+      ),
+    ).toBeGreaterThan(300);
+    expect(await painted()).toBe(false);
+
+    // Sweep p 0.4 -> 0.7 back and forth, fast, until something is painted (bounded, not timing-fragile).
+    let seen = false;
+    for (let round = 0; round < 12 && !seen; round++) {
+      for (const target of [0.4, 0.5, 0.6, 0.7, 0.6, 0.5]) {
+        await scrollToProgress(page, target);
+        await page.waitForTimeout(40);
+        if (await painted()) {
+          seen = true;
+          break;
+        }
+      }
+    }
+    expect(seen).toBe(true);
+
+    // Standing still: velocity decays, particles live ~1-2 s, canvas returns to fully transparent.
+    await expect.poll(painted, { timeout: 8000, intervals: [250] }).toBe(false);
+    expect(errors).toEqual([]);
+  });
+
+  test("snap does not fire while a pointer is held down, and may after release", async ({
+    page,
+  }) => {
+    await page.goto("/");
+    await expect(page.locator("[data-hero]")).toHaveAttribute(
+      "data-mode",
+      "scrub",
+    );
     // Let the video/layout settle so 0.47 stays near the river chapter.
-    await expect(page.locator("[data-hero]")).toHaveAttribute("data-ready", "true");
+    await expect(page.locator("[data-hero]")).toHaveAttribute(
+      "data-ready",
+      "true",
+    );
     await page.mouse.move(700, 450);
     await page.mouse.down();
     await scrollToProgress(page, 0.47);
@@ -324,9 +417,14 @@ test.describe("Scroll hero", () => {
     await expect.poll(() => page.evaluate(() => window.scrollY)).not.toBe(held);
   });
 
-  test("a blur during a held mouse press releases the snap guard", async ({ page }) => {
+  test("a blur during a held mouse press releases the snap guard", async ({
+    page,
+  }) => {
     await page.goto("/");
-    await expect(page.locator("[data-hero]")).toHaveAttribute("data-ready", "true");
+    await expect(page.locator("[data-hero]")).toHaveAttribute(
+      "data-ready",
+      "true",
+    );
     await page.mouse.move(700, 450);
     await page.mouse.down();
     await scrollToProgress(page, 0.47);
@@ -346,9 +444,15 @@ test.describe("Scroll hero", () => {
         page,
       }) => {
         await page.goto("/");
-        await expect(page.locator("[data-hero]")).toHaveAttribute("data-ready", "true");
+        await expect(page.locator("[data-hero]")).toHaveAttribute(
+          "data-ready",
+          "true",
+        );
         const cdp = await page.context().newCDPSession(page);
-        await cdp.send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: [{ x: 700, y: 450 }] });
+        await cdp.send("Input.dispatchTouchEvent", {
+          type: "touchStart",
+          touchPoints: [{ x: 700, y: 450 }],
+        });
         await scrollToProgress(page, 0.47);
         const held = await page.evaluate(() => window.scrollY);
         // Bounded waits: the frame-based velocity estimate must settle first (slow headless frames),
@@ -357,14 +461,21 @@ test.describe("Scroll hero", () => {
         if (withPointerCancel) {
           // What a browser does when it takes the drag over as a native pan.
           await page.evaluate(() =>
-            window.dispatchEvent(new PointerEvent("pointercancel", { pointerType: "touch" })),
+            window.dispatchEvent(
+              new PointerEvent("pointercancel", { pointerType: "touch" }),
+            ),
           );
         }
         // Negative check: a wrongly-fired snap (160 ms idle timer) would show well inside this window.
         await page.waitForTimeout(600);
         expect(await page.evaluate(() => window.scrollY)).toBe(held);
-        await cdp.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
-        await expect.poll(() => page.evaluate(() => window.scrollY)).not.toBe(held);
+        await cdp.send("Input.dispatchTouchEvent", {
+          type: "touchEnd",
+          touchPoints: [],
+        });
+        await expect
+          .poll(() => page.evaluate(() => window.scrollY))
+          .not.toBe(held);
       });
     }
   });

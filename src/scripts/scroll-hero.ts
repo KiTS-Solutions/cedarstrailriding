@@ -10,6 +10,7 @@ import {
   videoTime,
   type ActName,
 } from "./hero-math";
+import { createFx, type Fx } from "./hero-fx";
 
 type AnalyticsWindow = Window & {
   gtag?: (...args: unknown[]) => void;
@@ -106,6 +107,8 @@ function upgrade(root: HTMLElement): void {
   const canvas = must<HTMLCanvasElement>(root, "[data-hero-canvas]");
   const ctx = canvas.getContext("2d", { alpha: false });
   if (!ctx) throw new HeroError("2d canvas unavailable");
+  const fxCanvas = must<HTMLCanvasElement>(root, "[data-hero-fx]");
+  let fx: Fx | null = createFx(fxCanvas);
 
   const acts = Object.fromEntries(
     ACT_NAMES.map((name) => [
@@ -288,7 +291,19 @@ function upgrade(root: HTMLElement): void {
       }
     }
 
-    // Hook for Task 6: fx.update(dt, velocity, p)
+    // The FX layer is decorative: if it ever throws, drop it rather than freeze the scrub loop.
+    try {
+      fx?.update(dt, velocity, p);
+    } catch (err) {
+      fx = null;
+      fxCanvas
+        .getContext("2d")
+        ?.clearRect(0, 0, fxCanvas.width, fxCanvas.height);
+      console.warn(
+        "[hero] fx disabled:",
+        err instanceof Error ? err.message : err,
+      );
+    }
 
     if (visible) schedule();
   };
@@ -348,7 +363,9 @@ function upgrade(root: HTMLElement): void {
   };
   // Wheel/keys cancel a pending snap; the next scroll event re-arms it.
   ["wheel", "keydown"].forEach((type) =>
-    window.addEventListener(type, () => window.clearTimeout(snapTimer), { passive: true }),
+    window.addEventListener(type, () => window.clearTimeout(snapTimer), {
+      passive: true,
+    }),
   );
 
   // A held finger/button must never be snapped under; re-arm once nothing is held.
@@ -363,7 +380,9 @@ function upgrade(root: HTMLElement): void {
     else releaseIfIdle();
   };
   ["touchstart", "touchmove", "touchend", "touchcancel"].forEach((type) =>
-    window.addEventListener(type, (e) => syncTouches(e as TouchEvent), { passive: true }),
+    window.addEventListener(type, (e) => syncTouches(e as TouchEvent), {
+      passive: true,
+    }),
   );
   window.addEventListener(
     "pointerdown",
@@ -405,9 +424,12 @@ function upgrade(root: HTMLElement): void {
   window.addEventListener("scroll", onScroll, { passive: true });
   window.addEventListener("resize", () => {
     resize();
+    fx?.resize();
     schedule();
   });
 
   resize();
+  // The fx canvas is display:none until data-mode="scrub" is set, so size it only now.
+  fx?.resize();
   schedule();
 }
