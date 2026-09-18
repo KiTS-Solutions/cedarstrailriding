@@ -76,6 +76,7 @@ backend, deployed to Vercel. Full context: `brief/README.md` and `brief/HANDOFF.
   Lebanon" collision (`brief/04_seo_and_audit.md`).
 - **Accessibility:** WCAG AA target, native `<details>` FAQ accordion (keyboard-accessible by
   default), skip-to-content link, `lang`/`dir` set per locale.
+- **Hero:** src/components/ScrollHero.astro + src/scripts/{scroll-hero,hero-fx,hero-math}.ts — scroll-scrubbed video with static fallback; clip is AI-generated (see PRELAUNCH_CHECKLIST.md).
 
 ## Non-negotiables
 
@@ -95,6 +96,7 @@ npm install
 npm run dev          # local dev server (astro dev — see note below)
 npm run build        # static build to dist/, all 3 locales
 npm run check        # astro check (TS strict)
+npm run test:unit    # node:test unit tests for hero-math (tests/unit/)
 npm run test:e2e     # Playwright smoke tests (tests/smoke.spec.ts)
 ```
 

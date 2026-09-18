@@ -26,6 +26,7 @@ Then open http://localhost:4321.
 | `npm run build` | Static build to `dist/` (all 3 locales, 27 pages) |
 | `npm run preview` | Preview the production build (`astro preview` — see note below) |
 | `npm run check` | TypeScript / Astro diagnostics (`astro check`) |
+| `npm run test:unit` | Unit tests for the hero maths (`tests/unit/*.test.ts`, `node --test`) |
 | `npm run test:e2e` | Playwright smoke tests against a freshly built site |
 
 **Note on `astro preview`:** in this Astro version, `astro preview` (and `astro dev`) detach
@@ -63,6 +64,28 @@ src/
   pages/         Thin per-locale route files: src/pages/trails/index.astro (en),
                  src/pages/ar/trails/index.astro, src/pages/fr/trails/index.astro, etc.
 ```
+
+## Hero
+
+The home page opens with a scroll-scrubbed video hero (`src/components/ScrollHero.astro`,
+controller `src/scripts/scroll-hero.ts`, ambient droplets `src/scripts/hero-fx.ts`, pure maths
+`src/scripts/hero-math.ts`).
+
+- **Assets:** `public/images/hero/` — `poster-{mobile,desktop}.webp` and `ride-{mobile,desktop}.mp4`
+  (WebP posters only, no AVIF).
+- **Regenerate** from a new master: `scripts/encode-hero.sh <master.mp4> <x0> <x1>` (`x0`/`x1` are the
+  phone-crop pan start/end). The shipped command is
+  `DESKTOP_CRF=26 scripts/encode-hero.sh <master.mp4> 0.8 0.05`. The 4K master is **not** in this repo;
+  it lives outside it as `horse-hero/assets/horse-river-original.mp4` in the client's working copy.
+- **Tests:** `npm run test:unit` (hero maths), `npm run test:e2e` (hero smoke tests in `tests/smoke.spec.ts`).
+- **Capability gate:** `prefers-reduced-motion`, Save-Data, 2g/3g effective connection, or
+  `deviceMemory < 4` get the static hero (poster, no video request); everyone else gets scrub mode.
+- **Licence:** the clip is AI-generated; see `PRELAUNCH_CHECKLIST.md` (Hero video) for the sign-off item.
+- **Measured performance (2026-09-19, Lighthouse 13.5.0, local static build, headless Chromium, 3 locales):**
+  mobile with default simulated throttling LCP ≈ 3.7 s (a hero-free page such as `/faq/` measures 3.68 s
+  under the same settings, so this is a site-wide baseline); with DevTools throttling `/` mobile LCP is
+  2.23 s; desktop LCP ≈ 0.76 s; desktop CLS 0.087 on `/` (see `PRELAUNCH_CHECKLIST.md`). Budgets
+  (LCP < 2.5 s) are **not** yet met under simulated mobile throttling.
 
 ## Deployment (Vercel)
 

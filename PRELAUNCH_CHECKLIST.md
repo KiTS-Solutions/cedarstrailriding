@@ -53,7 +53,15 @@ it should be resolved before the site goes live publicly.
       (`scripts/encode-hero.sh` regenerates all hero assets from a new master; shipped command:
       `DESKTOP_CRF=26 scripts/encode-hero.sh <master.mp4> 0.8 0.05`).
 - [ ] Native review of new hero copy (EN Act II/III + AR/FR `hero.*`), see `src/i18n/REVIEW_NOTES.md`.
+- [ ] Phone crop pans 0.8→0.05; at ~2.8 s the portrait crop cuts the horse's head — accepted, revisit with real footage.
 - [ ] Run Lighthouse on `/`, `/ar/`, `/fr/` at 375px and 1440px (LCP < 2.5s, CLS < 0.1).
+      Measured 2026-09-19 (Lighthouse 13.5.0, local build): mobile simulated-throttling LCP ≈ 3.7 s
+      on all three locales and also on `/faq/` (hero-free control 3.68 s), so a site-wide baseline,
+      likely render-blocking CSS/fonts; DevTools-throttled LCP for `/` = 2.23 s; desktop LCP ≈ 0.76 s;
+      mobile CLS 0.000; desktop CLS 0.087 on `/`, `/ar/`, `/fr/` (0.000 on `/faq/`), caused by the
+      hero's static→scrub switch pushing the next section out of the first viewport (with Save-Data
+      the hero stays static and CLS is 0.000). Action: investigate site-wide critical CSS / font
+      loading and the hero CLS before launch.
 
 ## Technical QA before going live
 - [ ] Run Lighthouse (target LCP < 2.5s, CLS < 0.1 per KiTS standards) once real imagery
