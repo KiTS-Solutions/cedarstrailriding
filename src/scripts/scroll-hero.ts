@@ -67,11 +67,17 @@ function wireSkip(root: HTMLElement): void {
   });
 }
 
-function setActFocusable(act: HTMLElement, focusable: boolean): void {
+function setFocusable(act: HTMLElement, focusable: boolean): void {
   act.querySelectorAll<HTMLElement>("a, button").forEach((el) => {
     if (focusable) el.removeAttribute("tabindex");
     else el.setAttribute("tabindex", "-1");
   });
+}
+
+// A faded-out act must be inert: later acts stack above earlier ones and would swallow taps.
+function setActActive(act: HTMLElement, active: boolean): void {
+  setFocusable(act, active);
+  act.style.pointerEvents = active ? "" : "none";
 }
 
 export function initScrollHero(root: HTMLElement): void {
@@ -121,6 +127,9 @@ function upgrade(root: HTMLElement): void {
   };
   syncHeaderOffset();
 
+  const dock = root.querySelector<HTMLElement>("[data-hero-dock]");
+  if (dock) setFocusable(dock, false); // dock starts off; keep it out of the tab order
+
   root.dataset.mode = "scrub";
 
   // ---- Video: lazily fetched after first paint, source chosen by viewport ----
@@ -166,7 +175,20 @@ function upgrade(root: HTMLElement): void {
   });
   video.addEventListener("loadeddata", () => {
     ready = true;
-    draw();
+    // The user may already be past frame 0 (deep link, restored scroll) with no scroll
+    // event to trigger a seek, so resync now. `seeked` repaints the canvas.
+    lastTime = -1;
+    if (p >= 0) {
+      lastTime = videoTime(p, duration);
+      try {
+        video.currentTime = lastTime;
+      } catch (err) {
+        if (!(err instanceof DOMException)) throw err;
+        draw();
+      }
+    } else {
+      draw();
+    }
     root.dataset.ready = "true";
   });
   video.addEventListener("seeked", draw);
@@ -192,7 +214,7 @@ function upgrade(root: HTMLElement): void {
   let lastFrameAt = performance.now();
   let velocity = 0;
   let snapTimer = 0;
-  let userIsScrolling = false;
+  let pointerHeld = false;
   const reached = new Set<string>();
   const lastOpacity: Record<ActName, number> = {
     intro: -1,
@@ -229,7 +251,7 @@ function upgrade(root: HTMLElement): void {
         ) {
           lastOpacity[name] = o;
           acts[name].style.setProperty("--o", o.toFixed(3));
-          setActFocusable(acts[name], o > FOCUS_THRESHOLD);
+          setActActive(acts[name], o > FOCUS_THRESHOLD);
         }
       }
 
@@ -246,7 +268,11 @@ function upgrade(root: HTMLElement): void {
         track("hero_chapter_reached", { chapter: chapter.id });
       }
 
-      root.dataset.dock = p > 0.34 ? "on" : "off";
+      const dockState = p > 0.34 ? "on" : "off";
+      if (root.dataset.dock !== dockState) {
+        root.dataset.dock = dockState;
+        if (dock) setFocusable(dock, dockState === "on");
+      }
 
       if (ready) {
         const t = videoTime(p, duration);
@@ -309,24 +335,44 @@ function upgrade(root: HTMLElement): void {
   if (hashChapter)
     requestAnimationFrame(() => scrollToProgress(hashChapter.p, "instant"));
 
-  const cancelSnap = (): void => {
-    userIsScrolling = true;
-    window.clearTimeout(snapTimer);
+  const runSnap = (): void => {
+    if (!visible || pointerHeld) return;
+    const target = nearestSnap(p, velocity);
+    if (target !== null) scrollToProgress(target, "smooth");
   };
-  ["wheel", "touchstart", "keydown", "pointerdown"].forEach((type) =>
-    window.addEventListener(type, cancelSnap, { passive: true }),
+  const armSnap = (): void => {
+    window.clearTimeout(snapTimer);
+    snapTimer = window.setTimeout(runSnap, SNAP_IDLE_MS);
+  };
+  // Wheel/keys cancel a pending snap; the next scroll event re-arms it.
+  ["wheel", "keydown"].forEach((type) =>
+    window.addEventListener(type, () => window.clearTimeout(snapTimer), { passive: true }),
+  );
+  // A held finger/pointer must never be snapped under; re-arm once it is released.
+  ["pointerdown", "touchstart"].forEach((type) =>
+    window.addEventListener(
+      type,
+      () => {
+        pointerHeld = true;
+        window.clearTimeout(snapTimer);
+      },
+      { passive: true },
+    ),
+  );
+  ["pointerup", "pointercancel", "touchend", "touchcancel"].forEach((type) =>
+    window.addEventListener(
+      type,
+      () => {
+        pointerHeld = false;
+        armSnap();
+      },
+      { passive: true },
+    ),
   );
 
   const onScroll = (): void => {
     schedule();
-    window.clearTimeout(snapTimer);
-    snapTimer = window.setTimeout(() => {
-      userIsScrolling = false;
-      if (!visible) return;
-      const target = nearestSnap(p, velocity);
-      if (target !== null && !userIsScrolling)
-        scrollToProgress(target, "smooth");
-    }, SNAP_IDLE_MS);
+    armSnap();
   };
   window.addEventListener("scroll", onScroll, { passive: true });
   window.addEventListener("resize", () => {

@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, type Page } from "@playwright/test";
 
 test.describe("Home page", () => {
   test("renders the hero and primary nav", async ({ page }) => {
@@ -215,5 +215,112 @@ test.describe("Scroll hero", () => {
     await expect(page.getByRole("heading", { level: 1 })).not.toHaveText(
       "Explore Lebanon on Horseback",
     );
+  });
+
+  const scrollToProgress = (page: Page, p: number) =>
+    page.evaluate((target) => {
+      const el = document.querySelector<HTMLElement>("[data-hero]")!;
+      const stage = el.querySelector<HTMLElement>("[data-hero-stage]")!;
+      const top = el.getBoundingClientRect().top + window.scrollY;
+      const sticky = parseFloat(getComputedStyle(stage).top);
+      window.scrollTo({
+        top: top - sticky + target * (el.offsetHeight - stage.offsetHeight),
+        behavior: "instant",
+      });
+    }, p);
+
+  for (const [label, viewport, path, contact] of [
+    ["desktop", { width: 1440, height: 900 }, "/", "/contact/"],
+    ["phone", { width: 375, height: 812 }, "/", "/contact/"],
+    ["phone Arabic", { width: 375, height: 812 }, "/ar/", "/ar/contact/"],
+  ] as const) {
+    test(`p=0 Book CTA is really clickable (${label})`, async ({ page }) => {
+      await page.setViewportSize(viewport);
+      await page.goto(path);
+      await expect(page.locator("[data-hero]")).toHaveAttribute("data-mode", "scrub");
+      await page.locator('[data-hero] [data-hero-cta="book"]').click();
+      await expect(page).toHaveURL(new RegExp(`${contact}$`));
+    });
+  }
+
+  test("at p=0.5 the river act, not the intro, receives pointer events", async ({ page }) => {
+    await page.goto("/");
+    await expect(page.locator("[data-hero]")).toHaveAttribute("data-mode", "scrub");
+    await scrollToProgress(page, 0.5);
+    await expect(page.locator('[data-act="river"]')).toHaveCSS("opacity", "1");
+    await expect
+      .poll(() =>
+        page.evaluate(() => {
+          const r = document.querySelector('[data-act="river"]')!.getBoundingClientRect();
+          const hit = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+          return hit?.closest("[data-act]")?.getAttribute("data-act") ?? null;
+        }),
+      )
+      .toBe("river");
+  });
+
+  test("dock links are out of the tab order until the dock appears", async ({ page }) => {
+    await page.goto("/");
+    await expect(page.locator("[data-hero]")).toHaveAttribute("data-mode", "scrub");
+    const tabindexes = () =>
+      page.locator("[data-hero-dock] a").evaluateAll((els) => els.map((e) => e.getAttribute("tabindex")));
+    expect(await tabindexes()).toEqual(["-1", "-1"]);
+    await scrollToProgress(page, 0.5);
+    await expect(page.locator("[data-hero]")).toHaveAttribute("data-dock", "on");
+    expect(await tabindexes()).toEqual([null, null]);
+  });
+
+  test("deep link resyncs the video to the river frame once it is ready", async ({ page }) => {
+    await page.addInitScript(() => {
+      const w = window as unknown as { __seeks: number[] };
+      w.__seeks = [];
+      const desc = Object.getOwnPropertyDescriptor(HTMLMediaElement.prototype, "currentTime")!;
+      Object.defineProperty(HTMLMediaElement.prototype, "currentTime", {
+        get() {
+          return desc.get!.call(this);
+        },
+        set(v: number) {
+          w.__seeks.push(v);
+          desc.set!.call(this, v);
+        },
+      });
+    });
+    await page.goto("/#river");
+    await expect(page.locator("[data-hero]")).toHaveAttribute("data-ready", "true");
+    // duration is read from the same element the controller seeks
+    await expect
+      .poll(() =>
+        page.evaluate(() => {
+          const seeks = (window as unknown as { __seeks: number[] }).__seeks;
+          return seeks.length ? seeks[seeks.length - 1] : null;
+        }),
+      )
+      .not.toBeNull();
+    const last = await page.evaluate(() => {
+      const seeks = (window as unknown as { __seeks: number[] }).__seeks;
+      return seeks[seeks.length - 1]!;
+    });
+    // river chapter is p=0.5; clip is ~5.7s, so the target is ~2.8s, never frame 0
+    expect(last).toBeGreaterThan(2);
+    expect(last).toBeLessThan(3.5);
+  });
+
+  test("snap does not fire while a pointer is held down, and may after release", async ({ page }) => {
+    await page.goto("/");
+    await expect(page.locator("[data-hero]")).toHaveAttribute("data-mode", "scrub");
+    // Let the video/layout settle so 0.47 stays near the river chapter.
+    await expect(page.locator("[data-hero]")).toHaveAttribute("data-ready", "true");
+    await page.mouse.move(700, 450);
+    await page.mouse.down();
+    await scrollToProgress(page, 0.47);
+    const held = await page.evaluate(() => window.scrollY);
+    // Negative check: the idle timer is 160ms, so a wrongly-fired snap would have moved us well
+    // within this window. The window is also long enough for the velocity estimate (which decays
+    // per rendered frame, and frames are slow in headless Chromium) to settle, so that the
+    // post-release snap below is not rejected as "still moving".
+    await page.waitForTimeout(1500);
+    expect(await page.evaluate(() => window.scrollY)).toBe(held);
+    await page.mouse.up();
+    await expect.poll(() => page.evaluate(() => window.scrollY)).not.toBe(held);
   });
 });
