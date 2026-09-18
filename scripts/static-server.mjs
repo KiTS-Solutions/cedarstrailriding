@@ -25,6 +25,8 @@ const CONTENT_TYPES = {
   ".ico": "image/x-icon",
   ".xml": "application/xml; charset=utf-8",
   ".txt": "text/plain; charset=utf-8",
+  ".mp4": "video/mp4",
+  ".webp": "image/webp",
   ".webmanifest": "application/manifest+json",
 };
 
@@ -44,7 +46,21 @@ const server = createServer(async (req, res) => {
     const pathname = decodeURIComponent(new URL(req.url ?? "/", "http://localhost").pathname);
     const filePath = await resolveFile(pathname);
     const data = await readFile(filePath);
-    res.writeHead(200, { "Content-Type": CONTENT_TYPES[extname(filePath)] ?? "application/octet-stream" });
+    const type = CONTENT_TYPES[extname(filePath)] ?? "application/octet-stream";
+    const range = /^bytes=(\d*)-(\d*)$/.exec(req.headers.range ?? "");
+    if (range) {
+      const start = range[1] === "" ? 0 : Number(range[1]);
+      const end = range[2] === "" ? data.length - 1 : Math.min(Number(range[2]), data.length - 1);
+      res.writeHead(206, {
+        "Content-Type": type,
+        "Accept-Ranges": "bytes",
+        "Content-Range": `bytes ${start}-${end}/${data.length}`,
+        "Content-Length": end - start + 1,
+      });
+      res.end(data.subarray(start, end + 1));
+      return;
+    }
+    res.writeHead(200, { "Content-Type": type, "Accept-Ranges": "bytes", "Content-Length": data.length });
     res.end(data);
   } catch {
     res.writeHead(404, { "Content-Type": "text/plain" });

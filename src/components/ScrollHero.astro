@@ -226,6 +226,7 @@ const chapters = [
     letter-spacing: 0.16em;
     text-transform: uppercase;
     color: var(--color-gold);
+    text-shadow: 0 1px 10px rgb(22 17 12 / 0.75);
   }
   .ctr-hero__eyebrow::before {
     content: "";
@@ -291,6 +292,7 @@ const chapters = [
     opacity: 0;
     pointer-events: none;
   }
+  .ctr-hero__skip:focus,
   .ctr-hero__skip:focus-visible {
     transform: none;
     opacity: 1;
@@ -361,6 +363,19 @@ const chapters = [
   }
   .ctr-hero[data-mode="scrub"] .ctr-hero__act--ride .ctr-hero__ctas {
     justify-content: flex-end;
+  }
+  /* Phones: keep the chapter rail (left/inline-start gutter) clear of act copy. */
+  @media (max-width: 767px) {
+    .ctr-hero[data-mode="scrub"] .ctr-hero__act {
+      width: calc(100% - 5rem);
+    }
+    .ctr-hero[data-mode="scrub"] .ctr-hero__act--intro {
+      inset-inline-start: 3rem;
+    }
+    .ctr-hero[data-mode="scrub"] .ctr-hero__act--river {
+      inset-inline: 2.5rem;
+      width: auto;
+    }
   }
   @media (min-width: 768px) {
     .ctr-hero[data-mode="scrub"] .ctr-hero__act--intro {
@@ -488,6 +503,17 @@ const chapters = [
   :global(html[dir="rtl"]) .ctr-hero__coords {
     letter-spacing: 0;
     text-transform: none;
+  }
+
+  @media (max-width: 767px) {
+    .ctr-hero[data-mode="scrub"] .ctr-hero__rail {
+      inset-inline-start: 0.5rem;
+    }
+    /* Phone Act I is tall enough that the bottom-edge cue and coordinates collide with the chips. */
+    .ctr-hero[data-mode="scrub"] .ctr-hero__cue,
+    .ctr-hero[data-mode="scrub"] .ctr-hero__coords {
+      display: none;
+    }
   }
 
   /* Sticky booking dock */
