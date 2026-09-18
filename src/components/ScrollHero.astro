@@ -136,7 +136,8 @@ const chapters = [
     position: relative;
     isolation: isolate;
     overflow: clip;
-    min-height: min(46rem, calc(100svh - var(--hero-top)));
+    min-height: calc(100svh - var(--hero-top));
+    min-height: calc(100dvh - var(--hero-top));
     display: flex;
     align-items: center;
   }

@@ -185,6 +185,41 @@ test.describe("Scroll hero", () => {
     );
   });
 
+  for (const vp of [
+    { name: "desktop", width: 1440, height: 900 },
+    { name: "phone", width: 375, height: 812 },
+  ]) {
+    test(`static to scrub upgrade causes no layout shift (${vp.name})`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width: vp.width, height: vp.height });
+      await page.addInitScript(() => {
+        const w = window as unknown as { __cls: number };
+        w.__cls = 0;
+        new PerformanceObserver((list) => {
+          for (const e of list.getEntries()) {
+            const ls = e as PerformanceEntry & {
+              value: number;
+              hadRecentInput: boolean;
+            };
+            if (!ls.hadRecentInput) w.__cls += ls.value;
+          }
+        }).observe({ type: "layout-shift", buffered: true });
+      });
+      await page.goto("/");
+      await expect(page.locator("[data-hero]")).toHaveAttribute(
+        "data-mode",
+        "scrub",
+      );
+      await page.waitForLoadState("networkidle");
+      await page.waitForTimeout(500);
+      const cls = await page.evaluate(
+        () => (window as unknown as { __cls: number }).__cls,
+      );
+      expect(cls).toBeLessThan(0.02);
+    });
+  }
+
   test("#river deep link opens at the river chapter", async ({ page }) => {
     await page.goto("/#river");
     await expect(page.locator("[data-hero]")).toHaveAttribute(

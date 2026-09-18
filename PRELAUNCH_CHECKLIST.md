@@ -58,10 +58,11 @@ it should be resolved before the site goes live publicly.
       Measured 2026-09-19 (Lighthouse 13.5.0, local build): mobile simulated-throttling LCP ≈ 3.7 s
       on all three locales and also on `/faq/` (hero-free control 3.68 s), so a site-wide baseline,
       likely render-blocking CSS/fonts; DevTools-throttled LCP for `/` = 2.23 s; desktop LCP ≈ 0.76 s;
-      mobile CLS 0.000; desktop CLS 0.087 on `/`, `/ar/`, `/fr/` (0.000 on `/faq/`), caused by the
-      hero's static→scrub switch pushing the next section out of the first viewport (with Save-Data
-      the hero stays static and CLS is 0.000). Action: investigate site-wide critical CSS / font
-      loading and the hero CLS before launch.
+      mobile CLS 0.000. Desktop CLS was 0.087 on `/`, `/ar/`, `/fr/` (0.000 on `/faq/`), caused by the
+      hero's static→scrub switch pushing the next section out of the first viewport; fixed by making
+      the static stage fill the viewport, after which desktop Lighthouse CLS is 0.000 on `/` (3 runs),
+      `/ar/` and `/fr/` (desktop LCP 0.76-0.77 s). Action: investigate site-wide critical CSS / font
+      loading before launch.
 
 ## Technical QA before going live
 - [ ] Run Lighthouse (target LCP < 2.5s, CLS < 0.1 per KiTS standards) once real imagery

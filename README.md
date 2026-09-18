@@ -84,7 +84,8 @@ controller `src/scripts/scroll-hero.ts`, ambient droplets `src/scripts/hero-fx.t
 - **Measured performance (2026-09-19, Lighthouse 13.5.0, local static build, headless Chromium, 3 locales):**
   mobile with default simulated throttling LCP ≈ 3.7 s (a hero-free page such as `/faq/` measures 3.68 s
   under the same settings, so this is a site-wide baseline); with DevTools throttling `/` mobile LCP is
-  2.23 s; desktop LCP ≈ 0.76 s; desktop CLS 0.087 on `/` (see `PRELAUNCH_CHECKLIST.md`). Budgets
+  2.23 s; desktop LCP ≈ 0.77 s with CLS 0.000 on `/` (3 runs), `/ar/` and `/fr/` after the static stage was
+  made to fill the viewport (it was 0.087 before; see `PRELAUNCH_CHECKLIST.md`). Budgets
   (LCP < 2.5 s) are **not** yet met under simulated mobile throttling.
 
 ## Deployment (Vercel)
