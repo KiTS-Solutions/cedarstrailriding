@@ -214,7 +214,8 @@ function upgrade(root: HTMLElement): void {
   let lastFrameAt = performance.now();
   let velocity = 0;
   let snapTimer = 0;
-  let pointerHeld = false;
+  let pointerHeld = false; // mouse / pen button
+  let touchHeld = false; // one or more fingers down
   const reached = new Set<string>();
   const lastOpacity: Record<ActName, number> = {
     intro: -1,
@@ -335,8 +336,9 @@ function upgrade(root: HTMLElement): void {
   if (hashChapter)
     requestAnimationFrame(() => scrollToProgress(hashChapter.p, "instant"));
 
+  const isHeld = (): boolean => touchHeld || pointerHeld;
   const runSnap = (): void => {
-    if (!visible || pointerHeld) return;
+    if (!visible || isHeld()) return;
     const target = nearestSnap(p, velocity);
     if (target !== null) scrollToProgress(target, "smooth");
   };
@@ -348,27 +350,53 @@ function upgrade(root: HTMLElement): void {
   ["wheel", "keydown"].forEach((type) =>
     window.addEventListener(type, () => window.clearTimeout(snapTimer), { passive: true }),
   );
-  // A held finger/pointer must never be snapped under; re-arm once it is released.
-  ["pointerdown", "touchstart"].forEach((type) =>
-    window.addEventListener(
-      type,
-      () => {
-        pointerHeld = true;
-        window.clearTimeout(snapTimer);
-      },
-      { passive: true },
-    ),
+
+  // A held finger/button must never be snapped under; re-arm once nothing is held.
+  // Touch state comes from touch events only: browsers fire `pointercancel` on touch
+  // pointers when they take over a drag as a native pan, while the finger is still down.
+  const releaseIfIdle = (): void => {
+    if (!isHeld()) armSnap();
+  };
+  const syncTouches = (event: TouchEvent): void => {
+    touchHeld = event.touches.length > 0;
+    if (touchHeld) window.clearTimeout(snapTimer);
+    else releaseIfIdle();
+  };
+  ["touchstart", "touchmove", "touchend", "touchcancel"].forEach((type) =>
+    window.addEventListener(type, (e) => syncTouches(e as TouchEvent), { passive: true }),
   );
-  ["pointerup", "pointercancel", "touchend", "touchcancel"].forEach((type) =>
+  window.addEventListener(
+    "pointerdown",
+    (e) => {
+      if (e.pointerType === "touch") return;
+      pointerHeld = true;
+      window.clearTimeout(snapTimer);
+    },
+    { passive: true },
+  );
+  ["pointerup", "pointercancel"].forEach((type) =>
     window.addEventListener(
       type,
-      () => {
+      (e) => {
+        if ((e as PointerEvent).pointerType === "touch") return;
         pointerHeld = false;
-        armSnap();
+        releaseIfIdle();
       },
       { passive: true },
     ),
   );
+  // Safety net against a stuck flag (release happened outside the page / tab was hidden).
+  const resetHeld = (): void => {
+    pointerHeld = false;
+    touchHeld = false;
+  };
+  window.addEventListener("blur", () => {
+    resetHeld();
+    armSnap();
+  });
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) resetHeld();
+  });
 
   const onScroll = (): void => {
     schedule();

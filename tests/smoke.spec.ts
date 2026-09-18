@@ -323,4 +323,49 @@ test.describe("Scroll hero", () => {
     await page.mouse.up();
     await expect.poll(() => page.evaluate(() => window.scrollY)).not.toBe(held);
   });
+
+  test("a blur during a held mouse press releases the snap guard", async ({ page }) => {
+    await page.goto("/");
+    await expect(page.locator("[data-hero]")).toHaveAttribute("data-ready", "true");
+    await page.mouse.move(700, 450);
+    await page.mouse.down();
+    await scrollToProgress(page, 0.47);
+    const held = await page.evaluate(() => window.scrollY);
+    // Bounded negative wait (see the pointer-held test): lets the velocity estimate settle too.
+    await page.waitForTimeout(1500);
+    expect(await page.evaluate(() => window.scrollY)).toBe(held);
+    await page.evaluate(() => window.dispatchEvent(new Event("blur")));
+    await expect.poll(() => page.evaluate(() => window.scrollY)).not.toBe(held);
+  });
+
+  test.describe("touch", () => {
+    test.use({ hasTouch: true });
+
+    for (const withPointerCancel of [false, true]) {
+      test(`snap does not fire under a held finger${withPointerCancel ? " even after a touch pointercancel" : ""}`, async ({
+        page,
+      }) => {
+        await page.goto("/");
+        await expect(page.locator("[data-hero]")).toHaveAttribute("data-ready", "true");
+        const cdp = await page.context().newCDPSession(page);
+        await cdp.send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: [{ x: 700, y: 450 }] });
+        await scrollToProgress(page, 0.47);
+        const held = await page.evaluate(() => window.scrollY);
+        // Bounded waits: the frame-based velocity estimate must settle first (slow headless frames),
+        // otherwise a snap would be rejected as "still moving" and the test could not fail.
+        await page.waitForTimeout(1200);
+        if (withPointerCancel) {
+          // What a browser does when it takes the drag over as a native pan.
+          await page.evaluate(() =>
+            window.dispatchEvent(new PointerEvent("pointercancel", { pointerType: "touch" })),
+          );
+        }
+        // Negative check: a wrongly-fired snap (160 ms idle timer) would show well inside this window.
+        await page.waitForTimeout(600);
+        expect(await page.evaluate(() => window.scrollY)).toBe(held);
+        await cdp.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
+        await expect.poll(() => page.evaluate(() => window.scrollY)).not.toBe(held);
+      });
+    }
+  });
 });
