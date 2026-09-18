@@ -1,0 +1,576 @@
+---
+import { useTranslations, path, type Locale } from "../i18n";
+import { contact } from "../data/siteSettings";
+import WhatsAppButton from "./WhatsAppButton.astro";
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const t = useTranslations(locale);
+
+const { lat, lng } = contact.coordinates;
+const coords = `${lat.toFixed(2)}°N ${lng.toFixed(2)}°E`;
+const media = "/images/hero";
+
+const chapters = [
+  { id: "shouf", n: "01", label: t("hero.chapter1") },
+  { id: "river", n: "02", label: t("hero.chapter2") },
+  { id: "ride", n: "03", label: t("hero.chapter3") },
+] as const;
+---
+
+<section
+  class="ctr-hero"
+  data-hero
+  data-mode="static"
+  data-dock="off"
+  data-video-desktop={`${media}/ride-desktop.mp4`}
+  data-video-mobile={`${media}/ride-mobile.mp4`}
+  aria-label={t("hero.aria")}
+>
+  <a href="#trails" class="ctr-hero__skip" data-hero-skip>{t("hero.skip")}</a>
+
+  <div class="ctr-hero__stage" data-hero-stage>
+    <div class="ctr-hero__plate" aria-hidden="true">
+      <picture>
+        <source
+          media="(max-width: 767px) and (orientation: portrait)"
+          srcset={`${media}/poster-mobile.webp`}
+          type="image/webp"
+        />
+        <img
+          src={`${media}/poster-desktop.webp`}
+          alt=""
+          width="1600"
+          height="900"
+          fetchpriority="high"
+          decoding="async"
+          class="ctr-hero__poster"
+        />
+      </picture>
+      <canvas class="ctr-hero__canvas" data-hero-canvas></canvas>
+    </div>
+
+    <div class="ctr-hero__grade" aria-hidden="true"></div>
+    <div class="ctr-hero__shafts" aria-hidden="true"></div>
+    <canvas class="ctr-hero__fx" data-hero-fx aria-hidden="true"></canvas>
+    <div class="ctr-hero__scrim" aria-hidden="true"></div>
+    <div class="ctr-hero__bar" data-hero-bar aria-hidden="true"></div>
+
+    <nav class="ctr-hero__rail" aria-label={t("hero.railLabel")}>
+      <ol>
+        {
+          chapters.map((c) => (
+            <li>
+              <a href={`#${c.id}`} data-chapter={c.id}>
+                <span class="ctr-hero__rail-n">{c.n}</span>
+                <span class="ctr-hero__rail-l">{c.label}</span>
+              </a>
+            </li>
+          ))
+        }
+      </ol>
+    </nav>
+
+    <div class="ctr-hero__acts">
+      <div class="ctr-hero__act ctr-hero__act--intro" data-act="intro">
+        <p class="ctr-hero__eyebrow">{t("home.eyebrow")}</p>
+        <h1 class="ctr-hero__h1">{t("brand.hero")}</h1>
+        <p class="ctr-hero__lead">{t("home.heroSub")}</p>
+        <div class="ctr-hero__ctas">
+          <a href={path("/contact/", locale)} class="btn-primary" data-hero-cta="book">{t("cta.book")}</a>
+          <a
+            href="#trails"
+            class="btn-secondary !border-warm-white !text-warm-white hover:!bg-warm-white hover:!text-cedar-deep"
+            data-hero-cta="explore"
+          >
+            {t("cta.explore")}
+          </a>
+        </div>
+        <div class="ctr-hero__chips">
+          <span class="chip bg-warm-white/10">{t("label.ratedGoogle")}</span>
+          <span class="chip bg-warm-white/10">{t("label.languages")}</span>
+          <span class="chip bg-warm-white/10">{t("label.operateAllLebanon")}</span>
+        </div>
+      </div>
+
+      <div class="ctr-hero__act ctr-hero__act--river" data-act="river">
+        <p class="ctr-hero__eyebrow">{t("hero.act2.eyebrow")}</p>
+        <h2 class="ctr-hero__h2">{t("hero.act2.title")}</h2>
+        <p class="ctr-hero__lead">{t("hero.act2.body")}</p>
+      </div>
+
+      <div class="ctr-hero__act ctr-hero__act--ride" data-act="ride">
+        <p class="ctr-hero__eyebrow">{t("hero.act3.eyebrow")}</p>
+        <h2 class="ctr-hero__h2">{t("hero.act3.title")}</h2>
+        <p class="ctr-hero__lead">{t("hero.act3.body")}</p>
+        <div class="ctr-hero__ctas">
+          <a href={path("/contact/", locale)} class="btn-primary" data-hero-cta="plan">{t("cta.plan")}</a>
+        </div>
+      </div>
+    </div>
+
+    <p class="ctr-hero__coords" aria-hidden="true">{t("hero.location")} · {coords}</p>
+    <p class="ctr-hero__cue" aria-hidden="true"><i></i>{t("hero.scrollCue")}</p>
+
+    <div class="ctr-hero__dock" data-hero-dock>
+      <a href={path("/contact/", locale)} class="btn-primary" data-hero-cta="dock-book">{t("cta.book")}</a>
+      <WhatsAppButton label={t("cta.whatsapp")} class="!bg-warm-white !text-cedar-deep" />
+    </div>
+
+    <div class="ctr-hero__handoff" aria-hidden="true"></div>
+  </div>
+</section>
+
+<style>
+  .ctr-hero {
+    --hero-top: 4.5rem;
+    --p: 0;
+    position: relative;
+    background: var(--color-cedar-deep);
+    color: var(--color-warm-white);
+  }
+  .ctr-hero__stage {
+    position: relative;
+    isolation: isolate;
+    overflow: clip;
+    min-height: min(46rem, calc(100svh - var(--hero-top)));
+    display: flex;
+    align-items: center;
+  }
+
+  /* ---- Layers ---- */
+  .ctr-hero__plate {
+    position: absolute;
+    inset: 0;
+    z-index: -3;
+    transform: scale(calc(1 + var(--p) * 0.08));
+    transform-origin: 50% 60%;
+  }
+  .ctr-hero__poster,
+  .ctr-hero__canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .ctr-hero__canvas {
+    opacity: 0;
+    transition: opacity 0.4s ease;
+  }
+  .ctr-hero[data-ready] .ctr-hero__canvas {
+    opacity: 1;
+  }
+  .ctr-hero__grade {
+    position: absolute;
+    inset: 0;
+    z-index: -2;
+    background:
+      radial-gradient(ellipse at 50% 45%, transparent 45%, rgb(22 17 12 / 0.55) 100%),
+      linear-gradient(0deg, rgb(201 162 39 / 0.14), rgb(201 162 39 / 0.04));
+    mix-blend-mode: multiply;
+  }
+  .ctr-hero__scrim {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background:
+      linear-gradient(90deg, rgb(22 17 12 / 0.74) 0%, rgb(22 17 12 / 0.38) 40%, rgb(22 17 12 / 0.06) 72%, rgb(22 17 12 / 0.3) 100%),
+      linear-gradient(0deg, rgb(22 17 12 / 0.7) 0%, transparent 42%, rgb(22 17 12 / 0.24) 100%);
+  }
+  :global(html[dir="rtl"]) .ctr-hero__scrim {
+    transform: scaleX(-1);
+  }
+  /* Narrow portrait: copy spans the full width, so darken evenly for legibility */
+  @media (max-width: 767px) {
+    .ctr-hero__scrim {
+      background:
+        linear-gradient(0deg, rgb(22 17 12 / 0.82) 0%, rgb(22 17 12 / 0.6) 55%, rgb(22 17 12 / 0.5) 100%);
+    }
+  }
+  .ctr-hero__shafts,
+  .ctr-hero__fx,
+  .ctr-hero__bar,
+  .ctr-hero__rail,
+  .ctr-hero__dock,
+  .ctr-hero__cue,
+  .ctr-hero__coords,
+  .ctr-hero__handoff {
+    display: none;
+  }
+
+  /* ---- Copy (static mode: normal flow, Act I only) ---- */
+  .ctr-hero__acts {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 80rem;
+    margin-inline: auto;
+    padding: 4rem 1.25rem;
+  }
+  .ctr-hero__act--river,
+  .ctr-hero__act--ride {
+    display: none;
+  }
+  .ctr-hero__eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-gold);
+  }
+  .ctr-hero__eyebrow::before {
+    content: "";
+    display: block;
+    width: 2.25rem;
+    height: 1px;
+    background: currentColor;
+  }
+  .ctr-hero__h1,
+  .ctr-hero__h2 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    line-height: 0.96;
+    letter-spacing: -0.045em;
+    text-wrap: balance;
+    max-width: 14ch;
+  }
+  .ctr-hero__h1 {
+    font-size: clamp(3rem, 7.2vw, 7rem);
+  }
+  .ctr-hero__h2 {
+    font-size: clamp(2.6rem, 6vw, 5.75rem);
+  }
+  .ctr-hero__lead {
+    margin-top: 1.5rem;
+    max-width: 36rem;
+    font-size: 1.05rem;
+    line-height: 1.6;
+    color: rgb(251 247 238 / 0.88);
+  }
+  .ctr-hero__ctas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 2rem;
+  }
+  .ctr-hero__chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 1.25rem;
+    font-size: 0.875rem;
+    color: rgb(251 247 238 / 0.8);
+  }
+  :global(html[dir="rtl"]) .ctr-hero__h1,
+  :global(html[dir="rtl"]) .ctr-hero__h2,
+  :global(html[dir="rtl"]) .ctr-hero__eyebrow {
+    letter-spacing: 0;
+    text-transform: none;
+  }
+
+  .ctr-hero__skip {
+    position: absolute;
+    inset-inline-start: 1rem;
+    top: 0.75rem;
+    z-index: 30;
+    padding: 0.5rem 1rem;
+    border-radius: 999px;
+    background: var(--color-warm-white);
+    color: var(--color-cedar-deep);
+    font-weight: 600;
+    transform: translateY(-200%);
+    opacity: 0;
+    pointer-events: none;
+  }
+  .ctr-hero__skip:focus-visible {
+    transform: none;
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  /* ---- Scrub mode (JS-enabled, capable devices only) ---- */
+  .ctr-hero[data-mode="scrub"] {
+    height: 480vh;
+  }
+  @media (max-width: 767px) {
+    .ctr-hero[data-mode="scrub"] {
+      height: 360vh;
+    }
+  }
+  .ctr-hero[data-mode="scrub"] .ctr-hero__stage {
+    position: sticky;
+    top: var(--hero-top);
+    height: calc(100svh - var(--hero-top));
+    height: calc(100dvh - var(--hero-top));
+    min-height: 0;
+    display: block;
+  }
+  .ctr-hero[data-mode="scrub"] .ctr-hero__acts {
+    position: absolute;
+    inset: 0;
+    max-width: none;
+    padding: 0;
+  }
+  .ctr-hero[data-mode="scrub"] .ctr-hero__act {
+    position: absolute;
+    top: 50%;
+    display: block;
+    width: min(46rem, calc(100% - 2.5rem));
+    opacity: var(--o, 0);
+    transform: translateY(-50%);
+    translate: 0 calc((1 - var(--o, 0)) * 18px);
+    will-change: opacity, translate;
+  }
+  .ctr-hero[data-mode="scrub"] .ctr-hero__act--intro {
+    --o: 1;
+    inset-inline-start: 1.25rem;
+  }
+  .ctr-hero[data-mode="scrub"] .ctr-hero__act--river {
+    inset-inline: 1.25rem;
+    margin-inline: auto;
+    text-align: center;
+  }
+  .ctr-hero[data-mode="scrub"] .ctr-hero__act--river .ctr-hero__eyebrow {
+    justify-content: center;
+  }
+  .ctr-hero[data-mode="scrub"] .ctr-hero__act--river .ctr-hero__h2,
+  .ctr-hero[data-mode="scrub"] .ctr-hero__act--river .ctr-hero__lead {
+    margin-inline: auto;
+  }
+  .ctr-hero[data-mode="scrub"] .ctr-hero__act--ride {
+    inset-inline-end: 1.25rem;
+    text-align: end;
+  }
+  .ctr-hero[data-mode="scrub"] .ctr-hero__act--ride .ctr-hero__eyebrow {
+    justify-content: flex-end;
+  }
+  .ctr-hero[data-mode="scrub"] .ctr-hero__act--ride .ctr-hero__h2 {
+    margin-inline-start: auto;
+  }
+  .ctr-hero[data-mode="scrub"] .ctr-hero__act--ride .ctr-hero__lead {
+    margin-inline-start: auto;
+  }
+  .ctr-hero[data-mode="scrub"] .ctr-hero__act--ride .ctr-hero__ctas {
+    justify-content: flex-end;
+  }
+  @media (min-width: 768px) {
+    .ctr-hero[data-mode="scrub"] .ctr-hero__act--intro {
+      inset-inline-start: 7.5rem;
+    }
+    .ctr-hero[data-mode="scrub"] .ctr-hero__act--ride {
+      inset-inline-end: 8vw;
+    }
+  }
+
+  .ctr-hero[data-mode="scrub"] .ctr-hero__bar {
+    display: block;
+    position: absolute;
+    inset-inline: 0;
+    top: 0;
+    z-index: 20;
+    height: 3px;
+    background: var(--color-gold);
+    box-shadow: 0 0 16px rgb(201 162 39 / 0.7);
+    transform-origin: 0 50%;
+    transform: scaleX(var(--p));
+  }
+  :global(html[dir="rtl"]) .ctr-hero[data-mode="scrub"] .ctr-hero__bar {
+    transform-origin: 100% 50%;
+  }
+
+  /* Chapter rail */
+  .ctr-hero[data-mode="scrub"] .ctr-hero__rail {
+    display: block;
+    position: absolute;
+    inset-inline-start: 1.25rem;
+    top: 50%;
+    z-index: 20;
+    transform: translateY(-50%);
+  }
+  .ctr-hero__rail ol {
+    position: relative;
+    display: grid;
+    gap: 1.75rem;
+    padding-inline-start: 1rem;
+    list-style: none;
+    margin: 0;
+  }
+  .ctr-hero__rail ol::before,
+  .ctr-hero__rail ol::after {
+    content: "";
+    position: absolute;
+    inset-inline-start: 0;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: rgb(251 247 238 / 0.3);
+  }
+  .ctr-hero__rail ol::after {
+    background: var(--color-gold);
+    transform-origin: 50% 0;
+    transform: scaleY(var(--p));
+  }
+  .ctr-hero__rail a {
+    display: flex;
+    align-items: baseline;
+    gap: 0.6rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgb(251 247 238 / 0.55);
+    transition: color 0.25s ease;
+  }
+  .ctr-hero__rail a[aria-current="true"] {
+    color: var(--color-warm-white);
+  }
+  .ctr-hero__rail a[aria-current="true"] .ctr-hero__rail-n {
+    color: var(--color-gold);
+  }
+  .ctr-hero__rail-l {
+    display: none;
+  }
+  @media (min-width: 768px) {
+    .ctr-hero__rail-l {
+      display: inline;
+    }
+  }
+  :global(html[dir="rtl"]) .ctr-hero__rail a {
+    letter-spacing: 0;
+    text-transform: none;
+  }
+
+  .ctr-hero[data-mode="scrub"] .ctr-hero__coords {
+    display: block;
+    position: absolute;
+    inset-inline-start: 1.25rem;
+    bottom: 1.1rem;
+    z-index: 20;
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    color: rgb(251 247 238 / 0.7);
+    opacity: calc(1 - var(--p) * 3);
+  }
+  .ctr-hero[data-mode="scrub"] .ctr-hero__cue {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    position: absolute;
+    inset-inline: 0;
+    bottom: 1.1rem;
+    justify-content: center;
+    z-index: 20;
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: rgb(251 247 238 / 0.75);
+    opacity: calc(1 - var(--p) * 8);
+    pointer-events: none;
+  }
+  .ctr-hero__cue i {
+    display: block;
+    width: 1px;
+    height: 1.75rem;
+    background: var(--color-gold);
+  }
+  :global(html[dir="rtl"]) .ctr-hero__cue,
+  :global(html[dir="rtl"]) .ctr-hero__coords {
+    letter-spacing: 0;
+    text-transform: none;
+  }
+
+  /* Sticky booking dock */
+  .ctr-hero[data-mode="scrub"] .ctr-hero__dock {
+    display: flex;
+    gap: 0.5rem;
+    position: absolute;
+    inset-inline-end: 1.25rem;
+    bottom: 1rem;
+    z-index: 25;
+    padding: 0.4rem;
+    border-radius: 999px;
+    background: rgb(22 17 12 / 0.55);
+    backdrop-filter: blur(8px);
+    opacity: 0;
+    translate: 0 12px;
+    pointer-events: none;
+    transition:
+      opacity 0.3s ease,
+      translate 0.3s ease;
+  }
+  .ctr-hero[data-mode="scrub"][data-dock="on"] .ctr-hero__dock {
+    opacity: 1;
+    translate: 0 0;
+    pointer-events: auto;
+  }
+  .ctr-hero__dock :global(a) {
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+  }
+
+  /* Scroll hand-off into the next (light) section */
+  .ctr-hero[data-mode="scrub"] .ctr-hero__handoff {
+    display: block;
+    position: absolute;
+    inset-inline: 0;
+    bottom: 0;
+    z-index: 10;
+    height: 38%;
+    pointer-events: none;
+    background: linear-gradient(0deg, var(--color-warm-white), transparent);
+    opacity: clamp(0, calc((var(--p) - 0.92) * 12.5), 1);
+  }
+
+  /* Ambient light shafts + FX canvas */
+  .ctr-hero[data-mode="scrub"] .ctr-hero__shafts {
+    display: block;
+    position: absolute;
+    inset: -20% -10%;
+    z-index: -1;
+    pointer-events: none;
+    background: repeating-linear-gradient(
+      105deg,
+      transparent 0 9%,
+      rgb(255 236 190 / 0.1) 9% 11%,
+      transparent 11% 20%
+    );
+    mix-blend-mode: screen;
+    opacity: calc(0.35 + var(--p) * 0.3);
+    animation: ctr-shafts 14s ease-in-out infinite alternate;
+  }
+  @keyframes ctr-shafts {
+    from {
+      transform: translateX(-2%);
+    }
+    to {
+      transform: translateX(3%);
+    }
+  }
+  .ctr-hero[data-mode="scrub"] .ctr-hero__fx {
+    display: block;
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
+</style>
+
+<script>
+  import { initScrollHero } from "../scripts/scroll-hero";
+
+  const root = document.querySelector<HTMLElement>("[data-hero]");
+  if (root) initScrollHero(root);
+</script>

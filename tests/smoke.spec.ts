@@ -101,3 +101,42 @@ test.describe("Booking form", () => {
     await expect(page.locator("body")).not.toContainText(/\$\d/);
   });
 });
+
+test.describe("Scroll hero", () => {
+  test("Act I H1 is visible at load and the skip link targets #trails", async ({
+    page,
+  }) => {
+    await page.goto("/");
+    const h1 = page.getByRole("heading", { level: 1 });
+    await expect(h1).toBeVisible();
+    await expect(h1).toHaveCSS("opacity", "1");
+    await expect(page.locator("[data-hero-skip]")).toHaveAttribute(
+      "href",
+      "#trails",
+    );
+    await expect(page.locator("h1")).toHaveCount(1);
+  });
+
+  test.describe("reduced motion", () => {
+    test.use({ reducedMotion: "reduce" });
+
+    test("stays in static mode and never requests the video", async ({
+      page,
+    }) => {
+      const media: string[] = [];
+      page.on("request", (r) => {
+        if (/\.mp4(\?|$)/.test(r.url())) media.push(r.url());
+      });
+      await page.goto("/");
+      await page.waitForLoadState("networkidle");
+      await expect(page.locator("[data-hero]")).toHaveAttribute(
+        "data-mode",
+        "static",
+      );
+      expect(media).toEqual([]);
+      await expect(
+        page.getByRole("link", { name: "Book Today" }).first(),
+      ).toBeVisible();
+    });
+  });
+});

@@ -10,6 +10,7 @@ import HorseCard from "../components/HorseCard.astro";
 import FaqAccordion from "../components/FaqAccordion.astro";
 import WhatsAppButton from "../components/WhatsAppButton.astro";
 import BookingForm from "../components/BookingForm.astro";
+import ScrollHero from "../components/ScrollHero.astro";
 
 interface Props {
   locale: Locale;
@@ -29,30 +30,7 @@ const horseSlots = horses.length > 0 ? horses : Array.from({ length: HORSE_PLACE
   {t("home.trustBar")}
 </p>
 
-<section class="relative overflow-hidden bg-cedar-deep px-4 py-20 text-warm-white sm:px-6 sm:py-28">
-  <img
-    src="/images/brand/ctr-badge-square.webp"
-    alt=""
-    aria-hidden="true"
-    class="pointer-events-none absolute bottom-4 end-4 hidden h-32 w-32 rounded-full opacity-90 sm:block md:h-40 md:w-40"
-  />
-  <div class="mx-auto flex max-w-4xl flex-col items-center gap-6 text-center">
-    <p class="text-sm font-semibold uppercase tracking-widest text-gold">{t("home.eyebrow")}</p>
-    <h1 class="font-display text-4xl font-semibold leading-tight sm:text-6xl">{t("brand.hero")}</h1>
-    <p class="max-w-2xl text-lg text-warm-white/90">{t("home.heroSub")}</p>
-    <div class="flex flex-wrap items-center justify-center gap-4">
-      <a href={path("/contact/", locale)} class="btn-primary">{t("cta.book")}</a>
-      <a href="#trails" class="btn-secondary !border-warm-white !text-warm-white hover:!bg-warm-white hover:!text-cedar-deep">
-        {t("cta.explore")}
-      </a>
-    </div>
-    <div class="mt-4 flex flex-wrap items-center justify-center gap-3 text-sm text-warm-white/80">
-      <span class="chip bg-warm-white/10">{t("label.ratedGoogle")}</span>
-      <span class="chip bg-warm-white/10">{t("label.languages")}</span>
-      <span class="chip bg-warm-white/10">{t("label.operateAllLebanon")}</span>
-    </div>
-  </div>
-</section>
+<ScrollHero locale={locale} />
 
 <section class="mx-auto grid max-w-6xl gap-6 px-4 py-16 sm:px-6 md:grid-cols-3">
   <article class="card p-6">
