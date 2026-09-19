@@ -7,6 +7,9 @@ import {
   nearestSnap,
   progressToScrollY,
   scrollProgress,
+  smoothVelocity,
+  snapCandidate,
+  SNAP_MAX_VELOCITY,
   videoTime,
   type ActName,
 } from "./hero-math";
@@ -259,7 +262,7 @@ function upgrade(root: HTMLElement): void {
       stickyTop,
     );
     const instant = Math.abs(next - (p < 0 ? next : p)) / dt;
-    velocity = velocity * 0.8 + instant * 0.2;
+    velocity = smoothVelocity(velocity, instant, dt);
 
     if (next !== p) {
       p = next;
@@ -373,14 +376,21 @@ function upgrade(root: HTMLElement): void {
     requestAnimationFrame(() => scrollToProgress(hashChapter.p, "instant"));
 
   const isHeld = (): boolean => touchHeld || pointerHeld;
-  const runSnap = (): void => {
+  const runSnap = (isRetry: boolean): void => {
     if (!visible || isHeld()) return;
     const target = nearestSnap(p, velocity);
-    if (target !== null) scrollToProgress(target, "smooth");
+    if (target !== null) {
+      scrollToProgress(target, "smooth");
+      return;
+    }
+    // The idle timer can beat the velocity filter (a single wheel tick is still decaying
+    // after 160 ms): try once more, bounded, only when velocity is the sole blocker.
+    if (!isRetry && velocity > SNAP_MAX_VELOCITY && snapCandidate(p) !== null)
+      snapTimer = window.setTimeout(() => runSnap(true), SNAP_IDLE_MS);
   };
   const armSnap = (): void => {
     window.clearTimeout(snapTimer);
-    snapTimer = window.setTimeout(runSnap, SNAP_IDLE_MS);
+    snapTimer = window.setTimeout(() => runSnap(false), SNAP_IDLE_MS);
   };
   // Wheel/keys cancel a pending snap; the next scroll event re-arms it.
   ["wheel", "keydown"].forEach((type) =>

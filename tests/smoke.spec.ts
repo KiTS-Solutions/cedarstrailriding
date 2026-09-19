@@ -520,9 +520,8 @@ test.describe("Scroll hero", () => {
     // pixels brighter than near-black.
     const sampleCanvas = (page: Page) =>
       page.evaluate(() => {
-        const c = document.querySelector<HTMLCanvasElement>(
-          "[data-hero-canvas]",
-        )!;
+        const c =
+          document.querySelector<HTMLCanvasElement>("[data-hero-canvas]")!;
         const ctx = c.getContext("2d")!;
         let opaque = 0;
         let bright = 0;
@@ -543,7 +542,9 @@ test.describe("Scroll hero", () => {
       });
 
     for (const url of ["/", "/#river"]) {
-      test(`canvas holds a real frame once ready (${url})`, async ({ page }) => {
+      test(`canvas holds a real frame once ready (${url})`, async ({
+        page,
+      }) => {
         await page.goto(url);
         const root = page.locator("[data-hero]");
         await expect(root).toHaveAttribute("data-mode", "scrub");
@@ -615,7 +616,9 @@ test.describe("Scroll hero", () => {
       expect(named(await calls(page), "hero_chapter_reached")).toHaveLength(1);
     });
 
-    test("dock WhatsApp click is tracked as dock-whatsapp", async ({ page }) => {
+    test("dock WhatsApp click is tracked as dock-whatsapp", async ({
+      page,
+    }) => {
       await stubGtag(page);
       await page.context().route(/wa\.me/, (route) => route.abort());
       await page.goto("/");
@@ -653,14 +656,48 @@ test.describe("Scroll hero", () => {
         await page.waitForLoadState("networkidle");
         const bottom = await page.evaluate(
           () =>
-            document
-              .querySelector("[data-hero-stage]")!
-              .getBoundingClientRect().bottom,
+            document.querySelector("[data-hero-stage]")!.getBoundingClientRect()
+              .bottom,
         );
         // +8: at 375px the copy itself is ~5px taller than the min-height, so content wins.
         expect(bottom).toBeLessThanOrEqual(vp.height + 8);
         expect(bottom).toBeGreaterThanOrEqual(vp.height - 8);
       });
     }
+  });
+
+  test("a single wheel tick into the river snap radius settles on the river chapter", async ({
+    page,
+  }) => {
+    await page.goto("/");
+    await expect(page.locator("[data-hero]")).toHaveAttribute(
+      "data-ready",
+      "true",
+    );
+    // p=0.43 is just outside the river radius (0.06); one ~100px tick lands inside it.
+    await scrollToProgress(page, 0.43);
+    await page.waitForTimeout(600);
+    const before = await page.evaluate(() => window.scrollY);
+    const riverY = await page.evaluate(() => {
+      const el = document.querySelector<HTMLElement>("[data-hero]")!;
+      const stage = el.querySelector<HTMLElement>("[data-hero-stage]")!;
+      const top = el.getBoundingClientRect().top + window.scrollY;
+      const sticky = parseFloat(getComputedStyle(stage).top);
+      return top - sticky + 0.5 * (el.offsetHeight - stage.offsetHeight);
+    });
+    await page.mouse.move(700, 450);
+    await page.mouse.wheel(0, 100);
+    await expect
+      .poll(() => page.evaluate(() => window.scrollY), { timeout: 8000 })
+      .toBeGreaterThan(before);
+    await expect
+      .poll(
+        async () =>
+          Math.abs((await page.evaluate(() => window.scrollY)) - riverY),
+        {
+          timeout: 8000,
+        },
+      )
+      .toBeLessThanOrEqual(2);
   });
 });

@@ -10,6 +10,9 @@ import {
   nearestSnap,
   progressToScrollY,
   scrollProgress,
+  smoothVelocity,
+  snapCandidate,
+  SNAP_MAX_VELOCITY,
   splashRate,
   videoTime,
 } from "../../src/scripts/hero-math.ts";
@@ -106,4 +109,53 @@ test("splashRate scales with velocity and peaks in the river window", () => {
   assert.ok(splashRate(0.5, 0.5) > splashRate(0.5, 0.05));
   assert.ok(splashRate(0.5, 0.5) > splashRate(0.1, 0.5));
   assert.ok(splashRate(99, 0.5) <= 90);
+});
+
+test("activeChapter boundaries", () => {
+  assert.equal(activeChapter(0.33), 0);
+  assert.equal(activeChapter(0.34), 1);
+  assert.equal(activeChapter(0.67), 1);
+  assert.equal(activeChapter(0.68), 2);
+});
+
+test("nearestSnap targets river and ride, never the first chapter", () => {
+  assert.equal(nearestSnap(0.45, 0), 0.5);
+  assert.equal(nearestSnap(0.55, 0), 0.5);
+  assert.equal(nearestSnap(0.82, 0), 0.86);
+  assert.equal(nearestSnap(0.9, 0), 0.86);
+  // shouf (p=0.12) is the start position: nudging the page must not yank the user back
+  assert.equal(nearestSnap(0.1, 0), null);
+  assert.equal(nearestSnap(0.14, 0), null);
+  assert.equal(nearestSnap(0.12, 0), null);
+});
+
+test("nearestSnap radius and dead-zone boundaries", () => {
+  assert.equal(nearestSnap(0.5 + 0.059, 0), 0.5);
+  assert.equal(nearestSnap(0.5 - 0.059, 0), 0.5);
+  assert.equal(nearestSnap(0.5 + 0.061, 0), null);
+  assert.equal(nearestSnap(0.5 - 0.061, 0), null);
+  assert.equal(nearestSnap(0.5 + 0.003, 0), null);
+  assert.equal(nearestSnap(0.5 + 0.005, 0), 0.5);
+});
+
+test("nearestSnap velocity gate; snapCandidate ignores velocity", () => {
+  assert.equal(nearestSnap(0.52, SNAP_MAX_VELOCITY), 0.5);
+  assert.equal(nearestSnap(0.52, SNAP_MAX_VELOCITY + 0.001), null);
+  assert.equal(snapCandidate(0.52), 0.5);
+  assert.equal(snapCandidate(0.3), null);
+});
+
+test("smoothVelocity is frame-rate independent and never negative", () => {
+  // Same wall-clock time, different frame rates -> same result.
+  let a = 0.4;
+  for (let i = 0; i < 60; i++) a = smoothVelocity(a, 0, 1 / 60);
+  let b = 0.4;
+  for (let i = 0; i < 30; i++) b = smoothVelocity(b, 0, 1 / 30);
+  assert.ok(Math.abs(a - b) < 1e-9);
+  // ~0.34 progress/s from one wheel tick falls under the snap gate within ~0.25 s
+  let v = 0.34;
+  for (let i = 0; i < 15; i++) v = smoothVelocity(v, 0, 1 / 60);
+  assert.ok(v < SNAP_MAX_VELOCITY);
+  assert.ok(smoothVelocity(0, 0, 0.016) >= 0);
+  assert.ok(smoothVelocity(0.1, -5, 0.5) >= 0);
 });

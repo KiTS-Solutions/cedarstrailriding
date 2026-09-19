@@ -30,7 +30,9 @@ export const CHAPTERS: readonly Chapter[] = [
 const VIDEO_END_GUARD = 0.035;
 const SNAP_RADIUS = 0.06;
 const SNAP_DEAD_ZONE = 0.004;
-const SNAP_MAX_VELOCITY = 0.02;
+export const SNAP_MAX_VELOCITY = 0.02;
+/** Time constant (s) of the scroll-velocity low-pass filter. */
+export const VELOCITY_TAU = 0.08;
 const SPLASH_WINDOW: readonly [number, number] = [0.3, 0.8];
 
 export function clamp01(n: number): number {
@@ -77,15 +79,37 @@ export function progressToScrollY(
   return runwayDocTop - stickyTop + clamp01(p) * range;
 }
 
-/** Progress of the chapter to settle on, or null when no snap should happen. */
-export function nearestSnap(p: number, velocity: number): number | null {
-  if (velocity > SNAP_MAX_VELOCITY) return null;
+/**
+ * Frame-rate independent low-pass of scroll velocity (progress/second). `instant` is the
+ * unsmoothed speed and is expected to be non-negative.
+ */
+export function smoothVelocity(
+  velocity: number,
+  instant: number,
+  dt: number,
+): number {
+  const k = 1 - Math.exp(-Math.max(0, dt) / VELOCITY_TAU);
+  return Math.max(0, velocity + (Math.max(0, instant) - velocity) * k);
+}
+
+/**
+ * Chapter a position would settle on if the page were still, ignoring velocity.
+ * The first chapter is never a target: it is the start position, so snapping there
+ * would yank users who merely nudge the page off the top.
+ */
+export function snapCandidate(p: number): number | null {
   if (p < 0.02 || p > 0.98) return null;
-  for (const c of CHAPTERS) {
+  for (const c of CHAPTERS.slice(1)) {
     const d = Math.abs(p - c.p);
     if (d <= SNAP_RADIUS && d > SNAP_DEAD_ZONE) return c.p;
   }
   return null;
+}
+
+/** Progress of the chapter to settle on, or null when no snap should happen. */
+export function nearestSnap(p: number, velocity: number): number | null {
+  if (velocity > SNAP_MAX_VELOCITY) return null;
+  return snapCandidate(p);
 }
 
 export interface CapabilityEnv {
