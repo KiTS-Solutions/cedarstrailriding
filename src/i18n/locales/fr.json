@@ -9,6 +9,8 @@
   "nav.faq": "FAQ",
   "nav.menu": "Menu",
   "nav.contact": "Réserver / Contact",
+  "nav.close": "Fermer le menu",
+  "a11y.skip": "Aller au contenu",
 
   "cta.book": "Réserver",
   "cta.plan": "Planifier ma balade",

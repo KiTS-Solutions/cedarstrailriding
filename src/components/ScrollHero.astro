@@ -284,6 +284,9 @@ const chapters = [
     inset-inline-start: 1rem;
     top: 0.75rem;
     z-index: 30;
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
     padding: 0.5rem 1rem;
     border-radius: 999px;
     background: var(--color-warm-white);
@@ -436,6 +439,7 @@ const chapters = [
     transform: scaleY(var(--p));
   }
   .ctr-hero__rail a {
+    position: relative;
     display: flex;
     align-items: baseline;
     gap: 0.6rem;
@@ -445,6 +449,12 @@ const chapters = [
     text-transform: uppercase;
     color: rgb(251 247 238 / 0.55);
     transition: color 0.25s ease;
+  }
+  /* Invisible 44px-tall touch area around each 12px chapter marker. */
+  .ctr-hero__rail a::after {
+    content: "";
+    position: absolute;
+    inset: -0.75rem -0.6rem;
   }
   .ctr-hero__rail a[aria-current="true"] {
     color: var(--color-warm-white);
@@ -542,6 +552,7 @@ const chapters = [
     pointer-events: auto;
   }
   .ctr-hero__dock :global(a) {
+    min-height: 2.75rem;
     padding: 0.5rem 1rem;
     font-size: 0.85rem;
   }

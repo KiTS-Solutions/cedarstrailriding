@@ -2,6 +2,7 @@
 import { path, useTranslations, type Locale } from "../i18n";
 import { brand, logoSrc } from "../data/siteSettings";
 import LanguageSwitcher from "./LanguageSwitcher.astro";
+import WhatsAppButton from "./WhatsAppButton.astro";
 
 interface Props {
   locale: Locale;
@@ -22,9 +23,9 @@ const navItems: { key: string; label: string; route: string }[] = [
 ---
 
 <header class="sticky top-0 z-50 border-b border-cedar-deep/10 bg-warm-white/95 backdrop-blur">
-  <div class="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-2 sm:px-6 sm:py-3">
+  <div class="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-2 sm:px-6 sm:py-3">
     <a href={path("/", locale)} class="flex items-center gap-2">
-      <img src={logoSrc} alt={brand.name} width="72" height="48" decoding="async" class="h-10 w-auto sm:h-12" />
+      <img src={logoSrc} alt={brand.name} width="72" height="48" decoding="async" class="h-11 w-auto sm:h-12" />
       <span class="sr-only">{brand.name}</span>
     </a>
 
@@ -33,7 +34,7 @@ const navItems: { key: string; label: string; route: string }[] = [
         navItems.map((item) => (
           <a
             href={path(item.route, locale)}
-            class="text-sm font-medium text-ink hover:text-cedar-deep"
+            class="inline-flex min-h-11 items-center text-sm font-medium text-ink hover:text-cedar-deep"
           >
             {item.label}
           </a>
@@ -41,30 +42,155 @@ const navItems: { key: string; label: string; route: string }[] = [
       }
     </nav>
 
-    <div class="flex items-center gap-3">
-      <LanguageSwitcher locale={locale} route={route} />
-      <a href={path("/contact/", locale)} class="btn-primary hidden sm:inline-flex">
+    <div class="flex items-center gap-2 sm:gap-3">
+      <LanguageSwitcher locale={locale} route={route} class="hidden sm:flex" />
+      <a href={path("/contact/", locale)} class="btn-primary hidden min-h-11 sm:inline-flex">
         {t("cta.book")}
       </a>
+      <button
+        type="button"
+        id="menu-open"
+        class="inline-flex size-11 items-center justify-center rounded-full border border-cedar-deep/20 text-cedar-deep transition-colors hover:bg-cedar-deep/10 lg:hidden"
+        aria-label={t("nav.menu")}
+        aria-expanded="false"
+        aria-controls="mobile-menu"
+      >
+        <svg aria-hidden="true" viewBox="0 0 24 24" class="size-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <path d="M4 7h16M4 12h16M4 17h16"></path>
+        </svg>
+      </button>
     </div>
   </div>
-
-  <details class="group border-t border-cedar-deep/10 lg:hidden" data-mobile-menu>
-    <summary class="flex min-h-11 cursor-pointer list-none items-center justify-between px-4 text-sm font-semibold text-cedar-deep [&::-webkit-details-marker]:hidden">
-      <span>{t("nav.menu")}</span>
-      <span aria-hidden="true" class="text-lg transition-transform group-open:rotate-180">▾</span>
-    </summary>
-    <nav aria-label="Primary mobile" class="flex flex-col px-2 pb-2">
-      {
-        navItems.map((item) => (
-          <a href={path(item.route, locale)} class="flex min-h-11 items-center rounded-lg px-2 text-base text-ink hover:bg-cedar-deep/10">
-            {item.label}
-          </a>
-        ))
-      }
-      <a href={path("/contact/", locale)} class="flex min-h-11 items-center rounded-lg px-2 text-base font-semibold text-cedar-deep hover:bg-cedar-deep/10">
-        {t("cta.book")}
-      </a>
-    </nav>
-  </details>
 </header>
+
+{/* Native modal <dialog>: top layer, focus trap, Escape and ::backdrop for free. Slides in from the
+    inline-end edge, so it mirrors automatically in RTL. */}
+<dialog id="mobile-menu" class="menu-drawer" aria-label={t("nav.menu")}>
+  <div class="flex h-full flex-col gap-6 overflow-y-auto bg-warm-white px-5 pb-6 pt-3">
+    <div class="flex items-center justify-between gap-3">
+      <LanguageSwitcher locale={locale} route={route} class="sm:hidden" />
+      <button
+        type="button"
+        id="menu-close"
+        class="ms-auto inline-flex size-11 items-center justify-center rounded-full border border-cedar-deep/20 text-cedar-deep transition-colors hover:bg-cedar-deep/10"
+        aria-label={t("nav.close")}
+      >
+        <svg aria-hidden="true" viewBox="0 0 24 24" class="size-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <path d="M6 6l12 12M18 6L6 18"></path>
+        </svg>
+      </button>
+    </div>
+
+    <nav aria-label="Primary mobile">
+      <ul class="divide-y divide-cedar-deep/10">
+        {
+          navItems.map((item) => (
+            <li>
+              <a
+                href={path(item.route, locale)}
+                class="flex min-h-14 items-center font-display text-xl font-semibold text-cedar-deep"
+              >
+                {item.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    <div class="mt-auto flex flex-col gap-3">
+      <a href={path("/contact/", locale)} class="btn-primary min-h-12">{t("cta.book")}</a>
+      <WhatsAppButton label={t("cta.whatsapp")} class="min-h-12 !bg-cedar-deep !text-warm-white hover:!bg-cedar-soft" />
+    </div>
+  </div>
+</dialog>
+
+<style>
+  .menu-drawer {
+    /* Reset UA dialog box and pin to the inline-end edge, full height. */
+    margin: 0;
+    margin-inline-start: auto;
+    padding: 0;
+    border: 0;
+    inset: 0;
+    width: min(22rem, 88vw);
+    max-width: none;
+    height: 100dvh;
+    max-height: none;
+    background: var(--color-warm-white);
+    color: var(--color-ink);
+    box-shadow: -8px 0 32px rgb(28 36 31 / 0.25);
+    transform: translateX(100%);
+    transition:
+      transform 0.28s ease,
+      overlay 0.28s allow-discrete,
+      display 0.28s allow-discrete;
+  }
+  :global(html[dir="rtl"]) .menu-drawer {
+    transform: translateX(-100%);
+    box-shadow: 8px 0 32px rgb(28 36 31 / 0.25);
+  }
+  .menu-drawer[open],
+  :global(html[dir="rtl"]) .menu-drawer[open] {
+    transform: none;
+  }
+  @starting-style {
+    .menu-drawer[open] {
+      transform: translateX(100%);
+    }
+    :global(html[dir="rtl"]) .menu-drawer[open] {
+      transform: translateX(-100%);
+    }
+  }
+  .menu-drawer::backdrop {
+    background: rgb(28 36 31 / 0.5);
+    transition:
+      opacity 0.28s ease,
+      overlay 0.28s allow-discrete,
+      display 0.28s allow-discrete;
+    opacity: 0;
+  }
+  .menu-drawer[open]::backdrop {
+    opacity: 1;
+  }
+  @starting-style {
+    .menu-drawer[open]::backdrop {
+      opacity: 0;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .menu-drawer,
+    .menu-drawer::backdrop {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  const dialog = document.getElementById("mobile-menu") as HTMLDialogElement | null;
+  const openBtn = document.getElementById("menu-open");
+  const closeBtn = document.getElementById("menu-close");
+
+  if (dialog && openBtn) {
+    openBtn.addEventListener("click", () => {
+      dialog.showModal();
+      openBtn.setAttribute("aria-expanded", "true");
+    });
+    closeBtn?.addEventListener("click", () => dialog.close());
+
+    // A click on the dialog element itself (not its children) lands on the backdrop.
+    dialog.addEventListener("click", (event) => {
+      if (event.target === dialog) dialog.close();
+    });
+    // Same-page anchors and any link tap dismiss the drawer.
+    dialog.addEventListener("click", (event) => {
+      if ((event.target as HTMLElement).closest("a")) dialog.close();
+    });
+    dialog.addEventListener("close", () => openBtn.setAttribute("aria-expanded", "false"));
+
+    // Rotating a tablet / resizing past the desktop breakpoint must not leave a modal stuck open.
+    window.matchMedia("(min-width: 1024px)").addEventListener("change", (event) => {
+      if (event.matches && dialog.open) dialog.close();
+    });
+  }
+</script>

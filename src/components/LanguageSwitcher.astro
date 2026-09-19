@@ -4,12 +4,17 @@ import { LOCALES, LOCALE_LABEL, path, type Locale } from "../i18n";
 interface Props {
   locale: Locale;
   route: string;
+  class?: string;
 }
 
-const { locale, route } = Astro.props;
+const { locale, route, class: className = "" } = Astro.props;
 ---
 
-<div class="flex items-center gap-0.5 rounded-full border border-cedar-deep/20 text-sm" role="group" aria-label="Language">
+<div
+  class:list={["flex items-center gap-0.5 rounded-full border border-cedar-deep/20 text-sm", className]}
+  role="group"
+  aria-label="Language"
+>
   {
     LOCALES.map((loc) => (
       <a

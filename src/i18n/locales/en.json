@@ -9,6 +9,8 @@
   "nav.faq": "FAQ",
   "nav.menu": "Menu",
   "nav.contact": "Book / Contact",
+  "nav.close": "Close menu",
+  "a11y.skip": "Skip to content",
 
   "cta.book": "Book Today",
   "cta.plan": "Plan my ride",

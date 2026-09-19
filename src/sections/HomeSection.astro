@@ -32,7 +32,7 @@ const horseSlots = horses.length > 0 ? horses : Array.from({ length: HORSE_PLACE
 
 <ScrollHero locale={locale} />
 
-<section class="mx-auto grid max-w-6xl gap-6 px-4 py-16 sm:px-6 md:grid-cols-3">
+<section class="mx-auto grid max-w-6xl gap-6 px-4 py-12 sm:px-6 sm:py-16 md:grid-cols-3">
   <article class="card p-6">
     <h2 class="font-display text-xl font-semibold text-cedar-deep">{t("home.ridesTitle")}</h2>
     <p class="mt-2 text-sm text-ink/80">{t("home.ridesDesc")}</p>
@@ -47,20 +47,20 @@ const horseSlots = horses.length > 0 ? horses : Array.from({ length: HORSE_PLACE
   </article>
 </section>
 
-<section id="about" class="bg-sand px-4 py-16 sm:px-6">
+<section id="about" class="bg-sand px-4 py-12 sm:px-6 sm:py-16">
   <div class="mx-auto max-w-3xl text-center">
     <h2 class="font-display text-3xl font-semibold text-cedar-deep">{t("home.aboutHeading")}</h2>
     <p class="mt-4 text-ink/80">{t("home.aboutBody")}</p>
     <blockquote class="mt-6 font-display text-xl italic text-cedar-soft">“{t("home.aboutQuote")}”</blockquote>
-    <a href={path("/about/", locale)} class="mt-6 inline-block font-semibold text-cedar-deep underline">
+    <a href={path("/about/", locale)} class="mt-4 inline-flex min-h-11 items-center font-semibold text-cedar-deep underline">
       {t("cta.readStory")}
     </a>
   </div>
 </section>
 
-<section id="trails" class="mx-auto max-w-6xl px-4 py-16 sm:px-6">
+<section id="trails" class="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16">
   <h2 class="text-center font-display text-3xl font-semibold text-cedar-deep">{t("home.trailsHeading")}</h2>
-  <div class="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+  <div class="snap-row mt-8 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3" tabindex="0" role="group" aria-label={t("home.trailsHeading")}>
     {trails.filter((trail) => trail.id !== "custom-trails").map((trail) => <TrailCard trail={trail} locale={locale} />)}
   </div>
   <p class="mt-6 text-center text-sm text-ink/70">{t("home.customNote")}</p>
@@ -79,7 +79,7 @@ const horseSlots = horses.length > 0 ? horses : Array.from({ length: HORSE_PLACE
   </div>
 </section>
 
-<section id="groups" class="mx-auto max-w-6xl px-4 py-16 sm:px-6">
+<section id="groups" class="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16">
   <h2 class="text-center font-display text-3xl font-semibold text-cedar-deep">{t("home.groupsHeading")}</h2>
   <div class="mt-8 grid gap-6 sm:grid-cols-3">
     <article class="card p-6">
@@ -98,42 +98,44 @@ const horseSlots = horses.length > 0 ? horses : Array.from({ length: HORSE_PLACE
   </div>
 </section>
 
-<section id="horses" class="bg-sand px-4 py-16 sm:px-6">
+<section id="horses" class="bg-sand px-4 py-12 sm:px-6 sm:py-16">
   <div class="mx-auto max-w-6xl text-center">
     <h2 class="font-display text-3xl font-semibold text-cedar-deep">{t("home.horsesHeading")}</h2>
     <p class="mx-auto mt-3 max-w-2xl text-ink/80">{t("home.horsesIntro")}</p>
     <div class="mt-8 grid gap-6 sm:grid-cols-3">
-      {horseSlots.map((horse) => <HorseCard horse={horse} comingSoonLabel={t("horses.comingSoon")} />)}
+      {horseSlots.map((horse, i) => (
+        <HorseCard horse={horse} comingSoonLabel={t("horses.comingSoon")} class={!horse && i > 0 ? "max-sm:hidden" : ""} />
+      ))}
     </div>
   </div>
 </section>
 
-<section class="mx-auto max-w-6xl px-4 py-16 sm:px-6">
+<section class="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16">
   <h2 class="text-center font-display text-3xl font-semibold text-cedar-deep">{t("home.testimonialsHeading")}</h2>
-  <div class="mt-8 grid gap-6 sm:grid-cols-3">
+  <div class="snap-row mt-8 sm:grid-cols-3 sm:gap-6" tabindex="0" role="group" aria-label={t("home.testimonialsHeading")}>
     {testimonials.map((testimonial) => <TestimonialCard testimonial={testimonial} />)}
   </div>
   <p class="mt-6 text-center text-sm font-medium text-cedar-soft">{t("home.testimonialsSource")}</p>
 </section>
 
-<section id="faq" class="bg-sand px-4 py-16 sm:px-6">
+<section id="faq" class="bg-sand px-4 py-12 sm:px-6 sm:py-16">
   <div class="mx-auto max-w-3xl">
     <h2 class="text-center font-display text-3xl font-semibold text-cedar-deep">{t("nav.faq")}</h2>
     <div class="mt-8">
       <FaqAccordion items={previewFaq} />
     </div>
     <div class="mt-6 text-center">
-      <a href={path("/faq/", locale)} class="font-semibold text-cedar-deep underline">{t("cta.viewFullFaq")}</a>
+      <a href={path("/faq/", locale)} class="inline-flex min-h-11 items-center font-semibold text-cedar-deep underline">{t("cta.viewFullFaq")}</a>
     </div>
   </div>
 </section>
 
-<section id="contact" class="mx-auto max-w-4xl px-4 py-16 sm:px-6">
+<section id="contact" class="mx-auto max-w-4xl px-4 py-12 sm:px-6 sm:py-16">
   <h2 class="text-center font-display text-3xl font-semibold text-cedar-deep">{t("home.contactHeading")}</h2>
   <p class="mx-auto mt-3 max-w-2xl text-center text-ink/80">{t("contact.body")}</p>
-  <div class="mt-6 flex flex-wrap items-center justify-center gap-4">
-    <WhatsAppButton label={t("cta.whatsapp")} />
-    <a href="tel:+96170211041" class="btn-secondary">{t("cta.call")} <bdi dir="ltr">+961 70 211 041</bdi></a>
+  <div class="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-center sm:gap-4">
+    <WhatsAppButton label={t("cta.whatsapp")} class="min-h-12" />
+    <a href="tel:+96170211041" class="btn-secondary min-h-12">{t("cta.call")} <bdi dir="ltr">+961 70 211 041</bdi></a>
   </div>
   <div class="mt-10">
     <BookingForm locale={locale} />

@@ -18,7 +18,7 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
   data-success-message={t("form.success")}
   action="https://api.web3forms.com/submit"
   method="POST"
-  class="grid gap-4 rounded-2xl bg-sand p-6 sm:grid-cols-2"
+  class="grid grid-cols-2 gap-x-3 gap-y-4 rounded-2xl bg-sand p-4 sm:gap-4 sm:p-6"
 >
   <input type="hidden" name="access_key" value={web3formsKey ?? ""} />
   <input type="hidden" name="subject" value="New booking request — Cedars Trail Riding" />
@@ -30,38 +30,38 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
     turnstileSiteKey && (
       <>
         <script async defer src="https://challenges.cloudflare.com/turnstile/v0/api.js" />
-        <div class="cf-turnstile sm:col-span-2" data-sitekey={turnstileSiteKey} />
+        <div class="cf-turnstile col-span-2" data-sitekey={turnstileSiteKey} />
       </>
     )
   }
 
   {
     !web3formsKey && (
-      <p class="rounded-lg bg-terracotta/10 p-3 text-sm text-terracotta sm:col-span-2" role="note">
+      <p class="rounded-lg bg-terracotta/10 p-3 text-sm text-terracotta col-span-2" role="note">
         Booking form is running without a Web3Forms access key yet (PUBLIC_WEB3FORMS_ACCESS_KEY) —
         submissions won't be delivered until it's set in .env.
       </p>
     )
   }
 
-  <label class="flex flex-col gap-1 text-sm font-medium text-ink">
+  <label class="col-span-2 flex flex-col gap-1 text-sm font-medium text-ink sm:col-span-1">
     {t("form.name")} *
-    <input required type="text" name="name" autocomplete="name" class="min-h-12 rounded-lg border border-cedar-deep/20 px-3 py-3 text-base" />
+    <input required type="text" name="name" autocomplete="name" class="field" />
   </label>
 
-  <label class="flex flex-col gap-1 text-sm font-medium text-ink">
+  <label class="col-span-2 flex flex-col gap-1 text-sm font-medium text-ink sm:col-span-1">
     {t("form.phone")} *
-    <input required type="tel" name="phone" autocomplete="tel" inputmode="tel" placeholder="+961 XX XXX XXX" dir="ltr" class="min-h-12 rounded-lg border border-cedar-deep/20 px-3 py-3 text-base" />
+    <input required type="tel" name="phone" autocomplete="tel" inputmode="tel" placeholder="+961 XX XXX XXX" dir="ltr" class="field" />
   </label>
 
-  <label class="flex flex-col gap-1 text-sm font-medium text-ink">
+  <label class="col-span-2 flex flex-col gap-1 text-sm font-medium text-ink sm:col-span-1">
     {t("form.email")}
-    <input type="email" name="email" autocomplete="email" inputmode="email" class="min-h-12 rounded-lg border border-cedar-deep/20 px-3 py-3 text-base" />
+    <input type="email" name="email" autocomplete="email" inputmode="email" class="field" />
   </label>
 
-  <label class="flex flex-col gap-1 text-sm font-medium text-ink">
+  <label class="col-span-2 flex flex-col gap-1 text-sm font-medium text-ink sm:col-span-1">
     {t("form.interest")} *
-    <select required name="interest" class="min-h-12 rounded-lg border border-cedar-deep/20 px-3 py-3 text-base">
+    <select required name="interest" class="field">
       <option value="trail">{t("form.interest.trail")}</option>
       <option value="trek">{t("form.interest.trek")}</option>
       <option value="group">{t("form.interest.group")}</option>
@@ -70,9 +70,9 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
     </select>
   </label>
 
-  <label class="flex flex-col gap-1 text-sm font-medium text-ink">
+  <label class="col-span-2 flex flex-col gap-1 text-sm font-medium text-ink sm:col-span-1">
     {t("form.trailOrDuration")}
-    <select name="trail" class="min-h-12 rounded-lg border border-cedar-deep/20 px-3 py-3 text-base">
+    <select name="trail" class="field">
       <option value="">—</option>
       {trails.map((trail) => <option value={trail.name}>{trail.name}</option>)}
     </select>
@@ -80,17 +80,17 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
 
   <label class="flex flex-col gap-1 text-sm font-medium text-ink">
     {t("form.date")}
-    <input type="date" name="date" class="min-h-12 rounded-lg border border-cedar-deep/20 px-3 py-3 text-base" />
+    <input type="date" name="date" class="field" />
   </label>
 
   <label class="flex flex-col gap-1 text-sm font-medium text-ink">
     {t("form.riders")}
-    <input type="number" min="1" inputmode="numeric" name="riders" class="min-h-12 rounded-lg border border-cedar-deep/20 px-3 py-3 text-base" />
+    <input type="number" min="1" name="riders" inputmode="numeric" class="field" />
   </label>
 
   <label class="flex flex-col gap-1 text-sm font-medium text-ink">
     {t("form.experience")}
-    <select name="experience" class="min-h-12 rounded-lg border border-cedar-deep/20 px-3 py-3 text-base">
+    <select name="experience" class="field">
       <option value="none">{t("form.experience.none")}</option>
       <option value="beginner">{t("form.experience.beginner")}</option>
       <option value="intermediate">{t("form.experience.intermediate")}</option>
@@ -100,30 +100,30 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
 
   <label class="flex flex-col gap-1 text-sm font-medium text-ink">
     {t("form.languagePreference")}
-    <select name="language_preference" class="min-h-12 rounded-lg border border-cedar-deep/20 px-3 py-3 text-base">
+    <select name="language_preference" class="field">
       <option value="en">English</option>
       <option value="ar">العربية</option>
       <option value="fr">Français</option>
     </select>
   </label>
 
-  <label class="flex flex-col gap-1 text-sm font-medium text-ink sm:col-span-2">
+  <label class="col-span-2 flex flex-col gap-1 text-sm font-medium text-ink">
     {t("form.message")}
-    <textarea name="message" rows="4" class="min-h-12 rounded-lg border border-cedar-deep/20 px-3 py-3 text-base"></textarea>
+    <textarea name="message" rows="4" class="field"></textarea>
   </label>
 
-  <label class="flex items-start gap-2 text-sm text-ink sm:col-span-2">
-    <input required type="checkbox" name="consent" class="mt-1" />
+  <label class="col-span-2 flex min-h-11 items-start gap-3 text-sm text-ink">
+    <input required type="checkbox" name="consent" class="mt-0.5 size-6 shrink-0 accent-cedar-deep" />
     <span>{t("form.consent")}</span>
   </label>
 
-  <p class="text-xs text-ink/60 sm:col-span-2">{t("form.disclaimer")}</p>
+  <p class="form-note col-span-2 text-xs text-ink/60">{t("form.disclaimer")}</p>
 
-  <button type="submit" class="btn-primary min-h-12 w-full sm:col-span-2 sm:w-fit">
+  <button type="submit" class="btn-primary col-span-2 min-h-12 sm:w-fit">
     {t("form.send")}
   </button>
 
-  <p class="success-message hidden rounded-lg bg-cedar-deep/10 p-3 text-sm font-medium text-cedar-deep sm:col-span-2" role="status"></p>
+  <p class="success-message hidden rounded-lg bg-cedar-deep/10 p-3 text-sm font-medium text-cedar-deep col-span-2" role="status"></p>
 </form>
 
 <script>
@@ -148,8 +148,9 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
 
         if (response.ok) {
           form.reset();
-          form.querySelectorAll("input, select, textarea, button").forEach((el) => {
-            (el as HTMLElement).classList.add("hidden");
+          form.querySelectorAll("label, input, select, textarea, button, .form-note").forEach((el) => {
+            // Inline style, not the `hidden` utility: labels carry `flex`, which would win.
+            (el as HTMLElement).style.display = "none";
           });
           if (successEl) {
             successEl.textContent = successMessage;

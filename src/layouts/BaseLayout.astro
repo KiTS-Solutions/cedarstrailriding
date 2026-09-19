@@ -3,7 +3,7 @@ import "../styles/global.css";
 import { DIR, LOCALES, path, useTranslations, type Locale } from "../i18n";
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
-import StickyContactBar from "../components/StickyContactBar.astro";
+import StickyCta from "../components/StickyCta.astro";
 import JsonLd from "../components/JsonLd.astro";
 import { breadcrumbSchema } from "../data/jsonld";
 
@@ -115,15 +115,20 @@ if (/tennessee/i.test(pageTitle) || /tennessee/i.test(pageDescription)) {
       )
     }
   </head>
-  <body class="flex min-h-screen flex-col pb-[calc(4.5rem+env(safe-area-inset-bottom))] lg:pb-0">
-    <a href="#main" class="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:bg-gold focus:px-4 focus:py-2">
-      Skip to content
+  <body class="flex min-h-screen flex-col">
+    {/* start-0/top-0 pin the visually-hidden link inside the viewport in both LTR and RTL;
+        unpinned, its static position sat past the inline edge in RTL and widened the page. */}
+    <a
+      href="#main"
+      class="sr-only start-0 top-0 focus:not-sr-only focus:fixed focus:z-[70] focus:bg-gold focus:px-4 focus:py-3"
+    >
+      {t("a11y.skip")}
     </a>
     <Header locale={locale} route={route} />
     <main id="main" class="flex-1">
       <slot />
     </main>
     <Footer locale={locale} />
-    <StickyContactBar locale={locale} />
+    <StickyCta locale={locale} />
   </body>
 </html>

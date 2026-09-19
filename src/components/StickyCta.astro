@@ -1,0 +1,64 @@
+---
+import { path, useTranslations, type Locale } from "../i18n";
+import { contact } from "../data/siteSettings";
+import WhatsAppButton from "./WhatsAppButton.astro";
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const t = useTranslations(locale);
+const telHref = `tel:${contact.phones[0]?.replace(/\s+/g, "")}`;
+---
+
+{/* Phone-only persistent booking actions: Book, WhatsApp, Call. Hidden while the scroll hero
+    (which has its own dock) or a booking form is on screen — see the observer below. */}
+<div
+  id="sticky-cta"
+  data-sticky-contact
+  class="sticky-cta fixed inset-x-0 bottom-0 z-40 flex gap-2 border-t border-cedar-deep/10 bg-warm-white/95 px-3 pt-3 backdrop-blur sm:hidden"
+>
+  <a href={path("/contact/", locale)} class="btn-primary min-h-12 flex-1 !px-2 text-sm">{t("cta.book")}</a>
+  <WhatsAppButton
+    label={t("cta.whatsapp")}
+    class="min-h-12 flex-1 !bg-cedar-deep !px-2 text-sm !text-warm-white hover:!bg-cedar-soft"
+  />
+  <a href={telHref} class="btn-secondary min-h-12 flex-1 !px-2 text-sm">{t("cta.call")}</a>
+</div>
+{/* Reserves the bar's height so it never covers the footer's last line. */}
+<div class="h-[calc(4.5rem+env(safe-area-inset-bottom))] bg-cedar-deep sm:hidden" aria-hidden="true"></div>
+
+<style>
+  .sticky-cta {
+    padding-bottom: calc(0.75rem + env(safe-area-inset-bottom));
+    transition:
+      transform 0.25s ease,
+      opacity 0.25s ease;
+  }
+  .sticky-cta[data-hidden="true"] {
+    transform: translateY(100%);
+    opacity: 0;
+    pointer-events: none;
+  }
+</style>
+
+<script>
+  const bar = document.getElementById("sticky-cta");
+  const targets = document.querySelectorAll(".ctr-hero, #booking-form");
+
+  if (bar && targets.length > 0 && "IntersectionObserver" in window) {
+    const visible = new Set<Element>();
+    const observer = new IntersectionObserver((entries) => {
+      for (const entry of entries) {
+        if (entry.isIntersecting) visible.add(entry.target);
+        else visible.delete(entry.target);
+      }
+      const hidden = visible.size > 0;
+      bar.dataset.hidden = String(hidden);
+      // Keep the hidden bar out of the tab order too.
+      bar.inert = hidden;
+    });
+    targets.forEach((el) => observer.observe(el));
+  }
+</script>
