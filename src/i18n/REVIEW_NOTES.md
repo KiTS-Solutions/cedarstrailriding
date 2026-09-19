@@ -26,3 +26,5 @@ copy) intentionally falls back to English via `useTranslations()` — per the tr
 pack's own instruction #3, don't ship broken/half-translated AR or FR. Extend the locale
 files as the client approves more translated copy.
 - `nav.menu` (AR/FR) — mobile menu label added by the mobile UX pass.
+- 46 strings added to AR/FR by the mobile/i18n pass (2026-09-20): home rides/treks/groups cards, trails intro, about, gallery, contact.hours, all form select options + consent/disclaimer, treks/horses placeholders. Draft-quality; needs native review. "REAF"/"Berytech" kept untranslated.
+- `trail.<id>.descriptor` for pine/beit-eddine/panoramic/rocky/custom and `trail.<id>.duration` (AR/FR) — drafts.

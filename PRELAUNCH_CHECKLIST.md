@@ -93,3 +93,8 @@ it should be resolved before the site goes live publicly.
 - [x] Landscape phones (`max-height:500px` + coarse pointer) now get a 1.5 MB 854x480 clip (`ride-compact.mp4`) instead of the 4.68 MB desktop one. Needs real-device check.
 - [x] Favicon/apple-touch-icon/manifest icons generated from the CTR badge (replaced the default Astro favicon); hero small text raised to 13px.
 - [ ] Still open: hero chips as a scrollable row, real-device test of the sticky bar over the scrub hero, tap-to-play/poster-only mode for very slow connections (2g/3g).
+
+## i18n completeness (2026-09-20)
+- [x] All 142 EN keys now exist in AR and FR (46 + trail descriptors/durations added as drafts; no more silent English fallback on `/ar/` and `/fr/`).
+- [ ] Native AR/FR review of all newly added strings (listed in `src/i18n/REVIEW_NOTES.md`).
+- [ ] Testimonials (`src/data/testimonials.ts`) are English source reviews shown as-is on AR/FR pages — decide: keep original language with a label, or commission approved translations.

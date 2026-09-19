@@ -19,6 +19,8 @@ const chipKey: Record<NonNullable<Trail["difficulty"]>, { label: string; class: 
 const chip = trail.difficulty ? chipKey[trail.difficulty] : null;
 const descriptor = t(`trail.${trail.id}.descriptor`);
 const body = descriptor.startsWith("trail.") ? trail.summary : descriptor;
+const durationKey = `trail.${trail.id}.duration`;
+const durationText = trail.duration ? (t(durationKey) !== durationKey ? t(durationKey) : trail.duration) : null;
 ---
 
 <article class="card flex flex-col gap-3 p-5">
@@ -28,5 +30,5 @@ const body = descriptor.startsWith("trail.") ? trail.summary : descriptor;
   </div>
   {chip && <span class={chip.class}>{chip.label}</span>}
   <p dir="auto" class="text-sm text-ink/80">{body}</p>
-  {trail.duration && <p dir="auto" class="text-xs font-medium uppercase tracking-wide text-cedar-soft">{trail.duration}</p>}
+  {durationText && <p dir="auto" class="text-xs font-medium uppercase tracking-wide text-cedar-soft">{durationText}</p>}
 </article>

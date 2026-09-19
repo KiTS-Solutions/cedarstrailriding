@@ -155,5 +155,13 @@
   "footer.lebanonMapLabel": "We operate all over Lebanon.",
 
   "meta.title": "Cedars Trail Riding — Horseback Riding & Eco-Equestrian Tourism in Lebanon",
-  "meta.desc": "Lebanon's first eco-equestrian tourism experience. Guided trail rides and multi-day treks across the Shouf mountains, 1 hour to 8 days."
+  "meta.desc": "Lebanon's first eco-equestrian tourism experience. Guided trail rides and multi-day treks across the Shouf mountains, 1 hour to 8 days.",
+
+  "trail.pine-trail.descriptor": "A gentle start through forest paths — perfect for first riders.",
+  "trail.beit-eddine-trail.descriptor": "Slow pace, big views near historic Beiteddine.",
+  "trail.panoramic-trail.descriptor": "Ridgeline vistas over the Shouf; bring a camera.",
+  "trail.rocky-trail.descriptor": "Technical terrain for riders who want more.",
+  "trail.custom-trails.descriptor": "Create your own full-day or multi-day trek.",
+  "trail.marj-bisri-trail.duration": "1 to 3 days",
+  "trail.custom-trails.duration": "Flexible (full day or multi-day)"
 }
