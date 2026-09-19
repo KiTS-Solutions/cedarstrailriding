@@ -105,7 +105,7 @@ export function initScrollHero(root: HTMLElement): void {
 function upgrade(root: HTMLElement): void {
   const stage = must<HTMLElement>(root, "[data-hero-stage]");
   const canvas = must<HTMLCanvasElement>(root, "[data-hero-canvas]");
-  const ctx = canvas.getContext("2d", { alpha: false });
+  const ctx = canvas.getContext("2d");
   if (!ctx) throw new HeroError("2d canvas unavailable");
   const fxCanvas = must<HTMLCanvasElement>(root, "[data-hero-fx]");
   let fx: Fx | null = createFx(fxCanvas);
@@ -152,16 +152,29 @@ function upgrade(root: HTMLElement): void {
   let lastTime = -1;
   let ready = false;
 
-  const draw = (): void => {
+  // Returns true only when a frame was actually painted.
+  const draw = (): boolean => {
     const sw = video.videoWidth;
     const sh = video.videoHeight;
-    if (!sw || !sh) return;
+    if (!sw || !sh) return false;
     const cw = canvas.width;
     const ch = canvas.height;
     const scale = Math.max(cw / sw, ch / sh);
     const w = sw * scale;
     const h = sh * scale;
-    ctx.drawImage(video, (cw - w) / 2, (ch - h) / 2, w, h);
+    try {
+      ctx.drawImage(video, (cw - w) / 2, (ch - h) / 2, w, h);
+    } catch (err) {
+      if (!(err instanceof DOMException)) throw err;
+      return false;
+    }
+    return true;
+  };
+
+  // The canvas fades in over the poster only after it holds a real frame; until then it is
+  // transparent, so a failed/undecoded video leaves the poster visible.
+  const paint = (): void => {
+    if (draw()) root.dataset.ready = "true";
   };
 
   const resize = (): void => {
@@ -187,14 +200,12 @@ function upgrade(root: HTMLElement): void {
         video.currentTime = lastTime;
       } catch (err) {
         if (!(err instanceof DOMException)) throw err;
-        draw();
       }
-    } else {
-      draw();
     }
-    root.dataset.ready = "true";
+    // A seek to the current time may never fire `seeked`, so always paint what is decoded.
+    paint();
   });
-  video.addEventListener("seeked", draw);
+  video.addEventListener("seeked", paint);
   video.addEventListener("error", () => {
     // Keep the poster; scrolling still drives copy and rail.
     ready = false;

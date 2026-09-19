@@ -514,4 +514,67 @@ test.describe("Scroll hero", () => {
       });
     }
   });
+
+  test.describe("canvas paint", () => {
+    // Samples a grid of the main canvas: counts non-transparent pixels and
+    // pixels brighter than near-black.
+    const sampleCanvas = (page: Page) =>
+      page.evaluate(() => {
+        const c = document.querySelector<HTMLCanvasElement>(
+          "[data-hero-canvas]",
+        )!;
+        const ctx = c.getContext("2d")!;
+        let opaque = 0;
+        let bright = 0;
+        for (let i = 1; i <= 8; i++) {
+          for (let j = 1; j <= 8; j++) {
+            const x = Math.floor((c.width * i) / 9);
+            const y = Math.floor((c.height * j) / 9);
+            const d = ctx.getImageData(x, y, 1, 1).data;
+            const r = d[0] ?? 0;
+            const g = d[1] ?? 0;
+            const b = d[2] ?? 0;
+            const a = d[3] ?? 0;
+            if (a > 0) opaque++;
+            if (a > 0 && 0.2126 * r + 0.7152 * g + 0.0722 * b > 20) bright++;
+          }
+        }
+        return { opaque, bright };
+      });
+
+    for (const url of ["/", "/#river"]) {
+      test(`canvas holds a real frame once ready (${url})`, async ({ page }) => {
+        await page.goto(url);
+        const root = page.locator("[data-hero]");
+        await expect(root).toHaveAttribute("data-mode", "scrub");
+        await expect(root).toHaveAttribute("data-ready", "true");
+        const { opaque, bright } = await sampleCanvas(page);
+        expect(opaque).toBeGreaterThan(0);
+        expect(bright).toBeGreaterThan(0);
+      });
+    }
+
+    test("canvas stays transparent, and the poster visible, while not ready", async ({
+      page,
+    }) => {
+      // Block the video so the hero can never become ready.
+      await page.route(/\.mp4(\?|$)/, (route) => route.abort());
+      await page.goto("/");
+      const root = page.locator("[data-hero]");
+      await expect(root).toHaveAttribute("data-mode", "scrub");
+      await page.waitForTimeout(800);
+      await expect(root).not.toHaveAttribute("data-ready", /.*/);
+      await expect(page.locator("[data-hero-canvas]")).toHaveCSS(
+        "opacity",
+        "0",
+      );
+      await expect(page.locator(".ctr-hero__poster")).toBeVisible();
+      // The hero keeps scrubbing copy without a video.
+      await scrollToProgress(page, 0.5);
+      await expect(page.locator('[data-act="river"]')).toHaveCSS(
+        "opacity",
+        "1",
+      );
+    });
+  });
 });
