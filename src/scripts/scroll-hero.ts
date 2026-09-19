@@ -58,7 +58,8 @@ function track(
     w.gtag?.("event", name, params);
     w.fbq?.("trackCustom", name, params);
   } catch (err) {
-    if (!(err instanceof Error)) throw err; // analytics must never break the hero
+    // Analytics must never break the hero, whatever a third-party script throws.
+    console.debug("[scroll-hero] analytics call failed:", err);
   }
 }
 
@@ -248,8 +249,21 @@ function upgrade(root: HTMLElement): void {
     ride: -1,
   };
 
-  const frame = (now: number): void => {
-    raf = 0;
+  let halted = false;
+  // A throw in the frame loop must not leave a frozen half-upgraded hero: fall back to static.
+  const fallBackToStatic = (err: unknown): void => {
+    halted = true;
+    window.clearTimeout(snapTimer);
+    delete root.dataset.ready;
+    root.dataset.mode = "static";
+    syncHeroTop(root);
+    console.warn(
+      "[scroll-hero] frame failed, using static hero:",
+      err instanceof Error ? err.message : err,
+    );
+  };
+
+  const step = (now: number): void => {
     const dt = Math.max(0.001, (now - lastFrameAt) / 1000);
     lastFrameAt = now;
 
@@ -328,12 +342,22 @@ function upgrade(root: HTMLElement): void {
         err instanceof Error ? err.message : err,
       );
     }
+  };
 
+  const frame = (now: number): void => {
+    raf = 0;
+    if (halted) return;
+    try {
+      step(now);
+    } catch (err) {
+      fallBackToStatic(err);
+      return;
+    }
     if (visible) schedule();
   };
 
   const schedule = (): void => {
-    if (!raf) raf = requestAnimationFrame(frame);
+    if (!halted && !raf) raf = requestAnimationFrame(frame);
   };
 
   new IntersectionObserver(
@@ -377,7 +401,7 @@ function upgrade(root: HTMLElement): void {
 
   const isHeld = (): boolean => touchHeld || pointerHeld;
   const runSnap = (isRetry: boolean): void => {
-    if (!visible || isHeld()) return;
+    if (halted || !visible || isHeld()) return;
     const target = nearestSnap(p, velocity);
     if (target !== null) {
       scrollToProgress(target, "smooth");

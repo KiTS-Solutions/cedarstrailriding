@@ -700,4 +700,31 @@ test.describe("Scroll hero", () => {
       )
       .toBeLessThanOrEqual(2);
   });
+
+  test("a throwing analytics hook never freezes or errors the hero", async ({
+    page,
+  }) => {
+    const errors: string[] = [];
+    page.on("pageerror", (e) => errors.push(String(e)));
+    await page.addInitScript(() => {
+      (window as unknown as { gtag: () => void }).gtag = () => {
+        throw "analytics exploded"; // a non-Error throw
+      };
+    });
+    await page.goto("/");
+    await expect(page.locator("[data-hero]")).toHaveAttribute(
+      "data-mode",
+      "scrub",
+    );
+    await scrollToProgress(page, 0.5);
+    await expect(page.locator('[data-act="river"]')).toHaveCSS("opacity", "1");
+    await expect(page.locator('[data-act="intro"]')).toHaveCSS("opacity", "0");
+    await scrollToProgress(page, 0.9);
+    await expect(page.locator('[data-act="ride"]')).toHaveCSS("opacity", "1");
+    await expect(page.locator("[data-hero]")).toHaveAttribute(
+      "data-mode",
+      "scrub",
+    );
+    expect(errors).toEqual([]);
+  });
 });
