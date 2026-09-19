@@ -1,0 +1,84 @@
+<!--
+  DROP-IN: scroll-scrub hero for a Tailwind site
+  - Copy this section and its script to the page.
+  - Copy /assets/horse-river-hero.mp4 and /assets/poster.webp into your public assets.
+  - It deliberately uses your existing tokens: cedar-deep, warm-white, gold,
+    font-display, btn-primary, btn-secondary and chip.
+-->
+<section class="relative h-[480vh] bg-cedar-deep" aria-label="Cedar Trail Riders introduction" data-ctr-runway>
+  <div class="sticky top-0 h-[100svh] h-[100dvh] overflow-hidden isolate bg-cedar-deep">
+    <canvas class="absolute inset-0 block h-full w-full" data-ctr-canvas aria-hidden="true"></canvas>
+    <!-- Poster is both the no-JS fallback and a first-paint background. -->
+    <div class="absolute inset-0 -z-10 bg-[url('/assets/poster.webp')] bg-cover bg-center"></div>
+    <div class="pointer-events-none absolute inset-0 z-[1] bg-[linear-gradient(90deg,rgba(22,17,12,.76)_0%,rgba(22,17,12,.40)_39%,rgba(22,17,12,.06)_70%,rgba(22,17,12,.35)_100%),linear-gradient(0deg,rgba(22,17,12,.74)_0%,transparent_43%,rgba(22,17,12,.26)_100%)]"></div>
+    <div class="pointer-events-none absolute left-0 right-0 top-0 z-20 h-[3px] origin-left scale-x-0 bg-gold shadow-[0_0_16px_rgba(201,162,75,.7)]" data-ctr-progress></div>
+
+    <div class="absolute left-5 right-5 top-5 z-20 flex items-center justify-between text-[.68rem] font-bold uppercase tracking-[.15em] text-warm-white md:left-[5vw] md:right-[5vw] md:top-9">
+      <a href="/" class="flex items-center gap-3 no-underline"><span class="grid size-8 place-items-center rounded-full border border-gold font-serif text-[.68rem] tracking-normal text-gold">CTR</span><span>Cedar Trail Riders</span></a>
+      <a href="#trails" class="border-b border-warm-white/40 py-2 pl-4 no-underline hover:border-gold">Our trails</a>
+    </div>
+
+    <div class="relative z-10 mx-auto h-full max-w-7xl">
+      <!-- Act I — your original primary content -->
+      <div class="absolute left-5 right-5 top-1/2 max-w-3xl -translate-y-1/2 will-change-transform md:left-[10vw] md:right-auto" data-ctr-act="intro">
+        <p class="mb-4 flex items-center gap-3 text-[.68rem] font-bold uppercase tracking-[.17em] text-gold before:block before:h-px before:w-9 before:bg-current">Lebanon's First Equestrian Tourism Experience</p>
+        <h1 class="font-display text-[clamp(3.2rem,7.4vw,7.5rem)] leading-[.93] tracking-[-.055em] text-warm-white">Explore Lebanon<br>on Horseback</h1>
+        <p class="mt-6 max-w-xl text-base leading-relaxed text-warm-white/85 md:text-lg">From the Shouf mountains to the sea, discover Lebanon at a slower pace on treks from one hour to eight unforgettable days.</p>
+        <div class="mt-8 flex flex-wrap gap-3"><a href="/contact/" class="btn-primary">Book Today</a><a href="#trails" class="btn-secondary">Explore the Trails</a></div>
+        <div class="mt-5 flex flex-wrap gap-2"><span class="chip">★ 4.9 Google</span><span class="chip">Guides in Arabic / English / French</span><span class="chip">Operating all over Lebanon</span></div>
+      </div>
+
+      <!-- Act II — optional story beat -->
+      <div class="absolute left-1/2 top-1/2 w-[calc(100%-2.5rem)] max-w-3xl -translate-x-1/2 -translate-y-1/2 text-center will-change-transform" data-ctr-act="middle" aria-hidden="true">
+        <p class="mb-4 flex items-center justify-center gap-3 text-[.68rem] font-bold uppercase tracking-[.17em] text-gold before:block before:h-px before:w-9 before:bg-current">Move with the land</p>
+        <h2 class="font-display text-[clamp(2.8rem,6vw,6rem)] leading-[.95] tracking-[-.055em] text-warm-white">Follow the rhythm<br>of Lebanon</h2>
+        <p class="mx-auto mt-6 max-w-xl text-base leading-relaxed text-warm-white/85 md:text-lg">Cedar shade, river crossings, open ridgelines — made more meaningful from the saddle.</p>
+      </div>
+
+      <!-- Act III — optional conversion beat -->
+      <div class="absolute left-5 right-5 top-1/2 max-w-2xl -translate-y-1/2 text-right will-change-transform md:left-auto md:right-[10vw]" data-ctr-act="end" aria-hidden="true">
+        <p class="mb-4 flex items-center justify-end gap-3 text-[.68rem] font-bold uppercase tracking-[.17em] text-gold after:block after:h-px after:w-9 after:bg-current">Your next story</p>
+        <h2 class="font-display text-[clamp(2.8rem,6vw,6rem)] leading-[.95] tracking-[-.055em] text-warm-white">The trail is<br>waiting.</h2>
+        <p class="ml-auto mt-6 max-w-md text-base leading-relaxed text-warm-white/85 md:text-lg">Choose your pace. We will take care of the rest.</p>
+        <div class="mt-8 flex justify-end"><a href="/contact/" class="btn-primary">Plan your ride</a></div>
+      </div>
+    </div>
+
+    <!-- Retains the actual site badge rather than recreating it. -->
+    <img src="/images/brand/ctr-badge-square.webp" alt="Cedar Trail Riders" class="absolute bottom-12 right-[5vw] z-20 hidden w-16 border border-warm-white/50 bg-cedar-deep/20 p-1 backdrop-blur sm:block" />
+    <div class="pointer-events-none absolute bottom-5 left-1/2 z-20 flex -translate-x-1/2 items-center gap-2 whitespace-nowrap text-[.62rem] font-bold uppercase tracking-[.15em] text-warm-white/75" data-ctr-cue><i class="block h-7 w-px bg-gold"></i>Scroll to ride</div>
+  </div>
+</section>
+
+<script>
+/* No dependencies. This script maps scroll progress to a seek in the all-intra MP4. */
+(() => {
+  const runway = document.querySelector('[data-ctr-runway]');
+  if (!runway || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const canvas = runway.querySelector('[data-ctr-canvas]'), ctx = canvas.getContext('2d', { alpha:false });
+  const progress = runway.querySelector('[data-ctr-progress]'), cue = runway.querySelector('[data-ctr-cue]');
+  const acts = Object.fromEntries(['intro','middle','end'].map(k => [k, runway.querySelector(`[data-ctr-act="${k}"]`)]));
+  const video = Object.assign(document.createElement('video'), { src:'/assets/horse-river-hero.mp4', preload:'auto', muted:true, playsInline:true });
+  const poster = new Image(); poster.src = '/assets/poster.webp';
+  let duration = 5.5, last = -1, raf = 0;
+  function draw(media) { const sw=media.videoWidth||media.naturalWidth, sh=media.videoHeight||media.naturalHeight; if(!sw||!sh) return; const cw=canvas.width,ch=canvas.height,s=Math.max(cw/sw,ch/sh),w=sw*s,h=sh*s; ctx.fillStyle='#2A2119';ctx.fillRect(0,0,cw,ch);ctx.drawImage(media,(cw-w)/2,(ch-h)/2,w,h); }
+  function resize() { const r=canvas.getBoundingClientRect(), d=Math.min(devicePixelRatio||1,2); canvas.width=Math.round(r.width*d);canvas.height=Math.round(r.height*d); draw(video.readyState>=2?video:poster); }
+  function visible(p,a,b,f=.09){ return Math.max(0,Math.min(1,(p-a)/f,(b-p)/f)); }
+  function act(el,v) { el.style.opacity=v; el.style.pointerEvents=v>.35?'auto':'none'; el.style.transform=el.dataset.ctrAct==='middle'?`translate(-50%,calc(-50% + ${(1-v)*18}px))`:`translateY(calc(-50% + ${(1-v)*18}px))`; el.setAttribute('aria-hidden',v<.35); }
+  function update(){raf=0;const r=runway.getBoundingClientRect(),p=Math.max(0,Math.min(1,-r.top/Math.max(1,r.height-innerHeight)));progress.style.transform=`scaleX(${p})`;cue.style.opacity=1-p*8;act(acts.intro,visible(p,0,.36));act(acts.middle,visible(p,.30,.71));act(acts.end,visible(p,.64,1.09));const t=Math.min(duration-.035,Math.max(0,p*(duration-.035)));if(video.readyState>=2&&Math.abs(t-last)>.018){last=t;try{video.currentTime=t}catch(e){}}}
+  function request(){if(!raf)raf=requestAnimationFrame(update)}
+  poster.onload=resize; video.onloadedmetadata=()=>{duration=video.duration||duration;resize();request()}; video.onloadeddata=()=>draw(video); video.onseeked=()=>draw(video); video.onerror=()=>draw(poster);
+  addEventListener('resize',resize,{passive:true}); addEventListener('scroll',request,{passive:true}); resize();request();
+})();
+</script>
+
+<!--
+  Add this fallback once in your global CSS. It disables the scroll effect for users
+  who have asked for reduced motion; the poster remains visible behind the content.
+  @media (prefers-reduced-motion: reduce) {
+    [data-ctr-runway] { height:auto !important; }
+    [data-ctr-runway] > div { position:relative !important; min-height:47rem; }
+    [data-ctr-canvas], [data-ctr-progress], [data-ctr-cue] { display:none !important; }
+    [data-ctr-act] { position:relative !important; inset:auto !important; transform:none !important; opacity:1 !important; padding:8rem 1.25rem 0; text-align:left !important; }
+  }
+-->

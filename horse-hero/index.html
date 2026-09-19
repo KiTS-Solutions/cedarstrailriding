@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#2A2119" />
+  <title>CTR — Scroll-scrub horse hero</title>
+  <style>
+    :root { --cedar:#2A2119; --cedar-2:#3B3026; --gold:#C9A24B; --warm:#F7F1E5; --muted:#D7CCBB; }
+    * { box-sizing:border-box; }
+    html { scroll-behavior:smooth; background:var(--cedar); }
+    body { margin:0; color:var(--warm); background:var(--cedar); font-family:ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    button, a { font:inherit; }
+    a { color:inherit; }
+    .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+
+    /* The extra height is the timeline. The stage itself remains fixed in view. */
+    .horse-runway { height:480vh; position:relative; background:var(--cedar); }
+    .horse-stage { position:sticky; top:0; height:100svh; height:100dvh; overflow:hidden; isolation:isolate; background:#66583f url('assets/poster.webp') center/cover no-repeat; }
+    .horse-stage canvas { position:absolute; inset:0; width:100%; height:100%; display:block; }
+    .horse-stage::after { content:""; position:absolute; z-index:1; inset:0; pointer-events:none; background:linear-gradient(90deg,rgba(20,16,11,.72) 0%,rgba(20,16,11,.42) 38%,rgba(20,16,11,.08) 68%,rgba(20,16,11,.34) 100%),linear-gradient(0deg,rgba(20,16,11,.76) 0%,rgba(20,16,11,.03) 42%,rgba(20,16,11,.31) 100%); }
+    .grain { position:absolute; z-index:2; inset:0; pointer-events:none; opacity:.16; background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.5'/%3E%3C/svg%3E"); mix-blend-mode:soft-light; }
+    .topbar { position:absolute; z-index:4; left:clamp(1.25rem,5vw,5rem); right:clamp(1.25rem,5vw,5rem); top:clamp(1.25rem,4vw,2.5rem); display:flex; align-items:center; justify-content:space-between; font-size:.7rem; font-weight:700; letter-spacing:.15em; text-transform:uppercase; }
+    .brand { display:flex; align-items:center; gap:.7rem; text-decoration:none; }
+    .brand-mark { display:grid; place-items:center; width:2rem; height:2rem; border:1px solid var(--gold); border-radius:50%; color:var(--gold); font-family:Georgia, serif; font-size:.76rem; letter-spacing:0; }
+    .nav-link { text-decoration:none; padding:.7rem 0 .7rem 1rem; border-bottom:1px solid rgba(247,241,229,.42); transition:border-color .2s; }
+    .nav-link:hover { border-color:var(--gold); }
+
+    .progress { position:absolute; z-index:4; left:0; top:0; right:0; height:3px; transform-origin:left; transform:scaleX(0); background:var(--gold); box-shadow:0 0 16px rgba(201,162,75,.7); }
+    .frame { position:absolute; z-index:3; inset:0; pointer-events:none; }
+    .corner { position:absolute; width:17px; height:17px; border-color:rgba(201,162,75,.8); }
+    .corner.tl { top:clamp(4.7rem,9vw,6.5rem); left:clamp(1.25rem,5vw,5rem); border-left:1px solid; border-top:1px solid; }
+    .corner.tr { top:clamp(4.7rem,9vw,6.5rem); right:clamp(1.25rem,5vw,5rem); border-right:1px solid; border-top:1px solid; }
+    .corner.bl { bottom:clamp(1.4rem,4vw,2.5rem); left:clamp(1.25rem,5vw,5rem); border-left:1px solid; border-bottom:1px solid; }
+    .corner.br { bottom:clamp(1.4rem,4vw,2.5rem); right:clamp(1.25rem,5vw,5rem); border-right:1px solid; border-bottom:1px solid; }
+
+    .copy-stack { position:relative; z-index:3; height:100%; width:min(100%, 76rem); margin:auto; }
+    .act { position:absolute; left:clamp(1.25rem,10vw,9.5rem); right:clamp(1.25rem,8vw,7rem); top:50%; transform:translateY(-50%); max-width:45rem; will-change:opacity,transform; }
+    .act--intro { top:51%; }
+    .act--center { text-align:center; max-width:44rem; left:50%; right:auto; width:calc(100% - 2.5rem); transform:translate(-50%,-50%); }
+    .act--end { left:auto; right:clamp(1.25rem,10vw,9.5rem); text-align:right; max-width:35rem; }
+    .eyebrow { margin:0 0 1rem; display:flex; align-items:center; gap:.7rem; color:var(--gold); font-size:clamp(.64rem,.75vw,.78rem); letter-spacing:.17em; font-weight:750; text-transform:uppercase; }
+    .eyebrow::before { content:""; width:2.25rem; height:1px; background:currentColor; }
+    h1, h2 { margin:0; font-family:Georgia, "Times New Roman", serif; font-weight:400; line-height:.94; text-wrap:balance; text-shadow:0 2px 24px rgba(0,0,0,.24); }
+    h1 { font-size:clamp(3rem,7.4vw,7.4rem); letter-spacing:-.055em; }
+    h2 { font-size:clamp(2.7rem,6vw,6rem); letter-spacing:-.05em; }
+    .lede { max-width:36rem; margin:1.45rem 0 0; color:var(--muted); font-size:clamp(1rem,1.35vw,1.25rem); line-height:1.65; text-wrap:pretty; }
+    .act--center .lede { margin-inline:auto; }
+    .act--end .lede { margin-left:auto; }
+    .actions { display:flex; gap:.75rem; flex-wrap:wrap; margin-top:2rem; }
+    .act--end .actions { justify-content:flex-end; }
+    .button { min-height:3.1rem; display:inline-flex; align-items:center; justify-content:center; padding:.75rem 1.25rem; border:1px solid transparent; text-decoration:none; font-size:.72rem; font-weight:800; letter-spacing:.13em; text-transform:uppercase; transition:transform .2s, background .2s, border .2s; }
+    .button:hover { transform:translateY(-2px); }
+    .button--gold { background:var(--gold); color:#241c14; }
+    .button--gold:hover { background:#e0bc67; }
+    .button--ghost { color:var(--warm); border-color:rgba(247,241,229,.64); background:rgba(42,33,25,.16); backdrop-filter:blur(5px); }
+    .button--ghost:hover { border-color:var(--gold); }
+    .chips { display:flex; gap:.55rem; flex-wrap:wrap; margin-top:1.25rem; }
+    .chip { padding:.48rem .7rem; border:1px solid rgba(247,241,229,.29); border-radius:99rem; background:rgba(42,33,25,.22); color:#efe8db; font-size:.69rem; line-height:1.1; backdrop-filter:blur(5px); }
+    .intro-brand { position:absolute; z-index:3; bottom:clamp(3.7rem,7vw,6rem); right:clamp(1.25rem,5vw,5rem); width:clamp(3.6rem,6.3vw,5.3rem); aspect-ratio:1; display:grid; place-items:center; border:1px solid rgba(247,241,229,.54); background:rgba(42,33,25,.21); color:var(--warm); text-align:center; font:700 .58rem/1.12 ui-sans-serif,system-ui,sans-serif; letter-spacing:.1em; text-transform:uppercase; backdrop-filter:blur(5px); }
+    .intro-brand strong { color:var(--gold); font:400 1.45rem/1 Georgia,serif; letter-spacing:0; }
+    .scroll-cue { position:absolute; z-index:4; bottom:clamp(1.2rem,3vw,2rem); left:50%; display:flex; align-items:center; gap:.6rem; color:rgba(247,241,229,.78); font-size:.62rem; font-weight:800; letter-spacing:.15em; text-transform:uppercase; transform:translateX(-50%); white-space:nowrap; }
+    .scroll-cue i { display:block; width:1px; height:1.8rem; background:var(--gold); animation:cue 1.6s ease-in-out infinite; }
+    @keyframes cue { 0%,100% { transform:scaleY(.4); transform-origin:top; opacity:.45; } 50% { transform:scaleY(1); transform-origin:top; opacity:1; } }
+
+    .content { padding:clamp(4rem,10vw,9rem) clamp(1.25rem,7vw,7rem); background:var(--warm); color:var(--cedar); }
+    .section-label { color:#83641e; font-size:.72rem; font-weight:800; letter-spacing:.16em; text-transform:uppercase; }
+    .content h2 { max-width:52rem; margin-top:.75rem; font-size:clamp(2.4rem,5vw,5rem); text-shadow:none; }
+    .trails { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:1rem; margin-top:3rem; }
+    .trail { min-height:15rem; padding:1.25rem; display:flex; flex-direction:column; justify-content:flex-end; color:var(--warm); background:linear-gradient(160deg,#78664a,#2d241b); position:relative; overflow:hidden; }
+    .trail:nth-child(2) { background:linear-gradient(160deg,#9b7742,#322719); }
+    .trail:nth-child(3) { background:linear-gradient(160deg,#526952,#25251c); }
+    .trail::before { content:""; position:absolute; inset:0; opacity:.34; background:radial-gradient(circle at 70% 20%,#d7ae62 0 2%,transparent 35%), repeating-linear-gradient(120deg,transparent 0 11px,rgba(247,241,229,.10) 12px 13px); }
+    .trail > * { position:relative; }
+    .trail p { margin:0 0 .5rem; color:#e5d9c7; font-size:.78rem; letter-spacing:.12em; text-transform:uppercase; }
+    .trail h3 { margin:0; font:400 clamp(1.7rem,3vw,2.6rem)/1 Georgia,serif; }
+    footer { padding:2rem clamp(1.25rem,7vw,7rem); display:flex; justify-content:space-between; gap:1rem; color:#cdbfae; font-size:.75rem; background:#201914; }
+
+    @media (max-width:700px) { .topbar .nav-link { font-size:.57rem; } .act--intro { top:52%; } .act--end { top:50%; } .lede { line-height:1.52; } .intro-brand { display:none; } .trails { grid-template-columns:1fr; } }
+    @media (prefers-reduced-motion:reduce) { html { scroll-behavior:auto; } .horse-runway { height:auto; } .horse-stage { position:relative; min-height:47rem; } .horse-stage canvas { display:none; } .act { position:relative; left:auto; right:auto; top:auto; width:auto; margin:0; transform:none!important; opacity:1!important; padding:8rem clamp(1.25rem,7vw,7rem) 0; } .act--center, .act--end { text-align:left; } .act--center .lede, .act--end .lede { margin-left:0; } .act--end .actions { justify-content:flex-start; } .scroll-cue, .progress, .frame { display:none; } .copy-stack { padding-bottom:4rem; } .intro-brand { bottom:1.5rem; } .scroll-cue { animation:none; } }
+  </style>
+</head>
+<body>
+  <main>
+    <section class="horse-runway" aria-label="Cedar Trail Riders introduction" data-horse-runway>
+      <div class="horse-stage">
+        <canvas aria-hidden="true" data-horse-canvas></canvas>
+        <div class="grain"></div>
+        <div class="progress" data-horse-progress></div>
+        <div class="topbar">
+          <a class="brand" href="#top" aria-label="Cedar Trail Riders home"><span class="brand-mark">CTR</span><span>Cedar Trail Riders</span></a>
+          <a class="nav-link" href="#trails">Our trails</a>
+        </div>
+        <div class="frame" aria-hidden="true"><i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i></div>
+
+        <div class="copy-stack">
+          <div class="act act--intro" data-horse-act="intro">
+            <p class="eyebrow">Lebanon's First Equestrian Tourism Experience</p>
+            <h1>Explore Lebanon<br>on Horseback</h1>
+            <p class="lede">From the Shouf mountains to the sea, discover Lebanon at a slower pace on treks from one hour to eight unforgettable days.</p>
+            <div class="actions"><a class="button button--gold" href="/contact/">Book Today</a><a class="button button--ghost" href="#trails">Explore the Trails</a></div>
+            <div class="chips" aria-label="Cedar Trail Riders highlights"><span class="chip">★ 4.9 Google</span><span class="chip">Guides in Arabic / English / French</span><span class="chip">Operating all over Lebanon</span></div>
+          </div>
+          <div class="act act--center" data-horse-act="middle" aria-hidden="true">
+            <p class="eyebrow" style="justify-content:center">Move with the land</p>
+            <h2>Follow the rhythm<br>of Lebanon</h2>
+            <p class="lede">Cedar shade, river crossings, open ridgelines — made more meaningful from the saddle.</p>
+          </div>
+          <div class="act act--end" data-horse-act="end" aria-hidden="true">
+            <p class="eyebrow" style="justify-content:flex-end">Your next story</p>
+            <h2>The trail is<br>waiting.</h2>
+            <p class="lede">Choose your pace. We will take care of the rest.</p>
+            <div class="actions"><a class="button button--gold" href="/contact/">Plan your ride</a></div>
+          </div>
+        </div>
+        <div class="intro-brand" aria-label="Cedar Trail Riders"><strong>CTR</strong><span>Ride<br>Lebanon</span></div>
+        <div class="scroll-cue" data-horse-scroll-cue><i></i>Scroll to ride</div>
+      </div>
+    </section>
+
+    <section class="content" id="trails" aria-labelledby="trails-title">
+      <p class="section-label">Find your ride</p>
+      <h2 id="trails-title">Every route has a view worth slowing down for.</h2>
+      <div class="trails">
+        <article class="trail"><p>1–3 hours</p><h3>Forest &amp; river</h3></article>
+        <article class="trail"><p>Half &amp; full day</p><h3>Mountain horizon</h3></article>
+        <article class="trail"><p>Multi-day</p><h3>The Lebanon crossing</h3></article>
+      </div>
+    </section>
+  </main>
+  <footer><span>© Cedar Trail Riders</span><span>Lebanon · Equestrian tourism</span></footer>
+
+  <noscript><style>.horse-runway{height:auto}.horse-stage{position:relative;min-height:47rem}.horse-stage canvas,.progress,.frame,.scroll-cue{display:none}.act{position:relative;left:auto;right:auto;top:auto;transform:none!important;opacity:1!important;padding:8rem clamp(1.25rem,7vw,7rem) 0}.act--center,.act--end{text-align:left}.act--end .actions{justify-content:flex-start}.copy-stack{padding-bottom:4rem}</style></noscript>
+  <script>
+    (() => {
+      const runway = document.querySelector('[data-horse-runway]');
+      const canvas = document.querySelector('[data-horse-canvas]');
+      const ctx = canvas.getContext('2d', { alpha: false });
+      const progressBar = document.querySelector('[data-horse-progress]');
+      const cue = document.querySelector('[data-horse-scroll-cue]');
+      const acts = { intro: document.querySelector('[data-horse-act="intro"]'), middle: document.querySelector('[data-horse-act="middle"]'), end: document.querySelector('[data-horse-act="end"]') };
+      const motionOff = window.matchMedia('(prefers-reduced-motion: reduce)');
+      if (motionOff.matches) return;
+
+      const video = document.createElement('video');
+      video.preload = 'auto'; video.muted = true; video.playsInline = true;
+      video.src = 'assets/horse-river-hero.mp4';
+      const poster = new Image(); poster.src = 'assets/poster.webp';
+      let duration = 5.5, targetTime = -1, raf = 0, drawPending = false;
+
+      function resizeCanvas() {
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        const { width, height } = canvas.getBoundingClientRect();
+        canvas.width = Math.max(1, Math.round(width * dpr)); canvas.height = Math.max(1, Math.round(height * dpr));
+        drawFrame(video.readyState >= 2 ? video : poster);
+      }
+      function drawFrame(source) {
+        if (!source || !canvas.width) return;
+        const sw = source.videoWidth || source.naturalWidth, sh = source.videoHeight || source.naturalHeight;
+        if (!sw || !sh) return;
+        const cw = canvas.width, ch = canvas.height, scale = Math.max(cw / sw, ch / sh);
+        const dw = sw * scale, dh = sh * scale;
+        ctx.fillStyle = '#463a29'; ctx.fillRect(0, 0, cw, ch);
+        ctx.drawImage(source, (cw - dw) / 2, (ch - dh) / 2, dw, dh);
+      }
+      function visibilityFor(p, from, to, feather = .09) {
+        return Math.max(0, Math.min(1, Math.min((p - from) / feather, (to - p) / feather, 1)));
+      }
+      function setAct(el, amount) {
+        el.style.opacity = amount.toFixed(3);
+        el.style.transform = el.classList.contains('act--center') ? `translate(-50%, calc(-50% + ${(1 - amount) * 18}px))` : `translateY(calc(-50% + ${(1 - amount) * 18}px))`;
+        el.style.pointerEvents = amount > .35 ? 'auto' : 'none';
+        el.setAttribute('aria-hidden', String(amount < .35));
+      }
+      function render() {
+        raf = 0;
+        const rect = runway.getBoundingClientRect();
+        const range = Math.max(1, rect.height - innerHeight);
+        const p = Math.max(0, Math.min(1, -rect.top / range));
+        progressBar.style.transform = `scaleX(${p})`;
+        cue.style.opacity = Math.max(0, 1 - p * 8);
+        setAct(acts.intro, visibilityFor(p, 0, .36));
+        setAct(acts.middle, visibilityFor(p, .30, .71));
+        setAct(acts.end, visibilityFor(p, .64, 1.09));
+        const next = Math.min(Math.max(0, p * Math.max(.01, duration - .035)), Math.max(0, duration - .035));
+        if (video.readyState >= 2 && Math.abs(next - targetTime) > .018) {
+          targetTime = next;
+          try { video.currentTime = next; } catch (_) {}
+        }
+      }
+      function requestRender() { if (!raf) raf = requestAnimationFrame(render); }
+      poster.addEventListener('load', () => { resizeCanvas(); drawFrame(poster); });
+      video.addEventListener('loadedmetadata', () => { duration = video.duration || duration; resizeCanvas(); requestRender(); });
+      video.addEventListener('seeked', () => { drawPending = false; drawFrame(video); });
+      video.addEventListener('loadeddata', () => { drawFrame(video); });
+      video.addEventListener('error', () => { drawFrame(poster); });
+      window.addEventListener('resize', resizeCanvas, { passive:true });
+      window.addEventListener('scroll', requestRender, { passive:true });
+      resizeCanvas(); requestRender();
+    })();
+  </script>
+</body>
+</html>

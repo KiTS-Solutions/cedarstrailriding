@@ -33,3 +33,6 @@ pnpm-debug.log*
 # local agent tooling (session scratch, worktrees)
 .superpowers/
 .claude/
+
+# browser automation session scratch
+.playwright-mcp/
