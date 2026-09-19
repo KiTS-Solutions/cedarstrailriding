@@ -151,7 +151,12 @@ function upgrade(root: HTMLElement): void {
   const portrait = matchMedia(
     "(max-width: 767px) and (orientation: portrait)",
   ).matches;
-  const src = portrait ? root.dataset.videoMobile : root.dataset.videoDesktop;
+  const smallLandscape = matchMedia("(max-height: 500px) and (pointer: coarse)").matches;
+  const src = portrait
+    ? root.dataset.videoMobile
+    : smallLandscape
+      ? (root.dataset.videoCompact ?? root.dataset.videoDesktop)
+      : root.dataset.videoDesktop;
   if (!src) throw new HeroError("missing data-video-* source");
 
   const video = document.createElement("video");
