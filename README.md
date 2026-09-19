@@ -78,6 +78,8 @@ controller `src/scripts/scroll-hero.ts`, ambient droplets `src/scripts/hero-fx.t
   `DESKTOP_CRF=26 scripts/encode-hero.sh <master.mp4> 0.8 0.05`. The 4K master is **not** in this repo;
   it lives outside it as `horse-hero/assets/horse-river-original.mp4` in the client's working copy.
 - **Tests:** `npm run test:unit` (hero maths), `npm run test:e2e` (hero smoke tests in `tests/smoke.spec.ts`).
+  If port 4321 is busy (e.g. a running `astro dev`), use `PORT=4399 npm run test:e2e` — the
+  Playwright config builds and serves `dist/` on that port instead.
 - **Capability gate:** `prefers-reduced-motion`, Save-Data, 2g/3g effective connection, or
   `deviceMemory < 4` get the static hero (poster, no video request); everyone else gets scrub mode.
 - **Licence:** the clip is AI-generated; see `PRELAUNCH_CHECKLIST.md` (Hero video) for the sign-off item.

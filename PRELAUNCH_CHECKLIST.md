@@ -54,7 +54,8 @@ it should be resolved before the site goes live publicly.
       `DESKTOP_CRF=26 scripts/encode-hero.sh <master.mp4> 0.8 0.05`).
 - [ ] Native review of new hero copy (EN Act II/III + AR/FR `hero.*`), see `src/i18n/REVIEW_NOTES.md`.
 - [ ] Phone crop pans 0.8→0.05; at ~2.8 s the portrait crop cuts the horse's head — accepted, revisit with real footage.
-- [ ] Run Lighthouse on `/`, `/ar/`, `/fr/` at 375px and 1440px (LCP < 2.5s, CLS < 0.1).
+- [ ] Lighthouse on `/`, `/ar/`, `/fr/` at 375px and 1440px (LCP < 2.5s, CLS < 0.1) — the
+      authoritative item, with measured numbers; re-run it at launch on the real (not local) build.
       Measured 2026-09-19 (Lighthouse 13.5.0, local build): mobile simulated-throttling LCP ≈ 3.7 s
       on all three locales and also on `/faq/` (hero-free control 3.68 s), so a site-wide baseline,
       likely render-blocking CSS/fonts; DevTools-throttled LCP for `/` = 2.23 s; desktop LCP ≈ 0.76 s;
@@ -63,10 +64,19 @@ it should be resolved before the site goes live publicly.
       the static stage fill the viewport, after which desktop Lighthouse CLS is 0.000 on `/` (3 runs),
       `/ar/` and `/fr/` (desktop LCP 0.76-0.77 s). Action: investigate site-wide critical CSS / font
       loading before launch.
+- [ ] Real-device pass: iPhone Safari and a mid-range Android on real mobile data. Check the
+      poster→canvas seam, whether the hero video actually decodes and scrubs (iOS may not decode
+      an element that is never attached/played), and whether the 2.37 MB mobile fetch is acceptable.
+      Also: landscape phones currently receive the 4.68 MB desktop encode — decide whether to key
+      the source on the smaller viewport dimension / `(pointer: coarse)`.
+- [ ] Schedule the site-wide LCP work as its own task: render-blocking CSS/fonts and a preload of
+      the LCP poster in the `BaseLayout` head. The hero is not the cause (hero-free `/faq/` control
+      measures the same mobile LCP).
 
 ## Technical QA before going live
-- [ ] Run Lighthouse (target LCP < 2.5s, CLS < 0.1 per KiTS standards) once real imagery
-      replaces the placeholders — image weight will change the numbers.
+- [ ] Re-run Lighthouse once real imagery replaces the placeholders — image weight will change
+      the numbers. Targets and current measurements live in the "Hero video" Lighthouse item
+      above (this is the launch-time re-run and is NOT done yet).
 - [ ] Validate JSON-LD with Google's Rich Results Test (LocalBusiness/TouristTrip on
       home + contact, FAQPage on `/faq`, BreadcrumbList sitewide).
 - [ ] Test every page at `dir="rtl"` (`/ar/...`) for layout mirroring issues.

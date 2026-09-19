@@ -3,6 +3,18 @@
 Status: approved in chat 2026-09-19; pending written-spec review.
 Source prototype: `horse-hero/` (index.html, drop-in.html, assets/).
 
+## As-built deviations
+
+Where the shipped hero differs from this spec (the rest of the document is unchanged):
+
+- Posters are WebP only (no AVIF); the poster is video frame t=0.
+- The static hero fills the viewport (no compact static hero) — this removed the desktop CLS.
+- Light shafts (CSS gradient) shipped instead of CSS pollen.
+- Asset filenames: `poster-{desktop,mobile}.webp` and `ride-{desktop,mobile}.mp4`; desktop encode CRF 26.
+- Soft snap excludes the first chapter (the start position); snap is also suppressed while a
+  pointer or finger is held.
+- Measured numbers and open launch items: README "Hero" section and `PRELAUNCH_CHECKLIST.md`.
+
 ## Decisions (from interview)
 
 | Topic | Decision |
