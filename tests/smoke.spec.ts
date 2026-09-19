@@ -634,4 +634,33 @@ test.describe("Scroll hero", () => {
         .toEqual([["event", "hero_cta_click", { cta: "dock-whatsapp" }]]);
     });
   });
+
+  test.describe("static hero fills the fold", () => {
+    test.use({ reducedMotion: "reduce" });
+    for (const vp of [
+      { width: 375, height: 812 },
+      { width: 1440, height: 900 },
+    ]) {
+      test(`static hero bottom sits at the viewport bottom (${vp.width}x${vp.height})`, async ({
+        page,
+      }) => {
+        await page.setViewportSize(vp);
+        await page.goto("/");
+        await expect(page.locator("[data-hero]")).toHaveAttribute(
+          "data-mode",
+          "static",
+        );
+        await page.waitForLoadState("networkidle");
+        const bottom = await page.evaluate(
+          () =>
+            document
+              .querySelector("[data-hero-stage]")!
+              .getBoundingClientRect().bottom,
+        );
+        // +8: at 375px the copy itself is ~5px taller than the min-height, so content wins.
+        expect(bottom).toBeLessThanOrEqual(vp.height + 8);
+        expect(bottom).toBeGreaterThanOrEqual(vp.height - 8);
+      });
+    }
+  });
 });

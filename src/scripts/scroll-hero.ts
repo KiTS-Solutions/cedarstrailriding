@@ -82,9 +82,22 @@ function setActActive(act: HTMLElement, active: boolean): void {
   act.style.pointerEvents = active ? "" : "none";
 }
 
+// Static flow: everything above the hero (header, mobile nav row, trust bar) counts, so the
+// stage fills exactly the rest of the viewport. Scrub mode: only the sticky header does.
+function syncHeroTop(root: HTMLElement): void {
+  const header = document.querySelector<HTMLElement>("header");
+  const top =
+    root.dataset.mode === "scrub"
+      ? (header?.offsetHeight ?? 0)
+      : root.getBoundingClientRect().top + window.scrollY;
+  root.style.setProperty("--hero-top", `${Math.round(top)}px`);
+}
+
 export function initScrollHero(root: HTMLElement): void {
   try {
     wireSkip(root);
+    syncHeroTop(root);
+    window.addEventListener("resize", () => syncHeroTop(root));
 
     const hints = navigator as NavigatorWithHints;
     const enabled = canScrub({
@@ -124,17 +137,11 @@ function upgrade(root: HTMLElement): void {
     ]),
   );
 
-  const header = document.querySelector<HTMLElement>("body > header, header");
-  const syncHeaderOffset = (): void => {
-    if (header)
-      root.style.setProperty("--hero-top", `${header.offsetHeight}px`);
-  };
-  syncHeaderOffset();
-
   const dock = root.querySelector<HTMLElement>("[data-hero-dock]");
   if (dock) setFocusable(dock, false); // dock starts off; keep it out of the tab order
 
   root.dataset.mode = "scrub";
+  syncHeroTop(root);
 
   // ---- Video: lazily fetched after first paint, source chosen by viewport ----
   const portrait = matchMedia(
@@ -179,7 +186,6 @@ function upgrade(root: HTMLElement): void {
   };
 
   const resize = (): void => {
-    syncHeaderOffset();
     const rect = canvas.getBoundingClientRect();
     const dpr = Math.min(window.devicePixelRatio || 1, portrait ? 1.5 : 2);
     canvas.width = Math.max(1, Math.round(rect.width * dpr));
