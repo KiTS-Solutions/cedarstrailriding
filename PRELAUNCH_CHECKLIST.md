@@ -90,5 +90,6 @@ it should be resolved before the site goes live publicly.
 ## Mobile UX (2026-09-20 pass)
 - [x] Sticky bottom WhatsApp/Call bar (mobile), compact collapsible menu, 44px tap targets, booking-form input hints (autocomplete/inputmode/+961 placeholder), LTR phone numbers in AR, theme-color + viewport-fit.
 - [ ] Native review of `nav.menu` AR/FR label (see `src/i18n/REVIEW_NOTES.md`).
-- [ ] Landscape phones still get the 4.68 MB desktop hero clip (mobile clip is a portrait crop) — consider a mid-size encode.
-- [ ] Not yet done: apple-touch-icon + web manifest, minimum 14px for hero rail numbers/chips, hero chips as a scrollable row, real-device test of the sticky bar over the scrub hero.
+- [x] Landscape phones (`max-height:500px` + coarse pointer) now get a 1.5 MB 854x480 clip (`ride-compact.mp4`) instead of the 4.68 MB desktop one. Needs real-device check.
+- [x] Favicon/apple-touch-icon/manifest icons generated from the CTR badge (replaced the default Astro favicon); hero small text raised to 13px.
+- [ ] Still open: hero chips as a scrollable row, real-device test of the sticky bar over the scrub hero, tap-to-play/poster-only mode for very slow connections (2g/3g).
