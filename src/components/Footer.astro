@@ -28,8 +28,8 @@ const companyLinks = [
 
 <footer class="bg-cedar-deep text-warm-white">
   <div class="mx-auto max-w-7xl px-4 py-12 sm:px-6">
-    <div class="grid gap-10 md:grid-cols-[2fr_1fr_1fr_1fr_1.4fr]">
-      <div>
+    <div class="grid grid-cols-2 gap-x-6 gap-y-8 md:grid-cols-[2fr_1fr_1fr_1fr_1.4fr] md:gap-10">
+      <div class="col-span-2 md:col-span-1">
         <p class="font-display text-xl font-semibold">{brand.name}</p>
         <p class="mt-2 max-w-xs text-sm text-warm-white/80">{brand.positioning}</p>
         <p class="mt-3 text-sm text-gold">{t("label.managedBy")}</p>
@@ -37,11 +37,11 @@ const companyLinks = [
 
       <div>
         <h3 class="text-sm font-semibold uppercase tracking-wide text-gold">{t("footer.explore")}</h3>
-        <ul class="mt-3 space-y-2 text-sm">
+        <ul class="mt-2 text-sm">
           {
             exploreLinks.map((link) => (
               <li>
-                <a href={path(link.route, locale)} class="hover:underline">
+                <a href={path(link.route, locale)} class="footer-link">
                   {link.label}
                 </a>
               </li>
@@ -52,11 +52,11 @@ const companyLinks = [
 
       <div>
         <h3 class="text-sm font-semibold uppercase tracking-wide text-gold">{t("footer.company")}</h3>
-        <ul class="mt-3 space-y-2 text-sm">
+        <ul class="mt-2 text-sm">
           {
             companyLinks.map((link) => (
               <li>
-                <a href={path(link.route, locale)} class="hover:underline">
+                <a href={path(link.route, locale)} class="footer-link">
                   {link.label}
                 </a>
               </li>
@@ -65,23 +65,23 @@ const companyLinks = [
         </ul>
       </div>
 
-      <div>
+      <div class="col-span-2 md:col-span-1">
         <h3 class="text-sm font-semibold uppercase tracking-wide text-gold">{t("footer.contact")}</h3>
-        <ul class="mt-3 space-y-2 text-sm">
-          <li><a href={`tel:${contact.phones[0]?.replace(/\s+/g, "")}`} class="hover:underline">{contact.phones[0]}</a></li>
-          <li><a href={`tel:${contact.phones[1]?.replace(/\s+/g, "")}`} class="hover:underline">{contact.phones[1]}</a></li>
-          <li><a href={`mailto:${contact.email}`} class="hover:underline">{contact.email}</a></li>
-          <li><WhatsAppButton label={t("cta.whatsapp")} class="mt-1 !bg-gold !text-cedar-deep !py-1.5 !px-4 text-sm" /></li>
+        <ul class="mt-2 text-sm">
+          <li><a href={`tel:${contact.phones[0]?.replace(/\s+/g, "")}`} class="footer-link">{contact.phones[0]}</a></li>
+          <li><a href={`tel:${contact.phones[1]?.replace(/\s+/g, "")}`} class="footer-link">{contact.phones[1]}</a></li>
+          <li><a href={`mailto:${contact.email}`} class="footer-link">{contact.email}</a></li>
+          <li><WhatsAppButton label={t("cta.whatsapp")} class="mt-1 min-h-11 !bg-gold !px-5 !text-cedar-deep text-sm" /></li>
         </ul>
         <h3 class="mt-6 text-sm font-semibold uppercase tracking-wide text-gold">{t("footer.follow")}</h3>
-        <ul class="mt-3 space-y-2 text-sm">
-          <li><a href={brand.instagram} target="_blank" rel="noopener noreferrer" class="hover:underline">@{brand.instagram.split("/").filter(Boolean).pop()}</a></li>
-          <li><a href={social.instagram_parent.handle ? `https://www.instagram.com/${social.instagram_parent.handle}/` : "#"} target="_blank" rel="noopener noreferrer" class="hover:underline">@{social.instagram_parent.handle}</a></li>
-          <li><a href={brand.facebook} target="_blank" rel="noopener noreferrer" class="hover:underline">Facebook</a></li>
+        <ul class="mt-2 text-sm">
+          <li><a href={brand.instagram} target="_blank" rel="noopener noreferrer" class="footer-link">@{brand.instagram.split("/").filter(Boolean).pop()}</a></li>
+          <li><a href={social.instagram_parent.handle ? `https://www.instagram.com/${social.instagram_parent.handle}/` : "#"} target="_blank" rel="noopener noreferrer" class="footer-link">@{social.instagram_parent.handle}</a></li>
+          <li><a href={brand.facebook} target="_blank" rel="noopener noreferrer" class="footer-link">Facebook</a></li>
         </ul>
       </div>
 
-      <div class="flex flex-col items-center gap-4 md:items-end">
+      <div class="col-span-2 flex flex-col items-center gap-4 md:col-span-1 md:items-end">
         <LebanonMap label={t("footer.lebanonMapLabel")} class="text-gold" />
         <div class="flex flex-wrap items-center justify-center gap-2 md:justify-end">
           {
@@ -94,11 +94,11 @@ const companyLinks = [
                   class="rounded-lg transition-transform hover:scale-105"
                   title={entry.name}
                 >
-                  <img src={entry.logoSrc} alt={entry.name} class="h-20 w-20 rounded-lg object-contain" />
+                  <img src={entry.logoSrc} alt={entry.name} width="80" height="80" loading="lazy" class="h-20 w-20 rounded-lg object-contain" />
                 </a>
               ) : (
                 <span class="rounded-lg" title={entry.name}>
-                  <img src={entry.logoSrc} alt={entry.name} class="h-20 w-20 rounded-lg object-contain" />
+                  <img src={entry.logoSrc} alt={entry.name} width="80" height="80" loading="lazy" class="h-20 w-20 rounded-lg object-contain" />
                 </span>
               ),
             )

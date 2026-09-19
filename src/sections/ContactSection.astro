@@ -14,16 +14,16 @@ const t = useTranslations(locale);
 const mapSrc = `https://www.google.com/maps?q=${contact.coordinates.lat},${contact.coordinates.lng}&z=13&output=embed`;
 ---
 
-<section class="mx-auto max-w-5xl px-4 py-16 sm:px-6">
+<section class="mx-auto max-w-5xl px-4 py-12 sm:px-6 sm:py-16">
   <h1 class="text-center font-display text-4xl font-semibold text-cedar-deep">{t("home.contactHeading")}</h1>
   <p class="mx-auto mt-4 max-w-2xl text-center text-ink/80">{t("contact.body")}</p>
 
-  <div class="mt-8 flex flex-wrap items-center justify-center gap-4">
-    <WhatsAppButton label={t("cta.whatsapp")} />
-    <a href={`tel:${contact.phones[0]?.replace(/\s+/g, "")}`} class="btn-secondary">
+  <div class="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-center sm:gap-4">
+    <WhatsAppButton label={t("cta.whatsapp")} class="min-h-12" />
+    <a href={`tel:${contact.phones[0]?.replace(/\s+/g, "")}`} class="btn-secondary min-h-12">
       {t("cta.call")} {contact.phones[0]}
     </a>
-    <a href={`tel:${contact.phones[1]?.replace(/\s+/g, "")}`} class="btn-secondary">
+    <a href={`tel:${contact.phones[1]?.replace(/\s+/g, "")}`} class="btn-secondary min-h-12">
       {t("cta.call")} {contact.phones[1]}
     </a>
   </div>

@@ -8,6 +8,9 @@
   "nav.gallery": "Galerie",
   "nav.faq": "FAQ",
   "nav.contact": "Réserver / Contact",
+  "nav.menu": "Menu",
+  "nav.close": "Fermer le menu",
+  "a11y.skip": "Aller au contenu",
 
   "cta.book": "Réserver",
   "cta.plan": "Planifier ma balade",

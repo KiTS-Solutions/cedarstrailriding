@@ -754,3 +754,95 @@ test.describe("Scroll hero", () => {
     expect(box!.x).toBeLessThan(vw / 2);
   });
 });
+
+test.describe("Mobile layout", () => {
+  test.use({ viewport: { width: 375, height: 812 }, hasTouch: true });
+
+  // Regression: an unpinned sr-only skip link and an unshrinkable form grid both widened the
+  // page in RTL / at 320px, producing sideways scroll.
+  for (const route of [
+    "/",
+    "/ar/",
+    "/contact/",
+    "/ar/contact/",
+    "/fr/contact/",
+  ]) {
+    test(`no horizontal overflow at 320px (${route})`, async ({ page }) => {
+      await page.setViewportSize({ width: 320, height: 740 });
+      await page.goto(route);
+      const { scrollWidth, clientWidth } = await page.evaluate(() => ({
+        scrollWidth: document.documentElement.scrollWidth,
+        clientWidth: document.documentElement.clientWidth,
+      }));
+      expect(scrollWidth).toBe(clientWidth);
+    });
+  }
+
+  test("menu drawer opens, lists the nav, and closes on Escape", async ({
+    page,
+  }) => {
+    await page.goto("/trails/");
+    const toggle = page.getByRole("button", { name: "Menu", exact: true });
+    await expect(toggle).toHaveAttribute("aria-expanded", "false");
+    await toggle.click();
+    const drawer = page.getByRole("dialog", { name: "Menu" });
+    await expect(drawer).toBeVisible();
+    await expect(toggle).toHaveAttribute("aria-expanded", "true");
+    await expect(drawer.getByRole("link", { name: "Gallery" })).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(drawer).toBeHidden();
+    await expect(toggle).toHaveAttribute("aria-expanded", "false");
+  });
+
+  test("Arabic drawer slides in from the left edge (inline-end in RTL)", async ({
+    page,
+  }) => {
+    await page.goto("/ar/trails/");
+    await page.getByRole("button", { name: "القائمة" }).click();
+    const drawer = page.getByRole("dialog");
+    await expect(drawer).toBeVisible();
+    await expect.poll(async () => (await drawer.boundingBox())!.x).toBe(0);
+  });
+
+  test("drawer nav targets are at least 44px tall", async ({ page }) => {
+    await page.goto("/trails/");
+    await page.getByRole("button", { name: "Menu", exact: true }).click();
+    for (const link of await page.getByRole("dialog").getByRole("link").all()) {
+      expect((await link.boundingBox())!.height).toBeGreaterThanOrEqual(44);
+    }
+  });
+
+  test("sticky Book/WhatsApp bar shows on content pages and yields to the booking form", async ({
+    page,
+  }) => {
+    await page.goto("/trails/");
+    const bar = page.locator("#sticky-cta");
+    await expect(bar).toBeVisible();
+    await expect(bar).not.toHaveAttribute("data-hidden", "true");
+    await page.goto("/contact/");
+    await expect(bar).toHaveAttribute("data-hidden", "true");
+  });
+
+  test("shows one compact horse placeholder on phones, not three", async ({
+    page,
+  }) => {
+    await page.goto("/horses/");
+    const placeholders = page.getByText("Coming soon", { exact: false });
+    await expect(placeholders).toHaveCount(3);
+    const visible = await placeholders.evaluateAll(
+      (els) =>
+        els.filter((el) => (el as HTMLElement).offsetParent !== null).length,
+    );
+    expect(visible).toBe(1);
+  });
+
+  test("form controls are 48px tall and paired fields sit side by side", async ({
+    page,
+  }) => {
+    await page.goto("/contact/");
+    const date = await page.locator('input[name="date"]').boundingBox();
+    const riders = await page.locator('input[name="riders"]').boundingBox();
+    expect(date!.height).toBeGreaterThanOrEqual(48);
+    expect(Math.abs(date!.y - riders!.y)).toBeLessThan(2);
+  });
+});

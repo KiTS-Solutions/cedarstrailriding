@@ -8,6 +8,9 @@
   "nav.gallery": "Gallery",
   "nav.faq": "FAQ",
   "nav.contact": "Book / Contact",
+  "nav.menu": "Menu",
+  "nav.close": "Close menu",
+  "a11y.skip": "Skip to content",
 
   "cta.book": "Book Today",
   "cta.plan": "Plan my ride",

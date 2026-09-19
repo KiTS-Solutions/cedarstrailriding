@@ -19,6 +19,11 @@
     scroll-behavior: smooth;
   }
 
+  /* Lock page scroll behind the mobile menu drawer (modal <dialog>). */
+  html:has(dialog[open]) {
+    overflow: hidden;
+  }
+
   body {
     background-color: var(--color-warm-white);
     color: var(--color-ink);
@@ -77,5 +82,29 @@
 
   .chip-adventure {
     @apply inline-block rounded-full bg-terracotta/15 px-3 py-1 text-sm font-medium text-terracotta;
+  }
+
+  /* Form controls: 48px tall, 16px text (stops iOS zoom-on-focus), and min-w-0 so native
+     date/select controls can shrink inside grid columns instead of forcing horizontal scroll. */
+  .field {
+    @apply min-h-12 w-full min-w-0 rounded-lg border border-cedar-deep/20 bg-white px-3 py-2 text-base;
+  }
+
+  /* Footer links: full 44px touch height without changing the visual rhythm. */
+  .footer-link {
+    @apply flex min-h-11 items-center hover:underline;
+  }
+
+  /* Phone: swipeable row with the next card peeking in (signals scrollability); sm+: a normal grid
+     whose column count the section sets. Snap points are logical, so RTL just works. */
+  .snap-row {
+    @apply -mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-px-4 px-4 pb-3 sm:mx-0 sm:grid sm:snap-none sm:overflow-visible sm:px-0 sm:pb-0;
+    scrollbar-width: none;
+  }
+  .snap-row > * {
+    @apply w-[82%] shrink-0 snap-start sm:w-auto;
+  }
+  .snap-row:focus-visible {
+    @apply outline-2 outline-offset-2 outline-cedar-deep;
   }
 }
