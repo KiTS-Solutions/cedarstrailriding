@@ -31,6 +31,7 @@ const SEEK_EPSILON = 0.018;
 const OPACITY_EPSILON = 0.005;
 const FOCUS_THRESHOLD = 0.35;
 const SNAP_IDLE_MS = 160;
+const MOVED_THRESHOLD = 0.02;
 
 class HeroError extends Error {
   constructor(message: string) {
@@ -230,6 +231,7 @@ function upgrade(root: HTMLElement): void {
   let snapTimer = 0;
   let pointerHeld = false; // mouse / pen button
   let touchHeld = false; // one or more fingers down
+  let moved = false;
   const reached = new Set<string>();
   const lastOpacity: Record<ActName, number> = {
     intro: -1,
@@ -278,7 +280,9 @@ function upgrade(root: HTMLElement): void {
         else link.removeAttribute("aria-current");
       });
       const chapter = CHAPTERS[idx];
-      if (chapter && !reached.has(chapter.id)) {
+      // Not until the user has actually scrolled: the opening chapter is not "reached" at load.
+      if (p > MOVED_THRESHOLD) moved = true;
+      if (moved && chapter && !reached.has(chapter.id)) {
         reached.add(chapter.id);
         track("hero_chapter_reached", { chapter: chapter.id });
       }

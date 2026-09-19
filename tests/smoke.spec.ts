@@ -577,4 +577,61 @@ test.describe("Scroll hero", () => {
       );
     });
   });
+
+  test.describe("analytics", () => {
+    type Call = unknown[];
+    const stubGtag = (page: Page) =>
+      page.addInitScript(() => {
+        const w = window as unknown as {
+          __calls: unknown[][];
+          gtag: (...a: unknown[]) => void;
+        };
+        w.__calls = [];
+        w.gtag = (...a: unknown[]) => {
+          w.__calls.push(a);
+        };
+      });
+    const calls = (page: Page) =>
+      page.evaluate(() => (window as unknown as { __calls: Call[] }).__calls);
+    const named = (all: Call[], name: string) =>
+      all.filter((c) => c[0] === "event" && c[1] === name);
+
+    test("no chapter is reported at load; river is reported once after scrolling", async ({
+      page,
+    }) => {
+      await stubGtag(page);
+      await page.goto("/");
+      await expect(page.locator("[data-hero]")).toHaveAttribute(
+        "data-mode",
+        "scrub",
+      );
+      await page.waitForTimeout(700);
+      expect(named(await calls(page), "hero_chapter_reached")).toEqual([]);
+      await scrollToProgress(page, 0.5);
+      await expect
+        .poll(async () => named(await calls(page), "hero_chapter_reached"))
+        .toEqual([["event", "hero_chapter_reached", { chapter: "river" }]]);
+      await page.waitForTimeout(300);
+      expect(named(await calls(page), "hero_chapter_reached")).toHaveLength(1);
+    });
+
+    test("dock WhatsApp click is tracked as dock-whatsapp", async ({ page }) => {
+      await stubGtag(page);
+      await page.context().route(/wa\.me/, (route) => route.abort());
+      await page.goto("/");
+      await expect(page.locator("[data-hero]")).toHaveAttribute(
+        "data-mode",
+        "scrub",
+      );
+      await scrollToProgress(page, 0.5);
+      await expect(page.locator("[data-hero]")).toHaveAttribute(
+        "data-dock",
+        "on",
+      );
+      await page.locator('[data-hero-cta="dock-whatsapp"]').click();
+      await expect
+        .poll(async () => named(await calls(page), "hero_cta_click"))
+        .toEqual([["event", "hero_cta_click", { cta: "dock-whatsapp" }]]);
+    });
+  });
 });
