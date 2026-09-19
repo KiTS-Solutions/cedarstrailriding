@@ -29,3 +29,7 @@ pnpm-debug.log*
 /blob-report/
 /playwright/.cache/
 /playwright/.auth/
+
+# local agent tooling (session scratch, worktrees)
+.superpowers/
+.claude/

@@ -46,7 +46,6 @@ const chapters = [
           width="1600"
           height="900"
           fetchpriority="high"
-          decoding="async"
           class="ctr-hero__poster"
         />
       </picture>
@@ -588,7 +587,7 @@ const chapters = [
     display: block;
     position: absolute;
     inset: 0;
-    z-index: 5;
+    z-index: 0; /* above the video/scrim, below the copy (.ctr-hero__acts is z-index 1) */
     width: 100%;
     height: 100%;
     pointer-events: none;

@@ -1,14 +1,18 @@
 import { defineConfig, devices } from "@playwright/test";
 
+// Override to dodge a busy 4321: `PORT=4399 npm run test:e2e`.
+const PORT = Number(process.env.PORT ?? 4321);
+
 export default defineConfig({
   testDir: "./tests",
+  testIgnore: "unit/**",
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
   reporter: "html",
   use: {
-    baseURL: "http://localhost:4321",
+    baseURL: `http://localhost:${PORT}`,
     trace: "on-first-retry",
   },
 
@@ -23,8 +27,8 @@ export default defineConfig({
     // `astro preview` detaches into a managed background process in this Astro
     // version, which doesn't fit Playwright's foreground-process contract — see
     // scripts/static-server.mjs for why we serve the build output ourselves instead.
-    command: "npm run build && node scripts/static-server.mjs",
-    url: "http://localhost:4321",
+    command: `npm run build && PORT=${PORT} node scripts/static-server.mjs`,
+    url: `http://localhost:${PORT}`,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
   },

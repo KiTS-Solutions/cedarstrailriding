@@ -1,4 +1,6 @@
 import { test, expect, type Page } from "@playwright/test";
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 
 test.describe("Home page", () => {
   test("renders the hero and primary nav", async ({ page }) => {
@@ -726,5 +728,29 @@ test.describe("Scroll hero", () => {
       "scrub",
     );
     expect(errors).toEqual([]);
+  });
+
+  test("French: scrub hero, LTR, FR headline, rail on the left", async ({
+    page,
+  }) => {
+    const fr = JSON.parse(
+      readFileSync(
+        fileURLToPath(new URL("../src/i18n/locales/fr.json", import.meta.url)),
+        "utf8",
+      ),
+    ) as Record<string, string>;
+    await page.goto("/fr/");
+    await expect(page.locator("[data-hero]")).toHaveAttribute(
+      "data-mode",
+      "scrub",
+    );
+    await expect(page.locator("html")).toHaveAttribute("lang", "fr");
+    await expect(page.locator("html")).toHaveAttribute("dir", "ltr");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+      fr["brand.hero"]!,
+    );
+    const box = await page.locator(".ctr-hero__rail").boundingBox();
+    const vw = page.viewportSize()!.width;
+    expect(box!.x).toBeLessThan(vw / 2);
   });
 });
