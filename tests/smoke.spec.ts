@@ -846,3 +846,46 @@ test.describe("Mobile layout", () => {
     expect(Math.abs(date!.y - riders!.y)).toBeLessThan(2);
   });
 });
+
+test.describe("Mobile UX", () => {
+  test.use({ viewport: { width: 390, height: 844 } });
+
+  // The bar deliberately yields to the hero (which has its own dock) and to the booking form,
+  // so it is asserted on content pages rather than on "/" or "/contact/".
+  for (const path of ["/trails/", "/ar/trails/", "/fr/trails/"]) {
+    test(`sticky WhatsApp/Call bar and 44px targets (${path})`, async ({ page }) => {
+      await page.goto(path);
+      const bar = page.locator("[data-sticky-contact]");
+      await expect(bar).toBeVisible();
+      await expect(bar.locator('a[href^="https://wa.me/"]')).toBeVisible();
+      await expect(bar.locator('a[href^="tel:"]')).toBeVisible();
+      const heights = await bar
+        .locator("a")
+        .evaluateAll((els) => els.map((e) => e.getBoundingClientRect().height));
+      for (const h of heights) expect(h).toBeGreaterThanOrEqual(44);
+    });
+  }
+
+  test("language switcher targets in the drawer are 44px", async ({ page }) => {
+    await page.goto("/trails/");
+    await page.getByRole("button", { name: "Menu", exact: true }).click();
+    const links = page.getByRole("dialog").getByRole("group", { name: "Language" }).getByRole("link");
+    await expect(links).toHaveCount(3);
+    for (const link of await links.all()) {
+      expect((await link.boundingBox())!.height).toBeGreaterThanOrEqual(44);
+    }
+  });
+
+  test("booking form has mobile input hints", async ({ page }) => {
+    await page.goto("/contact/");
+    await expect(page.locator('input[name="phone"]')).toHaveAttribute("inputmode", "tel");
+    await expect(page.locator('input[name="phone"]')).toHaveAttribute("autocomplete", "tel");
+    await expect(page.locator('input[name="email"]')).toHaveAttribute("autocomplete", "email");
+  });
+
+  test("bar is hidden on desktop", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/trails/");
+    await expect(page.locator("[data-sticky-contact]")).toBeHidden();
+  });
+});

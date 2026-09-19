@@ -69,20 +69,26 @@ it should be resolved before the site goes live publicly.
       an element that is never attached/played), and whether the 2.37 MB mobile fetch is acceptable.
       Also: landscape phones currently receive the 4.68 MB desktop encode — decide whether to key
       the source on the smaller viewport dimension / `(pointer: coarse)`.
-- [ ] Schedule the site-wide LCP work as its own task: render-blocking CSS/fonts and a preload of
+- [x] Site-wide LCP work — resolved 2026-09-20: cause was oversized eager brand logos (~545 KB -> ~50 KB after resize, lazy footer images, width/height). Local Lighthouse mobile LCP now 1.8 s `/`, 1.8 s `/ar/`, 2.0 s `/fr/`, 1.3 s `/faq/`; re-verify on the Vercel build. (Original note: render-blocking CSS/fonts and a preload of
       the LCP poster in the `BaseLayout` head. The hero is not the cause (hero-free `/faq/` control
-      measures the same mobile LCP).
+      measures the same mobile LCP.)
 
 ## Technical QA before going live
 - [ ] Re-run Lighthouse once real imagery replaces the placeholders — image weight will change
       the numbers. Targets and current measurements live in the "Hero video" Lighthouse item
       above (this is the launch-time re-run and is NOT done yet).
-- [ ] Validate JSON-LD with Google's Rich Results Test (LocalBusiness/TouristTrip on
+- [ ] Validate JSON-LD with Google's Rich Results Test (statically validated 2026-09-20; removed aggregateRating, fixed locale breadcrumb URLs; Google tool itself not yet run) (LocalBusiness/TouristTrip on
       home + contact, FAQPage on `/faq`, BreadcrumbList sitewide).
-- [ ] Test every page at `dir="rtl"` (`/ar/...`) for layout mirroring issues.
+- [x] (audited 2026-09-20; fixed contact overflow at 375px and reversed English fallback text; `/ar/trails/` still mostly English, needs Arabic translation) Test every page at `dir="rtl"` (`/ar/...`) for layout mirroring issues.
 - [ ] `npm run check` and `npm run test:e2e` both currently pass — re-run after any content
       swap above.
 - [ ] Replace `public/og-image.jpg` (currently a TripAdvisor photo reused as a placeholder)
       with a purpose-made 1200×630 OG image once hero imagery is finalized.
 - [ ] Swap the stylized Lebanon outline in `src/components/LebanonMap.astro` (hand-approximated,
       not survey-accurate) for a proper traced map if the client wants pixel-perfect geography.
+
+## Mobile UX (2026-09-20 pass)
+- [x] Sticky bottom WhatsApp/Call bar (mobile), compact collapsible menu, 44px tap targets, booking-form input hints (autocomplete/inputmode/+961 placeholder), LTR phone numbers in AR, theme-color + viewport-fit.
+- [ ] Native review of `nav.menu` AR/FR label (see `src/i18n/REVIEW_NOTES.md`).
+- [ ] Landscape phones still get the 4.68 MB desktop hero clip (mobile clip is a portrait crop) — consider a mid-size encode.
+- [ ] Not yet done: apple-touch-icon + web manifest, minimum 14px for hero rail numbers/chips, hero chips as a scrollable row, real-device test of the sticky bar over the scrub hero.

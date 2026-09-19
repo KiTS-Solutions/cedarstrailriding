@@ -1,5 +1,6 @@
 ---
 import { path, useTranslations, type Locale } from "../i18n";
+import { contact } from "../data/siteSettings";
 import WhatsAppButton from "./WhatsAppButton.astro";
 
 interface Props {
@@ -8,19 +9,22 @@ interface Props {
 
 const { locale } = Astro.props;
 const t = useTranslations(locale);
+const telHref = `tel:${contact.phones[0]?.replace(/\s+/g, "")}`;
 ---
 
-{/* Phone-only persistent booking actions. Hidden while the scroll hero (which has its own
-    dock) or a booking form is on screen — see the observer below. */}
+{/* Phone-only persistent booking actions: Book, WhatsApp, Call. Hidden while the scroll hero
+    (which has its own dock) or a booking form is on screen — see the observer below. */}
 <div
   id="sticky-cta"
-  class="sticky-cta fixed inset-x-0 bottom-0 z-40 flex gap-3 border-t border-cedar-deep/10 bg-warm-white/95 px-4 pt-3 backdrop-blur sm:hidden"
+  data-sticky-contact
+  class="sticky-cta fixed inset-x-0 bottom-0 z-40 flex gap-2 border-t border-cedar-deep/10 bg-warm-white/95 px-3 pt-3 backdrop-blur sm:hidden"
 >
-  <a href={path("/contact/", locale)} class="btn-primary min-h-12 flex-1">{t("cta.book")}</a>
+  <a href={path("/contact/", locale)} class="btn-primary min-h-12 flex-1 !px-2 text-sm">{t("cta.book")}</a>
   <WhatsAppButton
     label={t("cta.whatsapp")}
-    class="min-h-12 flex-1 !bg-cedar-deep !text-warm-white hover:!bg-cedar-soft"
+    class="min-h-12 flex-1 !bg-cedar-deep !px-2 text-sm !text-warm-white hover:!bg-cedar-soft"
   />
+  <a href={telHref} class="btn-secondary min-h-12 flex-1 !px-2 text-sm">{t("cta.call")}</a>
 </div>
 {/* Reserves the bar's height so it never covers the footer's last line. */}
 <div class="h-[calc(4.5rem+env(safe-area-inset-bottom))] bg-cedar-deep sm:hidden" aria-hidden="true"></div>

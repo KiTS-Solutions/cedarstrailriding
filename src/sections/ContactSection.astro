@@ -21,14 +21,14 @@ const mapSrc = `https://www.google.com/maps?q=${contact.coordinates.lat},${conta
   <div class="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-center sm:gap-4">
     <WhatsAppButton label={t("cta.whatsapp")} class="min-h-12" />
     <a href={`tel:${contact.phones[0]?.replace(/\s+/g, "")}`} class="btn-secondary min-h-12">
-      {t("cta.call")} {contact.phones[0]}
+      {t("cta.call")} <bdi dir="ltr">{contact.phones[0]}</bdi>
     </a>
     <a href={`tel:${contact.phones[1]?.replace(/\s+/g, "")}`} class="btn-secondary min-h-12">
-      {t("cta.call")} {contact.phones[1]}
+      {t("cta.call")} <bdi dir="ltr">{contact.phones[1]}</bdi>
     </a>
   </div>
 
-  <div class="mt-10 grid gap-8 lg:grid-cols-2">
+  <div class="mt-10 grid grid-cols-[minmax(0,1fr)] gap-8 lg:grid-cols-2">
     <div>
       <BookingForm locale={locale} />
     </div>

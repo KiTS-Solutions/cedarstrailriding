@@ -68,8 +68,8 @@ const companyLinks = [
       <div class="col-span-2 md:col-span-1">
         <h3 class="text-sm font-semibold uppercase tracking-wide text-gold">{t("footer.contact")}</h3>
         <ul class="mt-2 text-sm">
-          <li><a href={`tel:${contact.phones[0]?.replace(/\s+/g, "")}`} class="footer-link">{contact.phones[0]}</a></li>
-          <li><a href={`tel:${contact.phones[1]?.replace(/\s+/g, "")}`} class="footer-link">{contact.phones[1]}</a></li>
+          <li><a href={`tel:${contact.phones[0]?.replace(/\s+/g, "")}`} class="footer-link"><bdi dir="ltr">{contact.phones[0]}</bdi></a></li>
+          <li><a href={`tel:${contact.phones[1]?.replace(/\s+/g, "")}`} class="footer-link"><bdi dir="ltr">{contact.phones[1]}</bdi></a></li>
           <li><a href={`mailto:${contact.email}`} class="footer-link">{contact.email}</a></li>
           <li><WhatsAppButton label={t("cta.whatsapp")} class="mt-1 min-h-11 !bg-gold !px-5 !text-cedar-deep text-sm" /></li>
         </ul>
@@ -94,11 +94,11 @@ const companyLinks = [
                   class="rounded-lg transition-transform hover:scale-105"
                   title={entry.name}
                 >
-                  <img src={entry.logoSrc} alt={entry.name} width="80" height="80" loading="lazy" class="h-20 w-20 rounded-lg object-contain" />
+                  <img src={entry.logoSrc} alt={entry.name} width="80" height="80" loading="lazy" decoding="async" class="h-20 w-20 rounded-lg object-contain" />
                 </a>
               ) : (
                 <span class="rounded-lg" title={entry.name}>
-                  <img src={entry.logoSrc} alt={entry.name} width="80" height="80" loading="lazy" class="h-20 w-20 rounded-lg object-contain" />
+                  <img src={entry.logoSrc} alt={entry.name} width="80" height="80" loading="lazy" decoding="async" class="h-20 w-20 rounded-lg object-contain" />
                 </span>
               ),
             )

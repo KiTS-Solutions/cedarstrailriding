@@ -13,14 +13,14 @@ const t = useTranslations(locale);
 
 <section class="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16">
   <h1 class="text-center font-display text-4xl font-semibold text-cedar-deep">{t("home.trailsHeading")}</h1>
-  <p class="mx-auto mt-4 max-w-2xl text-center text-ink/80">{t("trails.intro")}</p>
+  <p dir="auto" class="mx-auto mt-4 max-w-2xl text-center text-ink/80">{t("trails.intro")}</p>
 
   <div class="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
     {trails.map((trail) => <TrailCard trail={trail} locale={locale} />)}
   </div>
 
   <div class="mt-10 text-center">
-    <p class="text-sm text-ink/70">{t("trails.customNote")}</p>
+    <p dir="auto" class="text-sm text-ink/70">{t("trails.customNote")}</p>
     <a href={path("/contact/", locale)} class="btn-primary mt-4 inline-flex">{t("cta.plan")}</a>
   </div>
 </section>

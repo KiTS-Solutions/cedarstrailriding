@@ -51,12 +51,12 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
 
   <label class="col-span-2 flex flex-col gap-1 text-sm font-medium text-ink sm:col-span-1">
     {t("form.phone")} *
-    <input required type="tel" name="phone" autocomplete="tel" inputmode="tel" class="field" />
+    <input required type="tel" name="phone" autocomplete="tel" inputmode="tel" placeholder="+961 XX XXX XXX" dir="ltr" class="field" />
   </label>
 
   <label class="col-span-2 flex flex-col gap-1 text-sm font-medium text-ink sm:col-span-1">
     {t("form.email")}
-    <input type="email" name="email" autocomplete="email" class="field" />
+    <input type="email" name="email" autocomplete="email" inputmode="email" class="field" />
   </label>
 
   <label class="col-span-2 flex flex-col gap-1 text-sm font-medium text-ink sm:col-span-1">

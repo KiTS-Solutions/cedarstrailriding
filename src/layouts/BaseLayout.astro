@@ -35,7 +35,7 @@ const metaPixelId = import.meta.env.PUBLIC_META_PIXEL_ID;
 
 const allSchemas = [
   ...jsonLd,
-  ...(breadcrumbs ? [breadcrumbSchema(breadcrumbs)] : []),
+  ...(breadcrumbs ? [breadcrumbSchema(breadcrumbs.map((c) => ({ ...c, url: path(c.url, locale) })))] : []),
 ];
 
 // SEO collision guard (brief/04_seo_and_audit.md): never let "Cedars of Lebanon" +
@@ -49,7 +49,8 @@ if (/tennessee/i.test(pageTitle) || /tennessee/i.test(pageDescription)) {
 <html lang={locale} dir={DIR[locale]}>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#3c4710" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="canonical" href={canonicalURL} />
     <title>{pageTitle}</title>

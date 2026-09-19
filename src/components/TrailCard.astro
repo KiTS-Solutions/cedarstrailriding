@@ -27,6 +27,6 @@ const body = descriptor.startsWith("trail.") ? trail.summary : descriptor;
     {trail.feature && <span class="chip bg-gold/20 text-cedar-deep">{t("chip.feature")}</span>}
   </div>
   {chip && <span class={chip.class}>{chip.label}</span>}
-  <p class="text-sm text-ink/80">{body}</p>
-  {trail.duration && <p class="text-xs font-medium uppercase tracking-wide text-cedar-soft">{trail.duration}</p>}
+  <p dir="auto" class="text-sm text-ink/80">{body}</p>
+  {trail.duration && <p dir="auto" class="text-xs font-medium uppercase tracking-wide text-cedar-soft">{trail.duration}</p>}
 </article>

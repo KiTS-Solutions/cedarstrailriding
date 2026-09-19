@@ -26,7 +26,7 @@ const previewFaq = faqItems.slice(0, 4).map((_, index) => {
 const horseSlots = horses.length > 0 ? horses : Array.from({ length: HORSE_PLACEHOLDER_COUNT }, () => undefined);
 ---
 
-<p class="bg-cedar-deep py-2 text-center text-xs font-medium text-warm-white sm:text-sm">
+<p class="bg-cedar-deep px-4 py-2 text-center text-sm font-medium leading-snug text-warm-white">
   {t("home.trustBar")}
 </p>
 
@@ -135,7 +135,7 @@ const horseSlots = horses.length > 0 ? horses : Array.from({ length: HORSE_PLACE
   <p class="mx-auto mt-3 max-w-2xl text-center text-ink/80">{t("contact.body")}</p>
   <div class="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-center sm:gap-4">
     <WhatsAppButton label={t("cta.whatsapp")} class="min-h-12" />
-    <a href="tel:+96170211041" class="btn-secondary min-h-12">{t("cta.call")} +961 70 211 041</a>
+    <a href="tel:+96170211041" class="btn-secondary min-h-12">{t("cta.call")} <bdi dir="ltr">+961 70 211 041</bdi></a>
   </div>
   <div class="mt-10">
     <BookingForm locale={locale} />
