@@ -98,3 +98,10 @@ it should be resolved before the site goes live publicly.
 - [x] All 142 EN keys now exist in AR and FR (46 + trail descriptors/durations added as drafts; no more silent English fallback on `/ar/` and `/fr/`).
 - [ ] Native AR/FR review of all newly added strings (listed in `src/i18n/REVIEW_NOTES.md`).
 - [ ] Testimonials (`src/data/testimonials.ts`) are English source reviews shown as-is on AR/FR pages — decide: keep original language with a label, or commission approved translations.
+
+## Hosting (Vercel)
+- [x] GitHub repo `KiTS-Solutions/cedarstrailriding` (private); Vercel project `cedarstrailriding` created (team "casio699's projects"), not yet linked to Git or deployed.
+- [x] `vercel.json`: trailingSlash, immutable caching for `/_astro/*`, image/icon caching, baseline security headers. No CSP yet — add one once GA4/Meta Pixel/Turnstile/Web3Forms are finalized.
+- [ ] Install/authorize the Vercel GitHub app for `KiTS-Solutions`, then Project Settings -> Git -> connect the repo (or run `vercel login` locally and `vercel deploy`).
+- [ ] Set env vars in Vercel (Production + Preview): `PUBLIC_WEB3FORMS_ACCESS_KEY`, `PUBLIC_GA4_ID`, `PUBLIC_META_PIXEL_ID`, `PUBLIC_TURNSTILE_SITE_KEY`.
+- [ ] Attach `cedarstrailriding.com` once DNS access is confirmed; the project has Vercel Auth (SSO) protection on by default, so disable it for public launch.
