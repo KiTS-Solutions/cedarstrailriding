@@ -9,14 +9,14 @@ interface Props {
 const { locale, route } = Astro.props;
 ---
 
-<div class="flex items-center gap-1 rounded-full border border-cedar-deep/20 p-1 text-sm" role="group" aria-label="Language">
+<div class="flex items-center gap-0.5 rounded-full border border-cedar-deep/20 text-sm" role="group" aria-label="Language">
   {
     LOCALES.map((loc) => (
       <a
         href={path(route, loc)}
         aria-current={loc === locale ? "true" : undefined}
         class:list={[
-          "rounded-full px-2.5 py-1 transition-colors duration-200",
+          "flex min-h-11 min-w-11 items-center justify-center rounded-full px-2 transition-colors duration-200",
           loc === locale
             ? "bg-cedar-deep text-warm-white"
             : "text-cedar-deep hover:bg-cedar-deep/10",

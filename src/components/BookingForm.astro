@@ -46,22 +46,22 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
 
   <label class="flex flex-col gap-1 text-sm font-medium text-ink">
     {t("form.name")} *
-    <input required type="text" name="name" class="rounded-lg border border-cedar-deep/20 px-3 py-2" />
+    <input required type="text" name="name" autocomplete="name" class="min-h-12 rounded-lg border border-cedar-deep/20 px-3 py-3 text-base" />
   </label>
 
   <label class="flex flex-col gap-1 text-sm font-medium text-ink">
     {t("form.phone")} *
-    <input required type="tel" name="phone" class="rounded-lg border border-cedar-deep/20 px-3 py-2" />
+    <input required type="tel" name="phone" autocomplete="tel" inputmode="tel" placeholder="+961 XX XXX XXX" dir="ltr" class="min-h-12 rounded-lg border border-cedar-deep/20 px-3 py-3 text-base" />
   </label>
 
   <label class="flex flex-col gap-1 text-sm font-medium text-ink">
     {t("form.email")}
-    <input type="email" name="email" class="rounded-lg border border-cedar-deep/20 px-3 py-2" />
+    <input type="email" name="email" autocomplete="email" inputmode="email" class="min-h-12 rounded-lg border border-cedar-deep/20 px-3 py-3 text-base" />
   </label>
 
   <label class="flex flex-col gap-1 text-sm font-medium text-ink">
     {t("form.interest")} *
-    <select required name="interest" class="rounded-lg border border-cedar-deep/20 px-3 py-2">
+    <select required name="interest" class="min-h-12 rounded-lg border border-cedar-deep/20 px-3 py-3 text-base">
       <option value="trail">{t("form.interest.trail")}</option>
       <option value="trek">{t("form.interest.trek")}</option>
       <option value="group">{t("form.interest.group")}</option>
@@ -72,7 +72,7 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
 
   <label class="flex flex-col gap-1 text-sm font-medium text-ink">
     {t("form.trailOrDuration")}
-    <select name="trail" class="rounded-lg border border-cedar-deep/20 px-3 py-2">
+    <select name="trail" class="min-h-12 rounded-lg border border-cedar-deep/20 px-3 py-3 text-base">
       <option value="">—</option>
       {trails.map((trail) => <option value={trail.name}>{trail.name}</option>)}
     </select>
@@ -80,17 +80,17 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
 
   <label class="flex flex-col gap-1 text-sm font-medium text-ink">
     {t("form.date")}
-    <input type="date" name="date" class="rounded-lg border border-cedar-deep/20 px-3 py-2" />
+    <input type="date" name="date" class="min-h-12 rounded-lg border border-cedar-deep/20 px-3 py-3 text-base" />
   </label>
 
   <label class="flex flex-col gap-1 text-sm font-medium text-ink">
     {t("form.riders")}
-    <input type="number" min="1" name="riders" class="rounded-lg border border-cedar-deep/20 px-3 py-2" />
+    <input type="number" min="1" inputmode="numeric" name="riders" class="min-h-12 rounded-lg border border-cedar-deep/20 px-3 py-3 text-base" />
   </label>
 
   <label class="flex flex-col gap-1 text-sm font-medium text-ink">
     {t("form.experience")}
-    <select name="experience" class="rounded-lg border border-cedar-deep/20 px-3 py-2">
+    <select name="experience" class="min-h-12 rounded-lg border border-cedar-deep/20 px-3 py-3 text-base">
       <option value="none">{t("form.experience.none")}</option>
       <option value="beginner">{t("form.experience.beginner")}</option>
       <option value="intermediate">{t("form.experience.intermediate")}</option>
@@ -100,7 +100,7 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
 
   <label class="flex flex-col gap-1 text-sm font-medium text-ink">
     {t("form.languagePreference")}
-    <select name="language_preference" class="rounded-lg border border-cedar-deep/20 px-3 py-2">
+    <select name="language_preference" class="min-h-12 rounded-lg border border-cedar-deep/20 px-3 py-3 text-base">
       <option value="en">English</option>
       <option value="ar">العربية</option>
       <option value="fr">Français</option>
@@ -109,7 +109,7 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
 
   <label class="flex flex-col gap-1 text-sm font-medium text-ink sm:col-span-2">
     {t("form.message")}
-    <textarea name="message" rows="4" class="rounded-lg border border-cedar-deep/20 px-3 py-2"></textarea>
+    <textarea name="message" rows="4" class="min-h-12 rounded-lg border border-cedar-deep/20 px-3 py-3 text-base"></textarea>
   </label>
 
   <label class="flex items-start gap-2 text-sm text-ink sm:col-span-2">
@@ -119,7 +119,7 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
 
   <p class="text-xs text-ink/60 sm:col-span-2">{t("form.disclaimer")}</p>
 
-  <button type="submit" class="btn-primary sm:col-span-2 sm:w-fit">
+  <button type="submit" class="btn-primary min-h-12 w-full sm:col-span-2 sm:w-fit">
     {t("form.send")}
   </button>
 

@@ -18,13 +18,13 @@ const mapSrc = `https://www.google.com/maps?q=${contact.coordinates.lat},${conta
   <h1 class="text-center font-display text-4xl font-semibold text-cedar-deep">{t("home.contactHeading")}</h1>
   <p class="mx-auto mt-4 max-w-2xl text-center text-ink/80">{t("contact.body")}</p>
 
-  <div class="mt-8 flex flex-wrap items-center justify-center gap-4">
+  <div class="mt-8 grid grid-cols-1 gap-3 sm:flex sm:flex-wrap sm:items-center sm:justify-center sm:gap-4">
     <WhatsAppButton label={t("cta.whatsapp")} />
     <a href={`tel:${contact.phones[0]?.replace(/\s+/g, "")}`} class="btn-secondary">
-      {t("cta.call")} {contact.phones[0]}
+      {t("cta.call")} <bdi dir="ltr">{contact.phones[0]}</bdi>
     </a>
     <a href={`tel:${contact.phones[1]?.replace(/\s+/g, "")}`} class="btn-secondary">
-      {t("cta.call")} {contact.phones[1]}
+      {t("cta.call")} <bdi dir="ltr">{contact.phones[1]}</bdi>
     </a>
   </div>
 

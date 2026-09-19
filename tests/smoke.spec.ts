@@ -754,3 +754,34 @@ test.describe("Scroll hero", () => {
     expect(box!.x).toBeLessThan(vw / 2);
   });
 });
+
+test.describe("Mobile UX", () => {
+  test.use({ viewport: { width: 390, height: 844 } });
+
+  for (const path of ["/", "/ar/", "/fr/", "/contact/"]) {
+    test(`sticky WhatsApp/Call bar and 44px targets (${path})`, async ({ page }) => {
+      await page.goto(path);
+      const bar = page.locator("[data-sticky-contact]");
+      await expect(bar).toBeVisible();
+      await expect(bar.locator('a[href^="https://wa.me/"]')).toBeVisible();
+      await expect(bar.locator('a[href^="tel:"]')).toBeVisible();
+      const heights = await page
+        .locator('[aria-label="Language"] a, [data-sticky-contact] a')
+        .evaluateAll((els) => els.map((e) => e.getBoundingClientRect().height));
+      for (const h of heights) expect(h).toBeGreaterThanOrEqual(44);
+    });
+  }
+
+  test("booking form has mobile input hints", async ({ page }) => {
+    await page.goto("/contact/");
+    await expect(page.locator('input[name="phone"]')).toHaveAttribute("inputmode", "tel");
+    await expect(page.locator('input[name="phone"]')).toHaveAttribute("autocomplete", "tel");
+    await expect(page.locator('input[name="email"]')).toHaveAttribute("autocomplete", "email");
+  });
+
+  test("bar is hidden on desktop", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/");
+    await expect(page.locator("[data-sticky-contact]")).toBeHidden();
+  });
+});

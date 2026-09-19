@@ -25,3 +25,4 @@ Any key NOT present in `ar.json`/`fr.json` at all (e.g. most `about.*`, `treks.*
 copy) intentionally falls back to English via `useTranslations()` — per the translation
 pack's own instruction #3, don't ship broken/half-translated AR or FR. Extend the locale
 files as the client approves more translated copy.
+- `nav.menu` (AR/FR) — mobile menu label added by the mobile UX pass.

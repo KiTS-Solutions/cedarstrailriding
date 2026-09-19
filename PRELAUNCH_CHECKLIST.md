@@ -86,3 +86,9 @@ it should be resolved before the site goes live publicly.
       with a purpose-made 1200×630 OG image once hero imagery is finalized.
 - [ ] Swap the stylized Lebanon outline in `src/components/LebanonMap.astro` (hand-approximated,
       not survey-accurate) for a proper traced map if the client wants pixel-perfect geography.
+
+## Mobile UX (2026-09-20 pass)
+- [x] Sticky bottom WhatsApp/Call bar (mobile), compact collapsible menu, 44px tap targets, booking-form input hints (autocomplete/inputmode/+961 placeholder), LTR phone numbers in AR, theme-color + viewport-fit.
+- [ ] Native review of `nav.menu` AR/FR label (see `src/i18n/REVIEW_NOTES.md`).
+- [ ] Landscape phones still get the 4.68 MB desktop hero clip (mobile clip is a portrait crop) — consider a mid-size encode.
+- [ ] Not yet done: apple-touch-icon + web manifest, minimum 14px for hero rail numbers/chips, hero chips as a scrollable row, real-device test of the sticky bar over the scrub hero.

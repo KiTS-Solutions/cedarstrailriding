@@ -68,8 +68,8 @@ const companyLinks = [
       <div>
         <h3 class="text-sm font-semibold uppercase tracking-wide text-gold">{t("footer.contact")}</h3>
         <ul class="mt-3 space-y-2 text-sm">
-          <li><a href={`tel:${contact.phones[0]?.replace(/\s+/g, "")}`} class="hover:underline">{contact.phones[0]}</a></li>
-          <li><a href={`tel:${contact.phones[1]?.replace(/\s+/g, "")}`} class="hover:underline">{contact.phones[1]}</a></li>
+          <li><a href={`tel:${contact.phones[0]?.replace(/\s+/g, "")}`} class="hover:underline"><bdi dir="ltr">{contact.phones[0]}</bdi></a></li>
+          <li><a href={`tel:${contact.phones[1]?.replace(/\s+/g, "")}`} class="hover:underline"><bdi dir="ltr">{contact.phones[1]}</bdi></a></li>
           <li><a href={`mailto:${contact.email}`} class="hover:underline">{contact.email}</a></li>
           <li><WhatsAppButton label={t("cta.whatsapp")} class="mt-1 !bg-gold !text-cedar-deep !py-1.5 !px-4 text-sm" /></li>
         </ul>
