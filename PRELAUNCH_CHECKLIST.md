@@ -69,17 +69,17 @@ it should be resolved before the site goes live publicly.
       an element that is never attached/played), and whether the 2.37 MB mobile fetch is acceptable.
       Also: landscape phones currently receive the 4.68 MB desktop encode — decide whether to key
       the source on the smaller viewport dimension / `(pointer: coarse)`.
-- [ ] Schedule the site-wide LCP work as its own task: render-blocking CSS/fonts and a preload of
+- [x] Site-wide LCP work — resolved 2026-09-20: cause was oversized eager brand logos (~545 KB -> ~50 KB after resize, lazy footer images, width/height). Local Lighthouse mobile LCP now 1.8 s `/`, 1.8 s `/ar/`, 2.0 s `/fr/`, 1.3 s `/faq/`; re-verify on the Vercel build. (Original note: render-blocking CSS/fonts and a preload of
       the LCP poster in the `BaseLayout` head. The hero is not the cause (hero-free `/faq/` control
-      measures the same mobile LCP).
+      measures the same mobile LCP.)
 
 ## Technical QA before going live
 - [ ] Re-run Lighthouse once real imagery replaces the placeholders — image weight will change
       the numbers. Targets and current measurements live in the "Hero video" Lighthouse item
       above (this is the launch-time re-run and is NOT done yet).
-- [ ] Validate JSON-LD with Google's Rich Results Test (LocalBusiness/TouristTrip on
+- [ ] Validate JSON-LD with Google's Rich Results Test (statically validated 2026-09-20; removed aggregateRating, fixed locale breadcrumb URLs; Google tool itself not yet run) (LocalBusiness/TouristTrip on
       home + contact, FAQPage on `/faq`, BreadcrumbList sitewide).
-- [ ] Test every page at `dir="rtl"` (`/ar/...`) for layout mirroring issues.
+- [x] (audited 2026-09-20; fixed contact overflow at 375px and reversed English fallback text; `/ar/trails/` still mostly English, needs Arabic translation) Test every page at `dir="rtl"` (`/ar/...`) for layout mirroring issues.
 - [ ] `npm run check` and `npm run test:e2e` both currently pass — re-run after any content
       swap above.
 - [ ] Replace `public/og-image.jpg` (currently a TripAdvisor photo reused as a placeholder)

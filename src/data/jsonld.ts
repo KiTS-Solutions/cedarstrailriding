@@ -1,15 +1,18 @@
-import { brand, contact, reviewsEvidence, social } from "./siteSettings";
+import { brand, contact, logoSrc, social } from "./siteSettings";
 import type { FaqItem } from "./faq";
 
 const SITE_URL = "https://cedarstrailriding.com";
+const BUSINESS_ID = `${SITE_URL}/#business`;
 
 export function localBusinessSchema() {
   return {
     "@context": "https://schema.org",
     "@type": "LocalBusiness",
+    "@id": BUSINESS_ID,
     name: brand.name,
     description: brand.positioning,
     url: SITE_URL,
+    image: `${SITE_URL}${logoSrc}`,
     telephone: contact.phones,
     email: contact.email,
     address: {
@@ -23,12 +26,6 @@ export function localBusinessSchema() {
       latitude: contact.coordinates.lat,
       longitude: contact.coordinates.lng,
     },
-    aggregateRating: {
-      "@type": "AggregateRating",
-      ratingValue: reviewsEvidence.google_rating,
-      reviewCount: reviewsEvidence.tripadvisor_review_count,
-      bestRating: 5,
-    },
     sameAs: [social.instagram_main && brand.instagram, brand.facebook].filter(Boolean),
   };
 }
@@ -39,11 +36,7 @@ export function touristTripSchema() {
     "@type": "TouristTrip",
     name: brand.tagline,
     description: brand.mission,
-    provider: {
-      "@type": "LocalBusiness",
-      name: brand.name,
-      url: SITE_URL,
-    },
+    provider: { "@id": BUSINESS_ID },
     touristType: ["Families", "Couples", "Solo travelers", "Beginners", "Adventure seekers"],
   };
 }

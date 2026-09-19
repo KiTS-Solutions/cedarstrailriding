@@ -94,11 +94,11 @@ const companyLinks = [
                   class="rounded-lg transition-transform hover:scale-105"
                   title={entry.name}
                 >
-                  <img src={entry.logoSrc} alt={entry.name} class="h-20 w-20 rounded-lg object-contain" />
+                  <img src={entry.logoSrc} alt={entry.name} width="80" height="80" loading="lazy" decoding="async" class="h-20 w-20 rounded-lg object-contain" />
                 </a>
               ) : (
                 <span class="rounded-lg" title={entry.name}>
-                  <img src={entry.logoSrc} alt={entry.name} class="h-20 w-20 rounded-lg object-contain" />
+                  <img src={entry.logoSrc} alt={entry.name} width="80" height="80" loading="lazy" decoding="async" class="h-20 w-20 rounded-lg object-contain" />
                 </span>
               ),
             )

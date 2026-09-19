@@ -34,7 +34,7 @@ const metaPixelId = import.meta.env.PUBLIC_META_PIXEL_ID;
 
 const allSchemas = [
   ...jsonLd,
-  ...(breadcrumbs ? [breadcrumbSchema(breadcrumbs)] : []),
+  ...(breadcrumbs ? [breadcrumbSchema(breadcrumbs.map((c) => ({ ...c, url: path(c.url, locale) })))] : []),
 ];
 
 // SEO collision guard (brief/04_seo_and_audit.md): never let "Cedars of Lebanon" +
