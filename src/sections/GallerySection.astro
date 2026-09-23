@@ -1,5 +1,5 @@
 ---
-import { useTranslations, type Locale } from "../i18n";
+import { useTranslations, withBase, type Locale } from "../i18n";
 import { galleryImages, galleryPlaceholders } from "../data/gallery";
 
 interface Props {
@@ -18,7 +18,7 @@ const t = useTranslations(locale);
     {
       galleryImages.map((image) => (
         <img
-          src={image.src}
+          src={withBase(image.src)}
           alt={image.alt}
           width="1440"
           height="960"

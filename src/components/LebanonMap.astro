@@ -5,6 +5,7 @@
 // cedar-deep footer, so it sits borderless. Never mirror this for RTL — it's a
 // real map, not a decorative glyph.
 import { footerMapSrc } from "../data/siteSettings";
+import { withBase } from "../i18n";
 
 interface Props {
   label: string;
@@ -15,6 +16,6 @@ const { label, class: className = "" } = Astro.props;
 ---
 
 <figure class:list={["flex flex-col items-center gap-2 text-center", className]}>
-  <img src={footerMapSrc} alt={label} width="160" height="160" loading="lazy" decoding="async" class="h-40 w-40 rounded-xl object-contain" dir="ltr" />
+  <img src={withBase(footerMapSrc)} alt={label} width="160" height="160" loading="lazy" decoding="async" class="h-40 w-40 rounded-xl object-contain" dir="ltr" />
   <figcaption class="text-sm font-medium">{label}</figcaption>
 </figure>

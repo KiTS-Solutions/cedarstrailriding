@@ -1,6 +1,6 @@
 ---
 import "../styles/global.css";
-import { DIR, LOCALES, path, useTranslations, type Locale } from "../i18n";
+import { DIR, LOCALES, path, useTranslations, withBase, type Locale } from "../i18n";
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
 import StickyCta from "../components/StickyCta.astro";
@@ -29,6 +29,8 @@ const t = useTranslations(locale);
 const pageTitle = title ? `${title} — ${t("meta.title")}` : t("meta.title");
 const pageDescription = description ?? t("meta.desc");
 const canonicalURL = new URL(path(route, locale), Astro.site);
+// Demo/staging builds (PUBLIC_NOINDEX=true) must never be indexed.
+const noindex = import.meta.env.PUBLIC_NOINDEX === "true";
 
 const ga4Id = import.meta.env.PUBLIC_GA4_ID;
 const metaPixelId = import.meta.env.PUBLIC_META_PIXEL_ID;
@@ -51,10 +53,11 @@ if (/tennessee/i.test(pageTitle) || /tennessee/i.test(pageDescription)) {
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#3c4710" />
-    <link rel="icon" href="/favicon.ico" sizes="48x48" />
-    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-    <link rel="manifest" href="/manifest.webmanifest" />
+    {noindex && <meta name="robots" content="noindex, nofollow" />}
+    <link rel="icon" href={withBase("/favicon.ico")} sizes="48x48" />
+    <link rel="icon" type="image/png" sizes="32x32" href={withBase("/favicon-32.png")} />
+    <link rel="apple-touch-icon" href={withBase("/apple-touch-icon.png")} />
+    <link rel="manifest" href={withBase("/manifest.webmanifest")} />
     <link rel="canonical" href={canonicalURL} />
     <title>{pageTitle}</title>
     <meta name="description" content={pageDescription} />
@@ -70,7 +73,7 @@ if (/tennessee/i.test(pageTitle) || /tennessee/i.test(pageDescription)) {
     <meta property="og:title" content={pageTitle} />
     <meta property="og:description" content={pageDescription} />
     <meta property="og:url" content={canonicalURL} />
-    <meta property="og:image" content={new URL("/og-image.jpg", Astro.site)} />
+    <meta property="og:image" content={new URL(withBase("/og-image.jpg"), Astro.site)} />
     <meta name="twitter:card" content="summary_large_image" />
 
     {allSchemas.map((schema) => <JsonLd data={schema} />)}

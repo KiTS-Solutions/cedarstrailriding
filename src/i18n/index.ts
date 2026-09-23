@@ -26,9 +26,20 @@ export function localeBase(locale: Locale): string {
   return locale === DEFAULT_LOCALE ? "" : `/${locale}`;
 }
 
-/** Build a locale-prefixed path, e.g. path("/trails/", "ar") -> "/ar/trails/". */
+/**
+ * Deploy base path without a trailing slash: "" in production (site at the domain root),
+ * "/cedarstrailriding" for the GitHub Pages demo build (see astro.config.mjs).
+ */
+const BASE = import.meta.env.BASE_URL.replace(/\/+$/, "");
+
+/** Prefix a root-relative URL (assets, routes) with the deploy base path. */
+export function withBase(url: string): string {
+  return `${BASE}${url}`;
+}
+
+/** Build a locale-prefixed, base-aware path, e.g. path("/trails/", "ar") -> "/ar/trails/". */
 export function path(route: string, locale: Locale): string {
-  return `${localeBase(locale)}${route}`;
+  return withBase(`${localeBase(locale)}${route}`);
 }
 
 /**
