@@ -41,3 +41,6 @@ pnpm-debug.log*
 # kept on disk only, see README.md § Hero
 /horse-hero-v2/*.MOV
 /horse-hero-v2/*.mov
+
+# client-supplied documents (kept local, not part of the site)
+/client/
