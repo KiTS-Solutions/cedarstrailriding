@@ -30,6 +30,26 @@ test.describe("Home page", () => {
     }
   });
 
+  test("pathway cards under the hero link to their pages, per locale", async ({
+    page,
+  }) => {
+    for (const [prefix, title] of [
+      ["", "Multi-day Treks"],
+      ["/fr", "Treks de plusieurs jours"],
+    ] as const) {
+      await page.goto(`${prefix}/`);
+      const cards = page.locator("[data-pathways] article");
+      await expect(cards).toHaveCount(3);
+      const hrefs = await cards
+        .locator("h2 a")
+        .evaluateAll((links) => links.map((el) => el.getAttribute("href")));
+      expect(hrefs).toEqual(
+        ["/trails/", "/treks/", "/groups/"].map((p) => `${prefix}${p}`),
+      );
+      await expect(cards.nth(1).getByRole("link")).toHaveText(title);
+    }
+  });
+
   test("never renders the Tennessee 'Cedars of Lebanon' collision", async ({
     page,
   }) => {
