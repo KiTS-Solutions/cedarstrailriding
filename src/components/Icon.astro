@@ -1,7 +1,7 @@
 ---
 // Small stroke icons for the header chrome (paths adapted from Lucide, ISC licence). Decorative:
 // always aria-hidden, so the surrounding control must carry its own accessible name.
-type IconName = "phone" | "whatsapp" | "pin" | "mail" | "menu" | "close";
+type IconName = "phone" | "whatsapp" | "pin" | "mail" | "menu" | "close" | "arrow";
 
 interface Props {
   name: IconName;
@@ -53,4 +53,5 @@ const PHONE =
   }
   {name === "menu" && <path d="M4 7h16M4 12h16M4 17h16" />}
   {name === "close" && <path d="M6 6l12 12M18 6L6 18" />}
+  {name === "arrow" && <path d="M5 12h14M12 5l7 7-7 7" />}
 </svg>

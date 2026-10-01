@@ -13,6 +13,7 @@ import BookingForm from "../components/BookingForm.astro";
 import ScrollHero from "../components/ScrollHero.astro";
 import AmbientVideo from "../components/AmbientVideo.astro";
 import AmbientBackdrop from "../components/AmbientBackdrop.astro";
+import Icon from "../components/Icon.astro";
 import { v2Clips } from "../data/heroMedia";
 
 interface Props {
@@ -26,24 +27,68 @@ const previewFaq = faqItems.slice(0, 4).map((_, index) => {
   const n = index + 1;
   return { question: t(`faq.${n}.q`), answer: t(`faq.${n}.a`) };
 });
-const horseSlots = horses.length > 0 ? horses : Array.from({ length: HORSE_PLACEHOLDER_COUNT }, () => undefined);
+// Pathway cards under the hero. Each desc string is "fact · fact · tagline" in every locale: the
+// last segment leads as the tagline, the rest render as chips (a string without " · " is all tagline).
+const pathways = [
+  { href: "/trails/", title: t("home.ridesTitle"), desc: t("home.ridesDesc"), image: v2Clips.gallop.poster },
+  { href: "/treks/", title: t("home.treksCardTitle"), desc: t("home.treksCardDesc"), image: v2Clips.ridge.poster },
+  { href: "/groups/", title: t("home.groupsCardTitle"), desc: t("home.groupsCardDesc"), image: v2Clips.group.poster },
+].map(({ desc, ...pathway }) => {
+  const segments = desc.split(" · ");
+  return { ...pathway, tagline: segments.at(-1) ?? desc, facts: segments.slice(0, -1) };
+});
+const horseSlots =horses.length > 0 ? horses : Array.from({ length: HORSE_PLACEHOLDER_COUNT }, () => undefined);
 ---
 
 <ScrollHero locale={locale} />
 
-<section class="mx-auto grid max-w-6xl gap-6 px-4 py-12 sm:px-6 sm:py-16 md:grid-cols-3">
-  <article class="card p-6">
-    <h2 class="font-display text-xl font-semibold text-cedar-deep">{t("home.ridesTitle")}</h2>
-    <p class="mt-2 text-sm text-ink/80">{t("home.ridesDesc")}</p>
-  </article>
-  <article class="card p-6">
-    <h2 class="font-display text-xl font-semibold text-cedar-deep">{t("home.treksCardTitle")}</h2>
-    <p class="mt-2 text-sm text-ink/80">{t("home.treksCardDesc")}</p>
-  </article>
-  <article class="card p-6">
-    <h2 class="font-display text-xl font-semibold text-cedar-deep">{t("home.groupsCardTitle")}</h2>
-    <p class="mt-2 text-sm text-ink/80">{t("home.groupsCardDesc")}</p>
-  </article>
+<section data-pathways class="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16">
+  <ul class="grid gap-4 md:grid-cols-3 md:gap-6">
+    {
+      pathways.map((pathway) => (
+        <li>
+          <article class="group card relative flex h-full overflow-hidden has-[a:focus-visible]:outline-2 has-[a:focus-visible]:outline-offset-2 has-[a:focus-visible]:outline-cedar-deep md:flex-col">
+            <div class="relative w-28 shrink-0 overflow-hidden bg-cedar-deep sm:w-44 md:aspect-[4/3] md:w-auto">
+              <img
+                src={pathway.image}
+                alt=""
+                width="540"
+                height="960"
+                loading="lazy"
+                decoding="async"
+                class="absolute inset-0 size-full object-cover object-[50%_62%] transition-transform duration-500 ease-out motion-safe:group-hover:scale-105"
+              />
+            </div>
+            <div class="flex flex-1 flex-col p-4 sm:p-5 md:p-6">
+              <div class="flex items-start justify-between gap-3">
+                <h2 class="font-display text-lg font-semibold leading-snug text-cedar-deep md:text-xl">
+                  <a href={path(pathway.href, locale)} class="after:absolute after:inset-0 focus-visible:outline-none">
+                    {pathway.title}
+                  </a>
+                </h2>
+                <span class="mt-0.5 grid size-8 shrink-0 place-items-center rounded-full bg-gold/25 text-cedar-deep transition-colors duration-200 group-hover:bg-gold">
+                  <Icon name="arrow" class="size-4 transition-transform duration-200 rtl:-scale-x-100 motion-safe:group-hover:translate-x-0.5 motion-safe:rtl:group-hover:-translate-x-0.5" />
+                </span>
+              </div>
+              <p class="mt-1.5 text-sm text-ink/80 md:text-base">{pathway.tagline}</p>
+              {pathway.facts.length > 0 && (
+                <div class="mt-3 md:mt-auto md:pt-5">
+                  <ul class="space-y-1 text-[0.8125rem] font-medium leading-snug text-cedar-soft md:border-t md:border-cedar-deep/10 md:pt-4 md:text-sm">
+                    {pathway.facts.map((fact) => (
+                      <li class="flex items-baseline gap-2">
+                        <span aria-hidden="true" class="size-1.5 shrink-0 -translate-y-0.5 rounded-full bg-gold" />
+                        {fact}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          </article>
+        </li>
+      ))
+    }
+  </ul>
 </section>
 
 <section
