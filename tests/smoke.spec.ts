@@ -105,6 +105,11 @@ test.describe("Booking form", () => {
 });
 
 test.describe("Scroll hero", () => {
+  // The welcome screen has its own suite; keep it out of the way of hero interactions.
+  test.beforeEach(async ({ page }) => {
+    await page.addInitScript(() => sessionStorage.setItem("ctr-welcome", "1"));
+  });
+
   test("Act I H1 is visible at load and the skip link targets #trails", async ({
     page,
   }) => {
@@ -156,12 +161,12 @@ test.describe("Scroll hero", () => {
       "scrub",
     );
     await expect
-      .poll(() => media.some((u) => u.includes("ride-desktop.mp4")))
+      .poll(() => media.some((u) => u.includes("ride-hd.mp4")))
       .toBe(true);
     expect(media.some((u) => u.includes("ride-mobile.mp4"))).toBe(false);
   });
 
-  test("scrolling reveals the river act and advances the rail", async ({
+  test("scrolling reveals the ridge act and advances the rail", async ({
     page,
   }) => {
     await page.goto("/");
@@ -179,9 +184,9 @@ test.describe("Scroll hero", () => {
         behavior: "instant",
       });
     });
-    await expect(page.locator('[data-act="river"]')).toHaveCSS("opacity", "1");
+    await expect(page.locator('[data-act="ridge"]')).toHaveCSS("opacity", "1");
     await expect(page.locator('[data-act="intro"]')).toHaveCSS("opacity", "0");
-    await expect(page.locator('a[data-chapter="river"]')).toHaveAttribute(
+    await expect(page.locator('a[data-chapter="ridge"]')).toHaveAttribute(
       "aria-current",
       "true",
     );
@@ -222,13 +227,13 @@ test.describe("Scroll hero", () => {
     });
   }
 
-  test("#river deep link opens at the river chapter", async ({ page }) => {
-    await page.goto("/#river");
+  test("#ridge deep link opens at the ridge chapter", async ({ page }) => {
+    await page.goto("/#ridge");
     await expect(page.locator("[data-hero]")).toHaveAttribute(
       "data-mode",
       "scrub",
     );
-    await expect(page.locator('[data-act="river"]')).toHaveCSS("opacity", "1");
+    await expect(page.locator('[data-act="ridge"]')).toHaveCSS("opacity", "1");
   });
 
   test("skip link moves to the trails section", async ({ page }) => {
@@ -283,7 +288,7 @@ test.describe("Scroll hero", () => {
     });
   }
 
-  test("at p=0.5 the river act, not the intro, receives pointer events", async ({
+  test("at p=0.5 the ridge act, not the intro, receives pointer events", async ({
     page,
   }) => {
     await page.goto("/");
@@ -292,12 +297,12 @@ test.describe("Scroll hero", () => {
       "scrub",
     );
     await scrollToProgress(page, 0.5);
-    await expect(page.locator('[data-act="river"]')).toHaveCSS("opacity", "1");
+    await expect(page.locator('[data-act="ridge"]')).toHaveCSS("opacity", "1");
     await expect
       .poll(() =>
         page.evaluate(() => {
           const r = document
-            .querySelector('[data-act="river"]')!
+            .querySelector('[data-act="ridge"]')!
             .getBoundingClientRect();
           const hit = document.elementFromPoint(
             r.left + r.width / 2,
@@ -306,7 +311,7 @@ test.describe("Scroll hero", () => {
           return hit?.closest("[data-act]")?.getAttribute("data-act") ?? null;
         }),
       )
-      .toBe("river");
+      .toBe("ridge");
   });
 
   test("dock links are out of the tab order until the dock appears", async ({
@@ -330,7 +335,7 @@ test.describe("Scroll hero", () => {
     expect(await tabindexes()).toEqual([null, null]);
   });
 
-  test("deep link resyncs the video to the river frame once it is ready", async ({
+  test("deep link resyncs the video to the ridge frame once it is ready", async ({
     page,
   }) => {
     await page.addInitScript(() => {
@@ -350,7 +355,7 @@ test.describe("Scroll hero", () => {
         },
       });
     });
-    await page.goto("/#river");
+    await page.goto("/#ridge");
     await expect(page.locator("[data-hero]")).toHaveAttribute(
       "data-ready",
       "true",
@@ -368,12 +373,12 @@ test.describe("Scroll hero", () => {
       const seeks = (window as unknown as { __seeks: number[] }).__seeks;
       return seeks[seeks.length - 1]!;
     });
-    // river chapter is p=0.5; clip is ~5.7s, so the target is ~2.8s, never frame 0
-    expect(last).toBeGreaterThan(2);
-    expect(last).toBeLessThan(3.5);
+    // ridge chapter is p=0.5; the v2 clip is 13 s, so the target is ~6.5 s, never frame 0
+    expect(last).toBeGreaterThan(5.5);
+    expect(last).toBeLessThan(7.5);
   });
 
-  test("fast scroll through the river paints droplets, which clear once still", async ({
+  test("dust motes drift over the hero, and keep drifting through a fast scrub, without errors", async ({
     page,
   }) => {
     const errors: string[] = [];
@@ -386,8 +391,13 @@ test.describe("Scroll hero", () => {
       "data-ready",
       "true",
     );
+    await expect(page.locator("[data-hero]")).toHaveAttribute(
+      "data-fx",
+      "dust",
+    );
 
-    const painted = (): Promise<boolean> =>
+    // Non-transparent pixels on the FX canvas.
+    const painted = (): Promise<number> =>
       page.evaluate(() => {
         const c = document.querySelector<HTMLCanvasElement>("[data-hero-fx]")!;
         const data = c
@@ -395,8 +405,7 @@ test.describe("Scroll hero", () => {
           .getImageData(0, 0, c.width, c.height).data;
         let n = 0;
         for (let i = 3; i < data.length; i += 4) if (data[i] !== 0) n++;
-        // A 1x1 (unsized) canvas could "paint" one pixel; require a real droplet's worth.
-        return n >= 20;
+        return n;
       });
 
     // The canvas must be sized to the stage, not left at the 1x1 it has while display:none.
@@ -406,24 +415,17 @@ test.describe("Scroll hero", () => {
           document.querySelector<HTMLCanvasElement>("[data-hero-fx]")!.width,
       ),
     ).toBeGreaterThan(300);
-    expect(await painted()).toBe(false);
 
-    // Sweep p 0.4 -> 0.7 back and forth, fast, until something is painted (bounded, not timing-fragile).
-    let seen = false;
-    for (let round = 0; round < 12 && !seen; round++) {
-      for (const target of [0.4, 0.5, 0.6, 0.7, 0.6, 0.5]) {
-        await scrollToProgress(page, target);
-        await page.waitForTimeout(40);
-        if (await painted()) {
-          seen = true;
-          break;
-        }
-      }
+    // At rest: a faint constant drift (rate/spawn logic is unit-tested in hero-math).
+    await expect
+      .poll(painted, { timeout: 8000, intervals: [250] })
+      .toBeGreaterThan(0);
+
+    for (const target of [0.4, 0.5, 0.6, 0.7, 0.6, 0.5, 0.4]) {
+      await scrollToProgress(page, target);
+      await page.waitForTimeout(40);
     }
-    expect(seen).toBe(true);
-
-    // Standing still: velocity decays, particles live ~1-2 s, canvas returns to fully transparent.
-    await expect.poll(painted, { timeout: 8000, intervals: [250] }).toBe(false);
+    expect(await painted()).toBeGreaterThan(0);
     expect(errors).toEqual([]);
   });
 
@@ -435,7 +437,7 @@ test.describe("Scroll hero", () => {
       "data-mode",
       "scrub",
     );
-    // Let the video/layout settle so 0.47 stays near the river chapter.
+    // Let the video/layout settle so 0.47 stays near the ridge chapter.
     await expect(page.locator("[data-hero]")).toHaveAttribute(
       "data-ready",
       "true",
@@ -543,7 +545,7 @@ test.describe("Scroll hero", () => {
         return { opaque, bright };
       });
 
-    for (const url of ["/", "/#river"]) {
+    for (const url of ["/", "/#ridge"]) {
       test(`canvas holds a real frame once ready (${url})`, async ({
         page,
       }) => {
@@ -574,7 +576,7 @@ test.describe("Scroll hero", () => {
       await expect(page.locator(".ctr-hero__poster")).toBeVisible();
       // The hero keeps scrubbing copy without a video.
       await scrollToProgress(page, 0.5);
-      await expect(page.locator('[data-act="river"]')).toHaveCSS(
+      await expect(page.locator('[data-act="ridge"]')).toHaveCSS(
         "opacity",
         "1",
       );
@@ -599,7 +601,7 @@ test.describe("Scroll hero", () => {
     const named = (all: Call[], name: string) =>
       all.filter((c) => c[0] === "event" && c[1] === name);
 
-    test("no chapter is reported at load; river is reported once after scrolling", async ({
+    test("no chapter is reported at load; ridge is reported once after scrolling", async ({
       page,
     }) => {
       await stubGtag(page);
@@ -613,7 +615,7 @@ test.describe("Scroll hero", () => {
       await scrollToProgress(page, 0.5);
       await expect
         .poll(async () => named(await calls(page), "hero_chapter_reached"))
-        .toEqual([["event", "hero_chapter_reached", { chapter: "river" }]]);
+        .toEqual([["event", "hero_chapter_reached", { chapter: "ridge" }]]);
       await page.waitForTimeout(300);
       expect(named(await calls(page), "hero_chapter_reached")).toHaveLength(1);
     });
@@ -668,7 +670,7 @@ test.describe("Scroll hero", () => {
     }
   });
 
-  test("a single wheel tick into the river snap radius settles on the river chapter", async ({
+  test("a single wheel tick into the ridge snap radius settles on the ridge chapter", async ({
     page,
   }) => {
     await page.goto("/");
@@ -676,11 +678,11 @@ test.describe("Scroll hero", () => {
       "data-ready",
       "true",
     );
-    // p=0.43 is just outside the river radius (0.06); one ~100px tick lands inside it.
+    // p=0.43 is just outside the ridge radius (0.06); one ~100px tick lands inside it.
     await scrollToProgress(page, 0.43);
     await page.waitForTimeout(600);
     const before = await page.evaluate(() => window.scrollY);
-    const riverY = await page.evaluate(() => {
+    const ridgeY = await page.evaluate(() => {
       const el = document.querySelector<HTMLElement>("[data-hero]")!;
       const stage = el.querySelector<HTMLElement>("[data-hero-stage]")!;
       const top = el.getBoundingClientRect().top + window.scrollY;
@@ -695,7 +697,7 @@ test.describe("Scroll hero", () => {
     await expect
       .poll(
         async () =>
-          Math.abs((await page.evaluate(() => window.scrollY)) - riverY),
+          Math.abs((await page.evaluate(() => window.scrollY)) - ridgeY),
         {
           timeout: 8000,
         },
@@ -719,7 +721,7 @@ test.describe("Scroll hero", () => {
       "scrub",
     );
     await scrollToProgress(page, 0.5);
-    await expect(page.locator('[data-act="river"]')).toHaveCSS("opacity", "1");
+    await expect(page.locator('[data-act="ridge"]')).toHaveCSS("opacity", "1");
     await expect(page.locator('[data-act="intro"]')).toHaveCSS("opacity", "0");
     await scrollToProgress(page, 0.9);
     await expect(page.locator('[data-act="ride"]')).toHaveCSS("opacity", "1");
@@ -887,5 +889,176 @@ test.describe("Mobile UX", () => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto("/trails/");
     await expect(page.locator("[data-sticky-contact]")).toBeHidden();
+  });
+});
+
+test.describe("Welcome loader", () => {
+  const loader = (page: Page) => page.locator("[data-loader]");
+
+  const sinceNavigation = (page: Page) => page.evaluate(() => performance.now());
+
+  test("plays for its minimum time, then leaves on its own within the cap", async ({
+    page,
+  }) => {
+    await page.goto("/");
+    await expect(page.locator("html")).toHaveAttribute("data-welcome", "on");
+    await expect(loader(page)).toBeVisible();
+    await expect(loader(page).getByRole("button")).toHaveText("Skip");
+    // Still fully up just before the 3 s minimum, even though the hero is ready by then.
+    await page.waitForTimeout(Math.max(0, 2700 - (await sinceNavigation(page))));
+    await expect(loader(page)).not.toHaveAttribute("data-state", "out");
+    // 4.5 s cap + 1.25 s staged exit, measured from navigation start.
+    await expect(loader(page)).toHaveCount(0, { timeout: 7000 });
+    await expect(page.locator("html")).toHaveAttribute("data-welcome", "done");
+  });
+
+  test("holds the page still before the minimum, then a scroll lets the visitor in", async ({
+    page,
+  }) => {
+    await page.goto("/");
+    await expect(loader(page)).toBeVisible();
+    await page.mouse.move(600, 400);
+    await page.mouse.wheel(0, 600);
+    await page.waitForTimeout(300);
+    expect(await page.evaluate(() => window.scrollY)).toBe(0);
+    await expect(loader(page)).not.toHaveAttribute("data-state", "out");
+    // Past the minimum the same gesture dismisses it.
+    await page.waitForTimeout(Math.max(0, 3100 - (await sinceNavigation(page))));
+    await page.mouse.wheel(0, 100);
+    await expect(loader(page)).toHaveCount(0, { timeout: 2500 });
+  });
+
+  test("Skip dismisses it at any time", async ({ page }) => {
+    await page.goto("/");
+    await loader(page).getByRole("button").click();
+    await expect(loader(page)).toHaveAttribute("data-state", "out");
+    await expect(loader(page)).toHaveCount(0, { timeout: 2000 });
+  });
+
+  test("is shown once per session", async ({ page }) => {
+    await page.goto("/");
+    await expect(loader(page)).toHaveCount(0, { timeout: 7000 });
+    await page.goto("/fr/");
+    await expect(page.locator("html")).not.toHaveAttribute("data-welcome", /.*/);
+    await expect(loader(page)).toHaveCount(0);
+  });
+
+  test("never appears on deep links or inner pages", async ({ page }) => {
+    await page.goto("/#trails");
+    await expect(loader(page)).toHaveCount(0);
+    await page.goto("/trails/");
+    await expect(loader(page)).toHaveCount(0);
+  });
+
+  test("fades out by CSS alone if its script never runs", async ({ page }) => {
+    await page.route(/\.js(\?|$)/, (route) => route.abort());
+    await page.goto("/");
+    await expect(loader(page)).toBeVisible();
+    await expect(loader(page)).toBeHidden({ timeout: 8000 });
+  });
+
+  test.describe("reduced motion", () => {
+    test.use({ reducedMotion: "reduce" });
+
+    test("is skipped and never fetches its clip", async ({ page }) => {
+      const media: string[] = [];
+      page.on("request", (r) => {
+        if (/\.mp4(\?|$)/.test(r.url())) media.push(r.url());
+      });
+      await page.goto("/");
+      await page.waitForLoadState("networkidle");
+      await expect(loader(page)).toHaveCount(0);
+      expect(media).toEqual([]);
+    });
+  });
+});
+
+test.describe("Ambient clips", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.addInitScript(() => sessionStorage.setItem("ctr-welcome", "1"));
+  });
+
+  test("are decorative, fetch nothing until near, then play while visible", async ({
+    page,
+  }) => {
+    await page.goto("/");
+    const clips = page.locator("[data-ambient-video]");
+    await expect(clips).toHaveCount(2);
+    for (const clip of await clips.all()) {
+      await expect(clip).toHaveAttribute("preload", "none");
+      await expect(clip).not.toHaveAttribute("src", /.*/);
+      await expect(clip.locator("..")).toHaveAttribute("aria-hidden", "true");
+    }
+    const group = page.locator("#groups [data-ambient-video]");
+    await group.scrollIntoViewIfNeeded();
+    await expect(group).toHaveAttribute("src", /ambient-group\.mp4$/);
+    await expect
+      .poll(() => group.evaluate((v: HTMLVideoElement) => !v.paused))
+      .toBe(true);
+    await expect(group).toHaveAttribute("data-playing", "true");
+    await expect(group).toHaveCSS("opacity", "1");
+  });
+
+  for (const route of ["/treks/", "/groups/"]) {
+    test(`render on ${route}`, async ({ page }) => {
+      await page.goto(route);
+      await expect(page.locator("[data-ambient-video]")).toHaveCount(1);
+    });
+  }
+
+  test.describe("reduced motion", () => {
+    test.use({ reducedMotion: "reduce" });
+
+    test("keep the poster and never load the clip", async ({ page }) => {
+      await page.goto("/");
+      const group = page.locator("#groups [data-ambient-video]");
+      await group.scrollIntoViewIfNeeded();
+      await page.waitForTimeout(500);
+      await expect(group).not.toHaveAttribute("src", /.*/);
+      await expect(
+        page.locator("#groups [data-ambient-poster]"),
+      ).toHaveAttribute("src", /ambient-group\.webp$/);
+      await expect(page.locator("#groups [data-ambient-poster]")).toBeVisible();
+    });
+  });
+});
+
+test.describe("Hero panel layout (v2 vertical footage)", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.addInitScript(() => sessionStorage.setItem("ctr-welcome", "1"));
+  });
+
+  const plateBox = async (page: Page, path: string) => {
+    await page.goto(path);
+    await expect(page.locator("[data-hero]")).toHaveAttribute(
+      "data-layout",
+      "panel",
+    );
+    return (await page.locator(".ctr-hero__plate").boundingBox())!;
+  };
+
+  test("desktop: a portrait panel on the inline-end side, clear of the copy", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    const box = await plateBox(page, "/");
+    // 3:4 window on the 9:16 footage
+    expect(box.height / box.width).toBeCloseTo(4 / 3, 1);
+    expect(box.width).toBeGreaterThan(500);
+    expect(box.x).toBeGreaterThan(720);
+    const h1 = (await page.getByRole("heading", { level: 1 }).boundingBox())!;
+    expect(h1.x + h1.width).toBeLessThan(box.x);
+  });
+
+  test("Arabic desktop: the panel mirrors to the left", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    const box = await plateBox(page, "/ar/");
+    expect(box.x + box.width).toBeLessThan(720);
+  });
+
+  test("phone portrait: the footage fills the stage", async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 812 });
+    const box = await plateBox(page, "/");
+    expect(box.width).toBeGreaterThanOrEqual(374);
   });
 });

@@ -30,3 +30,7 @@ files as the client approves more translated copy.
 - `nav.menu` (AR/FR) — mobile menu label added by the mobile UX pass.
 - 46 strings added to AR/FR by the mobile/i18n pass (2026-09-20): home rides/treks/groups cards, trails intro, about, gallery, contact.hours, all form select options + consent/disclaimer, treks/horses placeholders. Draft-quality; needs native review. "REAF"/"Berytech" kept untranslated.
 - `trail.<id>.descriptor` for pine/beit-eddine/panoramic/rocky/custom and `trail.<id>.duration` (AR/FR) — drafts.
+- `hero.v2.chapter2`, `hero.v2.act2.body`, `loader.welcome`, `loader.skip` (EN/AR/FR, 2026-10-01) —
+  v2 hero footage (ridge, not river) and the welcome screen. New EN copy, not in the brief: needs
+  client sign-off; AR/FR are drafts. The v1 `hero.chapter2` / `hero.act2.body` ("River") stay for
+  the fallback variant.

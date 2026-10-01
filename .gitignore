@@ -36,3 +36,8 @@ pnpm-debug.log*
 
 # browser automation session scratch
 .playwright-mcp/
+
+# raw video masters (the v2 .MOV is ~150 MB, over GitHub's 100 MB per-file limit);
+# kept on disk only, see README.md § Hero
+/horse-hero-v2/*.MOV
+/horse-hero-v2/*.mov

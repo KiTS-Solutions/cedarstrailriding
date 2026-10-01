@@ -13,7 +13,7 @@ import {
   videoTime,
   type ActName,
 } from "./hero-math";
-import { createFx, type Fx } from "./hero-fx";
+import { createFx, type Fx, type FxStyle } from "./hero-fx";
 
 type AnalyticsWindow = Window & {
   gtag?: (...args: unknown[]) => void;
@@ -35,6 +35,8 @@ const OPACITY_EPSILON = 0.005;
 const FOCUS_THRESHOLD = 0.35;
 const SNAP_IDLE_MS = 160;
 const MOVED_THRESHOLD = 0.02;
+/** The backdrop is drawn at 1/3 of its CSS size: soft enough under a light blur, cheap per seek. */
+const BACKDROP_DOWNSCALE = 3;
 
 class HeroError extends Error {
   constructor(message: string) {
@@ -95,6 +97,9 @@ function syncHeroTop(root: HTMLElement): void {
       ? (header?.offsetHeight ?? 0)
       : root.getBoundingClientRect().top + window.scrollY;
   root.style.setProperty("--hero-top", `${Math.round(top)}px`);
+  // Mode-independent, so the v2 portrait panel keeps its size across the static -> scrub
+  // upgrade (sizing it from --hero-top made it resize, a layout shift).
+  root.style.setProperty("--header-h", `${Math.round(header?.offsetHeight ?? 0)}px`);
 }
 
 export function initScrollHero(root: HTMLElement): void {
@@ -126,7 +131,11 @@ function upgrade(root: HTMLElement): void {
   const ctx = canvas.getContext("2d");
   if (!ctx) throw new HeroError("2d canvas unavailable");
   const fxCanvas = must<HTMLCanvasElement>(root, "[data-hero-fx]");
-  let fx: Fx | null = createFx(fxCanvas);
+  const fxStyle: FxStyle = root.dataset.fx === "dust" ? "dust" : "splash";
+  let fx: Fx | null = createFx(fxCanvas, fxStyle);
+  // Panel layout: a reduced-resolution copy of the frame behind the panel (CSS softens it).
+  const backdrop = root.querySelector<HTMLCanvasElement>("[data-hero-backdrop]");
+  const backdropCtx = backdrop?.getContext("2d") ?? null;
 
   const acts = Object.fromEntries(
     ACT_NAMES.map((name) => [
@@ -169,18 +178,28 @@ function upgrade(root: HTMLElement): void {
   let lastTime = -1;
   let ready = false;
 
-  // Returns true only when a frame was actually painted.
-  const draw = (): boolean => {
+  // object-fit: cover, in canvas terms.
+  const drawCover = (
+    target: CanvasRenderingContext2D,
+    cw: number,
+    ch: number,
+  ): void => {
     const sw = video.videoWidth;
     const sh = video.videoHeight;
-    if (!sw || !sh) return false;
-    const cw = canvas.width;
-    const ch = canvas.height;
     const scale = Math.max(cw / sw, ch / sh);
     const w = sw * scale;
     const h = sh * scale;
+    target.drawImage(video, (cw - w) / 2, (ch - h) / 2, w, h);
+  };
+
+  // Returns true only when a frame was actually painted.
+  const draw = (): boolean => {
+    if (!video.videoWidth || !video.videoHeight) return false;
     try {
-      ctx.drawImage(video, (cw - w) / 2, (ch - h) / 2, w, h);
+      drawCover(ctx, canvas.width, canvas.height);
+      // display:none (phones) leaves it at 1x1: skip the useless draw.
+      if (backdrop && backdropCtx && backdrop.width > 1)
+        drawCover(backdropCtx, backdrop.width, backdrop.height);
     } catch (err) {
       if (!(err instanceof DOMException)) throw err;
       return false;
@@ -191,7 +210,10 @@ function upgrade(root: HTMLElement): void {
   // The canvas fades in over the poster only after it holds a real frame; until then it is
   // transparent, so a failed/undecoded video leaves the poster visible.
   const paint = (): void => {
-    if (draw()) root.dataset.ready = "true";
+    if (!draw() || root.dataset.ready) return;
+    root.dataset.ready = "true";
+    // The welcome loader waits on this to know the hero has a real frame to reveal.
+    root.dispatchEvent(new CustomEvent("ctr:hero-ready", { bubbles: true }));
   };
 
   const resize = (): void => {
@@ -199,6 +221,11 @@ function upgrade(root: HTMLElement): void {
     const dpr = Math.min(window.devicePixelRatio || 1, portrait ? 1.5 : 2);
     canvas.width = Math.max(1, Math.round(rect.width * dpr));
     canvas.height = Math.max(1, Math.round(rect.height * dpr));
+    if (backdrop) {
+      const b = backdrop.getBoundingClientRect();
+      backdrop.width = Math.max(1, Math.round(b.width / BACKDROP_DOWNSCALE));
+      backdrop.height = Math.max(1, Math.round(b.height / BACKDROP_DOWNSCALE));
+    }
     if (ready) draw();
   };
 
@@ -250,7 +277,7 @@ function upgrade(root: HTMLElement): void {
   const reached = new Set<string>();
   const lastOpacity: Record<ActName, number> = {
     intro: -1,
-    river: -1,
+    ridge: -1,
     ride: -1,
   };
 
