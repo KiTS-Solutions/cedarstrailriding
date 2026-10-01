@@ -46,7 +46,9 @@ backend, deployed to Vercel. Full context: `brief/README.md` and `brief/HANDOFF.
 ## Locked build decisions (do not re-litigate without client input)
 
 - **Stack:** Astro (static output), Tailwind CSS v4, minimal client JS, no backend.
-- **Hosting:** Vercel, domain `cedarstrailriding.com`.
+- **Hosting:** Vercel, domain `cedarstrailriding.com`. DNS and email stay at HostGator — at
+  launch change only the apex `A` + `www` `CNAME` there; never touch MX/SPF/DKIM/DMARC or move
+  nameservers (see `PRELAUNCH_CHECKLIST.md` § Hosting).
 - **Languages:** EN default at `/`, AR (RTL) at `/ar/`, FR at `/fr/` via Astro's built-in i18n
   routing (`astro.config.mjs`, `prefixDefaultLocale: false`). All copy goes through
   `src/i18n/locales/{en,ar,fr}.json` + `useTranslations()` — never hardcode English in
