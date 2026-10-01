@@ -41,8 +41,8 @@ const socials = [
     <p>{t("footer.credit.pitch")}</p>
     <ul class="mt-2 flex flex-wrap items-center justify-center gap-x-4">
       <li>
-        <a href={developer.whatsapp} target="_blank" rel="noopener noreferrer" class="footer-link">
-          {t("footer.credit.whatsapp")}:{" "}<bdi dir="ltr">{developer.phone}</bdi>
+        <a href={developer.whatsapp} target="_blank" rel="noopener noreferrer" class="footer-link gap-1">
+          <span>{t("footer.credit.whatsapp")}:</span><bdi dir="ltr">{developer.phone}</bdi>
         </a>
       </li>
       <li>

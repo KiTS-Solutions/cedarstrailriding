@@ -1157,6 +1157,14 @@ test.describe("Site credit", () => {
       "href",
       "mailto:kits.tech.co@gmail.com",
     );
+    await expect(credit.getByRole("link", { name: "Instagram" })).toHaveAttribute(
+      "href",
+      "https://www.instagram.com/kits_solutions/",
+    );
+    await expect(credit.getByRole("link", { name: "Facebook" })).toHaveAttribute(
+      "href",
+      "https://www.facebook.com/profile.php?id=61585989414621",
+    );
   });
 
   test("credit is translated on /ar/", async ({ page }) => {
