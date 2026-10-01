@@ -42,5 +42,7 @@ files as the client approves more translated copy.
 - `nav.trailsDesc`, `nav.treksDesc`, `nav.groupsDesc`, `nav.aboutDesc`, `nav.galleryDesc`,
   `nav.faqDesc` (EN/AR/FR, 2026-10-01) — one-line descriptions under each item in the mobile menu
   drawer. Trails/treks/groups/about are trimmed from existing brief copy (`home.*CardDesc`,
-  positioning) and their existing AR/FR translations; gallery and FAQ lines are new EN copy needing
-  client sign-off. AR/FR are drafts.
+  positioning) and their existing AR/FR translations; gallery and FAQ lines are new EN copy.
+  **Approved 2026-10-01** (EN copy and AR/FR wording) — no further review needed for these six keys.
+- `cta.exploreTreks` (EN/AR/FR, 2026-10-01) — replaces the home treks band's generic "Learn more"
+  (Lighthouse link-text). Built from the existing `nav.treks` wording; AR/FR are drafts.

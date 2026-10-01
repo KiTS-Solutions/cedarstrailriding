@@ -35,6 +35,9 @@ it should be resolved before the site goes live publicly.
 - [x] Logo file — resolved this session: a genuine transparent logo (`public/images/brand/ctr-logo.webp`)
       is live in the header. **Still needed:** client confirmation that this is the final approved
       version before public launch.
+- [x] Header logo treatment — approved 2026-10-01: the header renders the logo split into its mark
+      and wordmark (`public/images/brand/ctr-mark.webp` / `ctr-wordmark.webp`, cropped from
+      `logo/ctr-1-1-scaled.webp`) so the name stays legible at header size.
 
 ## Rights / legal
 - [ ] Confirm usage rights for the 3 TripAdvisor photos currently live in the gallery/hero
@@ -82,6 +85,11 @@ it should be resolved before the site goes live publicly.
       the static stage fill the viewport, after which desktop Lighthouse CLS is 0.000 on `/` (3 runs),
       `/ar/` and `/fr/` (desktop LCP 0.76-0.77 s). Action: investigate site-wide critical CSS / font
       loading before launch.
+      **Measured 2026-10-01 after the header redesign, on the deployed GitHub Pages demo** (real CDN,
+      compressed; Lighthouse 13.5.0, median of 3 runs, welcome screen included on home):
+      mobile LCP 1.47 s `/`, 1.50 s `/ar/`, 1.45 s `/fr/`, 0.92 s `/trails/`; desktop LCP 0.30–0.41 s;
+      CLS ≤ 0.011 everywhere (0.000 on mobile); TBT ≤ 9 ms. Performance score 94–100. Passes the
+      budget with headroom. Still to do: the same run on the Vercel production domain at launch.
 - [ ] Real-device pass: iPhone Safari and a mid-range Android on real mobile data. Check the
       poster→video fade, that the hero autoplays (iOS Low Power Mode refuses autoplay: the poster
       and a Play button should show), and whether the mobile fetch is acceptable (v2 autoplay loop:
@@ -97,6 +105,15 @@ it should be resolved before the site goes live publicly.
 - [ ] Validate JSON-LD with Google's Rich Results Test (statically validated 2026-09-20; removed aggregateRating, fixed locale breadcrumb URLs; Google tool itself not yet run) (LocalBusiness/TouristTrip on
       home + contact, FAQPage on `/faq`, BreadcrumbList sitewide).
 - [x] (audited 2026-09-20; fixed contact overflow at 375px and reversed English fallback text; `/ar/trails/` still mostly English, needs Arabic translation) Test every page at `dir="rtl"` (`/ar/...`) for layout mirroring issues.
+- [x] Colour contrast — fixed 2026-10-01 (Lighthouse flagged brand-palette pairs site-wide). Added
+      text-safe tokens in `global.css` (`gold-bright` on cedar 4.66:1, `gold-deep` on sand 4.73:1,
+      `terracotta-deep` on terracotta tints ≥ 4.68:1); `.btn-primary` text is now ink on gold
+      (6.57:1, was cedar 4.13:1); `.form-note` ink/70 (5.52:1). Base gold/terracotta unchanged for
+      fills, borders and decoration.
+- [x] Lighthouse minor items — fixed 2026-10-01: `/trails/` cards are `h2` under the page `h1`
+      (`TrailCard headingLevel`); home treks band link now reads "Explore multi-day treks". SEO
+      58–66 on the demo is only the deliberate `noindex` (`PUBLIC_NOINDEX` in `pages.yml`);
+      production builds don't set it.
 - [ ] `npm run check` and `npm run test:e2e` both currently pass — re-run after any content
       swap above.
 - [ ] Replace `public/og-image.jpg` (currently a TripAdvisor photo reused as a placeholder)

@@ -16,7 +16,7 @@ const t = useTranslations(locale);
   <p dir="auto" class="mx-auto mt-4 max-w-2xl text-center text-ink/80">{t("trails.intro")}</p>
 
   <div class="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-    {trails.map((trail) => <TrailCard trail={trail} locale={locale} />)}
+    {trails.map((trail) => <TrailCard trail={trail} locale={locale} headingLevel={2} />)}
   </div>
 
   <div class="mt-10 text-center">

@@ -8,6 +8,11 @@
   --color-gold: #c9a227;
   --color-ink: #1c241f;
   --color-terracotta: #b4552d;
+  /* Text-safe variants of the brand accents (same hue, WCAG AA ≥ 4.5:1 for normal text). The base
+     gold/terracotta stay for fills, borders and decoration. */
+  --color-gold-bright: #d6ac29; /* gold text on cedar-deep: 4.66:1 */
+  --color-gold-deep: #806719; /* gold text on sand / warm-white: 4.73:1 / 5.07:1 */
+  --color-terracotta-deep: #974726; /* terracotta text on terracotta/10–15 tints: ≥ 4.68:1 */
 
   --font-display: "Fraunces", "Playfair Display", serif;
   --font-body: "Inter", "Source Sans 3", system-ui, sans-serif;
@@ -71,7 +76,7 @@
 
 @layer components {
   .btn-primary {
-    @apply inline-flex items-center justify-center rounded-full px-6 py-3 font-medium transition-colors duration-200 bg-gold text-cedar-deep hover:bg-cedar-deep hover:text-warm-white;
+    @apply inline-flex items-center justify-center rounded-full px-6 py-3 font-medium transition-colors duration-200 bg-gold text-ink hover:bg-cedar-deep hover:text-warm-white;
   }
 
   .btn-secondary {
@@ -91,11 +96,11 @@
   }
 
   .chip-scenic {
-    @apply inline-block rounded-full border border-gold px-3 py-1 text-sm font-medium text-gold;
+    @apply inline-block rounded-full border border-gold px-3 py-1 text-sm font-medium text-gold-deep;
   }
 
   .chip-adventure {
-    @apply inline-block rounded-full bg-terracotta/15 px-3 py-1 text-sm font-medium text-terracotta;
+    @apply inline-block rounded-full bg-terracotta/15 px-3 py-1 text-sm font-medium text-terracotta-deep;
   }
 
   /* Form controls: 48px tall, 16px text (stops iOS zoom-on-focus), and min-w-0 so native
