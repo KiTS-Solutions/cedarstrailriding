@@ -36,3 +36,6 @@ files as the client approves more translated copy.
   the fallback variant.
 - `hero.pause`, `hero.play` (EN/AR/FR, 2026-10-01) — accessible labels for the autoplaying
   hero's pause/play button (replaces the removed `hero.scrollCue`). AR/FR are drafts.
+- `footer.credit.by`, `footer.credit.pitch`, `footer.credit.whatsapp` (EN/AR/FR, 2026-10-01) — the
+  KiTS agency credit in the footer (`SiteCredit.astro`). Agency copy, not client copy; AR/FR are
+  drafts.

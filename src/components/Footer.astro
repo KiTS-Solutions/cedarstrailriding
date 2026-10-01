@@ -3,6 +3,7 @@ import { path, useTranslations, withBase, type Locale } from "../i18n";
 import { brand, contact, social, brandFamily } from "../data/siteSettings";
 import LebanonMap from "./LebanonMap.astro";
 import WhatsAppButton from "./WhatsAppButton.astro";
+import SiteCredit from "./SiteCredit.astro";
 
 interface Props {
   locale: Locale;
@@ -110,6 +111,10 @@ const companyLinks = [
     <div class="mt-10 flex flex-col gap-2 border-t border-warm-white/15 pt-6 text-xs text-warm-white/70 sm:flex-row sm:items-center sm:justify-between">
       <p>© {year} {brand.name} · Samqaniyeh, Beiteddine, Lebanon</p>
       <p>{t("footer.siteLanguage")}</p>
+    </div>
+
+    <div class="mt-4">
+      <SiteCredit locale={locale} />
     </div>
   </div>
 </footer>
