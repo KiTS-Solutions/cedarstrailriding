@@ -983,7 +983,8 @@ test.describe("Ambient clips", () => {
   }) => {
     await page.goto("/");
     const clips = page.locator("[data-ambient-video]");
-    await expect(clips).toHaveCount(2);
+    // Treks + groups panels, plus the About band's standalone blurred backdrop.
+    await expect(clips).toHaveCount(3);
     for (const clip of await clips.all()) {
       await expect(clip).toHaveAttribute("preload", "none");
       await expect(clip).not.toHaveAttribute("src", /.*/);
@@ -998,6 +999,28 @@ test.describe("Ambient clips", () => {
     await expect(group).toHaveAttribute("data-playing", "true");
     await expect(group).toHaveCSS("opacity", "1");
   });
+
+  test("About band plays its own blurred backdrop clip", async ({ page }) => {
+    await page.goto("/");
+    const clip = page.locator("#about .ambient-backdrop [data-ambient-video]");
+    await clip.scrollIntoViewIfNeeded();
+    await expect(clip).toHaveAttribute("src", /loader\.mp4$/);
+    await expect(clip).toHaveAttribute("data-playing", "true");
+    await expect(clip).toHaveCSS("opacity", "1");
+  });
+
+  for (const route of ["/", "/treks/"]) {
+    test(`treks backdrop mirrors the panel clip on ${route}`, async ({ page }) => {
+      await page.goto(route);
+      const backdrop = page.locator("[data-ambient-scope] [data-ambient-backdrop]");
+      await expect(backdrop).toHaveCount(1);
+      await backdrop.scrollIntoViewIfNeeded();
+      // Mirrored, not a second copy of the clip.
+      await expect(page.locator("[data-ambient-scope] video")).toHaveCount(1);
+      await expect(backdrop).toHaveAttribute("data-drawn", "true");
+      await expect(backdrop).toHaveCSS("opacity", "1");
+    });
+  }
 
   for (const route of ["/treks/", "/groups/"]) {
     test(`render on ${route}`, async ({ page }) => {
@@ -1019,6 +1042,17 @@ test.describe("Ambient clips", () => {
         page.locator("#groups [data-ambient-poster]"),
       ).toHaveAttribute("src", /ambient-group\.webp$/);
       await expect(page.locator("#groups [data-ambient-poster]")).toBeVisible();
+    });
+
+    test("backdrops keep the blurred poster and never draw or load", async ({ page }) => {
+      await page.goto("/");
+      for (const id of ["#about", "#treks"]) {
+        await page.locator(id).scrollIntoViewIfNeeded();
+        await expect(page.locator(`${id} .ambient-backdrop img`)).toBeVisible();
+      }
+      await page.waitForTimeout(500);
+      await expect(page.locator("#about .ambient-backdrop video")).not.toHaveAttribute("src", /.*/);
+      await expect(page.locator("#treks [data-ambient-backdrop]")).not.toHaveAttribute("data-drawn", /.*/);
     });
   });
 });

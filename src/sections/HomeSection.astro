@@ -50,12 +50,16 @@ const horseSlots = horses.length > 0 ? horses : Array.from({ length: HORSE_PLACE
   </article>
 </section>
 
-<section id="about" class="bg-sand px-4 py-12 sm:px-6 sm:py-16">
+<section
+  id="about"
+  class="relative isolate overflow-hidden bg-cedar-deep px-4 py-12 text-warm-white sm:px-6 sm:py-16"
+>
+  <AmbientBackdrop video={v2Clips.loader.video} poster={v2Clips.loader.poster} scrim="even" />
   <div class="mx-auto max-w-3xl text-center">
-    <h2 class="font-display text-3xl font-semibold text-cedar-deep">{t("home.aboutHeading")}</h2>
-    <p class="mt-4 text-ink/80">{t("home.aboutBody")}</p>
-    <blockquote class="mt-6 font-display text-xl italic text-cedar-soft">“{t("home.aboutQuote")}”</blockquote>
-    <a href={path("/about/", locale)} class="mt-4 inline-flex min-h-11 items-center font-semibold text-cedar-deep underline">
+    <h2 class="font-display text-3xl font-semibold">{t("home.aboutHeading")}</h2>
+    <p class="mt-4">{t("home.aboutBody")}</p>
+    <blockquote class="mt-6 font-display text-xl italic">“{t("home.aboutQuote")}”</blockquote>
+    <a href={path("/about/", locale)} class="mt-4 inline-flex min-h-11 items-center font-semibold text-warm-white underline">
       {t("cta.readStory")}
     </a>
   </div>
@@ -81,7 +85,7 @@ const horseSlots = horses.length > 0 ? horses : Array.from({ length: HORSE_PLACE
   <div class="mx-auto grid max-w-5xl items-center gap-10 md:grid-cols-[1fr_auto]">
     <div class="text-center md:text-start">
       <h2 class="font-display text-3xl font-semibold">{t("home.treksHeading")}</h2>
-      <p class="mt-4 text-warm-white/85">{t("home.treksLead")}</p>
+      <p class="mt-4">{t("home.treksLead")}</p>
       <div class="mt-6">
         <a href={path("/treks/", locale)} class="btn-primary">{t("cta.learnMore")}</a>
       </div>
