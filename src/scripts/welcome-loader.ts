@@ -2,8 +2,8 @@
 // keyed off html[data-welcome="on"] set in <head>); this decides when it leaves.
 //
 // - It always plays for at least MIN_MS (from navigation start). Until then scrolling is held
-//   (wheel / touch / scroll keys are swallowed, so the hero underneath does not scrub away
-//   unseen); only Skip or Escape end it early.
+//   (wheel / touch / scroll keys are swallowed, so the visitor does not scroll past the
+//   hero unseen); only Skip or Escape end it early.
 // - After MIN_MS it leaves as soon as the hero has a real frame to reveal, or when the
 //   visitor scrolls / taps / presses a key, and at MAX_MS regardless.
 // - The exit is staged in CSS ([data-state="out"]); the node is removed after EXIT_MS.
@@ -38,10 +38,12 @@ export function initWelcomeLoader(el: HTMLElement): void {
   const timers: number[] = [];
   const video = el.querySelector<HTMLVideoElement>("[data-loader-video]");
   const hero = document.querySelector<HTMLElement>("[data-hero]");
-  // Set by the MIN_MS timer itself. Re-reading performance.now() in its callback is not safe:
-  // timers can fire a hair before the clock reads MIN_MS, which skipped the exit until MAX_MS.
+  // Either signal counts: timers can fire a hair before the clock reads MIN_MS (which skipped
+  // the exit until MAX_MS), and on a busy device they can fire late (which swallowed a
+  // visitor's scroll after the minimum had passed).
   let minReached = false;
-  const minElapsed = (): boolean => minReached;
+  const minElapsed = (): boolean =>
+    minReached || performance.now() >= MIN_MS;
 
   // Scroll intent: held back before the minimum, an exit cue after it.
   const onScrollIntent = (e: Event): void => {
@@ -113,7 +115,7 @@ export function initWelcomeLoader(el: HTMLElement): void {
     window.addEventListener(
       "load",
       () => {
-        if (!hero || hero.dataset.mode !== "scrub") markReady();
+        if (!hero || hero.dataset.mode !== "play") markReady();
       },
       { once: true },
     );

@@ -1,6 +1,6 @@
-// Hero footage variants. "v2" is CTR's own vertical (9:16) footage shot for the site
-// (scripts/encode-hero-v2.sh); "v1" is the previous AI-generated landscape clip
-// (scripts/encode-hero.sh), kept intact as a proven fallback. Flip HERO_VARIANT to switch.
+// Hero footage variants. "v2" is CTR's own vertical (9:16) footage shot for the site, encoded as
+// a seamless 13 s autoplay loop (scripts/encode-hero-v2.sh); "v1" is the previous AI-generated
+// landscape clip (scripts/encode-hero.sh), kept intact as a fallback. Flip HERO_VARIANT to switch.
 
 export type HeroVariant = "v1" | "v2";
 export const HERO_VARIANT: HeroVariant = "v2";
@@ -17,7 +17,7 @@ export interface HeroMedia {
   };
   /** i18n keys for the copy that describes the footage itself. */
   copy: { chapter2: string; act2Body: string };
-  /** Decorative particle style drawn over the scrub. */
+  /** Decorative particle style drawn over the footage. */
   fx: "splash" | "dust";
 }
 
@@ -41,9 +41,9 @@ export const HERO_MEDIA: Record<HeroVariant, HeroMedia> = {
     layout: "panel",
     dir: "/images/hero/v2",
     video: {
-      desktop: "ride-hd.mp4",
-      mobile: "ride-mobile.mp4",
-      compact: "ride-compact.mp4",
+      desktop: "play-hd.mp4",
+      mobile: "play-mobile.mp4",
+      compact: "play-compact.mp4",
     },
     poster: {
       desktop: { src: "poster-hd.webp", width: 720, height: 1280 },

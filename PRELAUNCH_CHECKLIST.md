@@ -83,9 +83,9 @@ it should be resolved before the site goes live publicly.
       `/ar/` and `/fr/` (desktop LCP 0.76-0.77 s). Action: investigate site-wide critical CSS / font
       loading before launch.
 - [ ] Real-device pass: iPhone Safari and a mid-range Android on real mobile data. Check the
-      poster→canvas seam, whether the hero video actually decodes and scrubs (iOS may not decode
-      an element that is never attached/played), and whether the mobile fetch is acceptable
-      (v2: 2.81 MB mobile, 5.75 MB desktop panel, 1.26 MB landscape-phone; v1 was 2.37 / 4.68 MB).
+      poster→video fade, that the hero autoplays (iOS Low Power Mode refuses autoplay: the poster
+      and a Play button should show), and whether the mobile fetch is acceptable (v2 autoplay loop:
+      1.2 MB phone / 3g, 2.5 MB desktop panel, 0.5 MB landscape phone; v1 was 2.37 / 4.68 MB).
 - [x] Site-wide LCP work — resolved 2026-09-20: cause was oversized eager brand logos (~545 KB -> ~50 KB after resize, lazy footer images, width/height). Local Lighthouse mobile LCP now 1.8 s `/`, 1.8 s `/ar/`, 2.0 s `/fr/`, 1.3 s `/faq/`; re-verify on the Vercel build. (Original note: render-blocking CSS/fonts and a preload of
       the LCP poster in the `BaseLayout` head. The hero is not the cause (hero-free `/faq/` control
       measures the same mobile LCP.)
@@ -109,7 +109,7 @@ it should be resolved before the site goes live publicly.
 - [ ] Native review of `nav.menu` AR/FR label (see `src/i18n/REVIEW_NOTES.md`).
 - [x] Landscape phones (`max-height:500px` + coarse pointer) now get a 1.5 MB 854x480 clip (`ride-compact.mp4`) instead of the 4.68 MB desktop one. Needs real-device check.
 - [x] Favicon/apple-touch-icon/manifest icons generated from the CTR badge (replaced the default Astro favicon); hero small text raised to 13px.
-- [ ] Still open: hero chips as a scrollable row, real-device test of the sticky bar over the scrub hero, tap-to-play/poster-only mode for very slow connections (2g/3g).
+- [ ] Still open: hero chips as a scrollable row, real-device test of the sticky bar below the one-screen hero. (2026-10-01: "3g" estimates now get the autoplay hero on the 540p clip; only 2g/Save-Data stay poster-only.)
 
 ## i18n completeness (2026-09-20)
 - [x] All 142 EN keys now exist in AR and FR (46 + trail descriptors/durations added as drafts; no more silent English fallback on `/ar/` and `/fr/`).

@@ -104,11 +104,29 @@ test.describe("Booking form", () => {
   });
 });
 
-test.describe("Scroll hero", () => {
+test.describe("Autoplay hero", () => {
   // The welcome screen has its own suite; keep it out of the way of hero interactions.
   test.beforeEach(async ({ page }) => {
     await page.addInitScript(() => sessionStorage.setItem("ctr-welcome", "1"));
   });
+
+  const hero = (page: Page) => page.locator("[data-hero]");
+  const heroVideo = (page: Page) => page.locator("[data-hero-video]");
+  const playing = (page: Page) =>
+    heroVideo(page).evaluate((v: HTMLVideoElement) => !v.paused);
+  const currentTime = (page: Page) =>
+    heroVideo(page).evaluate((v: HTMLVideoElement) => v.currentTime);
+  const mediaRequests = (page: Page): string[] => {
+    const media: string[] = [];
+    page.on("request", (r) => {
+      if (/\.mp4(\?|$)/.test(r.url())) media.push(r.url());
+    });
+    return media;
+  };
+  const untilPlaying = async (page: Page) => {
+    await expect(hero(page)).toHaveAttribute("data-mode", "play");
+    await expect(hero(page)).toHaveAttribute("data-ready", "true");
+  };
 
   test("Act I H1 is visible at load and the skip link targets #trails", async ({
     page,
@@ -131,42 +149,41 @@ test.describe("Scroll hero", () => {
     test("stays in static mode and never requests the video", async ({
       page,
     }) => {
-      const media: string[] = [];
-      page.on("request", (r) => {
-        if (/\.mp4(\?|$)/.test(r.url())) media.push(r.url());
-      });
+      const media = mediaRequests(page);
       await page.goto("/");
       await page.waitForLoadState("networkidle");
-      await expect(page.locator("[data-hero]")).toHaveAttribute(
-        "data-mode",
-        "static",
-      );
+      await expect(hero(page)).toHaveAttribute("data-mode", "static");
       expect(media).toEqual([]);
       await expect(
         page.locator('[data-hero] [data-hero-cta="book"]'),
       ).toBeVisible();
+      await expect(page.locator("[data-hero-toggle]")).toBeHidden();
     });
   });
 
-  test("upgrades to scrub mode on capable desktop and requests the desktop video", async ({
-    page,
-  }) => {
-    const media: string[] = [];
-    page.on("request", (r) => {
-      if (/\.mp4(\?|$)/.test(r.url())) media.push(r.url());
-    });
+  test("autoplays the desktop clip, muted and looping", async ({ page }) => {
+    const media = mediaRequests(page);
     await page.goto("/");
-    await expect(page.locator("[data-hero]")).toHaveAttribute(
-      "data-mode",
-      "scrub",
-    );
-    await expect
-      .poll(() => media.some((u) => u.includes("ride-hd.mp4")))
-      .toBe(true);
-    expect(media.some((u) => u.includes("ride-mobile.mp4"))).toBe(false);
+    await untilPlaying(page);
+    expect(await playing(page)).toBe(true);
+    const v = await heroVideo(page).evaluate((el: HTMLVideoElement) => ({
+      muted: el.muted,
+      loop: el.loop,
+      duration: el.duration,
+    }));
+    expect(v).toEqual({
+      muted: true,
+      loop: true,
+      duration: expect.any(Number),
+    });
+    // The seamless 13 s loop (scripts/encode-hero-v2.sh).
+    expect(v.duration).toBeCloseTo(13, 0);
+    expect(media.some((u) => u.includes("play-hd.mp4"))).toBe(true);
+    expect(media.some((u) => u.includes("play-mobile.mp4"))).toBe(false);
+    await expect(heroVideo(page)).toHaveCSS("opacity", "1");
   });
 
-  test("a 3g connection estimate still scrubs, on the lighter 540p clip", async ({
+  test("a 3g connection estimate still autoplays, on the lighter 540p clip", async ({
     page,
   }) => {
     // Chrome reports "3g" for ordinary high-RTT broadband (e.g. 350 ms in Lebanon).
@@ -175,54 +192,32 @@ test.describe("Scroll hero", () => {
         value: { effectiveType: "3g", saveData: false },
       }),
     );
-    const media: string[] = [];
-    page.on("request", (r) => {
-      if (/\.mp4(\?|$)/.test(r.url())) media.push(r.url());
-    });
+    const media = mediaRequests(page);
     await page.goto("/");
-    await expect(page.locator("[data-hero]")).toHaveAttribute(
-      "data-mode",
-      "scrub",
-    );
-    await expect(page.locator("[data-hero]")).toHaveAttribute(
-      "data-ready",
-      "true",
-    );
-    expect(media.some((u) => u.includes("ride-mobile.mp4"))).toBe(true);
-    expect(media.some((u) => u.includes("ride-hd.mp4"))).toBe(false);
-  });
-
-  test("scrolling reveals the ridge act and advances the rail", async ({
-    page,
-  }) => {
-    await page.goto("/");
-    await expect(page.locator("[data-hero]")).toHaveAttribute(
-      "data-mode",
-      "scrub",
-    );
-    await page.evaluate(() => {
-      const el = document.querySelector<HTMLElement>("[data-hero]")!;
-      const stage = el.querySelector<HTMLElement>("[data-hero-stage]")!;
-      const top = el.getBoundingClientRect().top + window.scrollY;
-      const sticky = parseFloat(getComputedStyle(stage).top);
-      window.scrollTo({
-        top: top - sticky + 0.5 * (el.offsetHeight - stage.offsetHeight),
-        behavior: "instant",
-      });
-    });
-    await expect(page.locator('[data-act="ridge"]')).toHaveCSS("opacity", "1");
-    await expect(page.locator('[data-act="intro"]')).toHaveCSS("opacity", "0");
-    await expect(page.locator('a[data-chapter="ridge"]')).toHaveAttribute(
-      "aria-current",
-      "true",
-    );
+    await untilPlaying(page);
+    expect(media.some((u) => u.includes("play-mobile.mp4"))).toBe(true);
+    expect(media.some((u) => u.includes("play-hd.mp4"))).toBe(false);
   });
 
   for (const vp of [
     { name: "desktop", width: 1440, height: 900 },
     { name: "phone", width: 375, height: 812 },
   ]) {
-    test(`static to scrub upgrade causes no layout shift (${vp.name})`, async ({
+    test(`the hero is one screen tall: the next section starts at the fold (${vp.name})`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width: vp.width, height: vp.height });
+      await page.goto("/");
+      await untilPlaying(page);
+      const bottom = await hero(page).evaluate(
+        (el) => el.getBoundingClientRect().bottom,
+      );
+      // +8: at 375px the copy itself is a few px taller than the min-height, so content wins.
+      expect(bottom).toBeLessThanOrEqual(vp.height + 8);
+      expect(bottom).toBeGreaterThanOrEqual(vp.height - 8);
+    });
+
+    test(`static to play upgrade causes no layout shift (${vp.name})`, async ({
       page,
     }) => {
       await page.setViewportSize({ width: vp.width, height: vp.height });
@@ -240,11 +235,7 @@ test.describe("Scroll hero", () => {
         }).observe({ type: "layout-shift", buffered: true });
       });
       await page.goto("/");
-      await expect(page.locator("[data-hero]")).toHaveAttribute(
-        "data-mode",
-        "scrub",
-      );
-      await page.waitForLoadState("networkidle");
+      await untilPlaying(page);
       await page.waitForTimeout(500);
       const cls = await page.evaluate(
         () => (window as unknown as { __cls: number }).__cls,
@@ -253,77 +244,150 @@ test.describe("Scroll hero", () => {
     });
   }
 
-  test("#ridge deep link opens at the ridge chapter", async ({ page }) => {
-    await page.goto("/#ridge");
-    await expect(page.locator("[data-hero]")).toHaveAttribute(
-      "data-mode",
-      "scrub",
-    );
-    await expect(page.locator('[data-act="ridge"]')).toHaveCSS("opacity", "1");
-  });
-
-  test("skip link moves to the trails section", async ({ page }) => {
-    await page.goto("/");
-    await page.locator("[data-hero-skip]").focus();
-    await page.keyboard.press("Enter");
-    await expect(page.locator("#trails")).toBeInViewport();
-  });
-
-  test("Arabic: rail sits on the right (inline-start in RTL)", async ({
+  test("the acts and the rail follow the footage as it plays", async ({
     page,
   }) => {
-    await page.goto("/ar/");
-    await expect(page.locator("[data-hero]")).toHaveAttribute(
-      "data-mode",
-      "scrub",
+    test.setTimeout(30_000);
+    await page.goto("/");
+    await untilPlaying(page);
+    await expect(page.locator('a[data-chapter="shouf"]')).toHaveAttribute(
+      "aria-current",
+      "true",
     );
-    const box = await page.locator(".ctr-hero__rail").boundingBox();
-    const vw = page.viewportSize()!.width;
-    expect(box!.x).toBeGreaterThan(vw / 2);
-    await expect(page.getByRole("heading", { level: 1 })).not.toHaveText(
-      "Explore Lebanon on Horseback",
-    );
-  });
-
-  const scrollToProgress = (page: Page, p: number) =>
-    page.evaluate((target) => {
-      const el = document.querySelector<HTMLElement>("[data-hero]")!;
-      const stage = el.querySelector<HTMLElement>("[data-hero-stage]")!;
-      const top = el.getBoundingClientRect().top + window.scrollY;
-      const sticky = parseFloat(getComputedStyle(stage).top);
-      window.scrollTo({
-        top: top - sticky + target * (el.offsetHeight - stage.offsetHeight),
-        behavior: "instant",
-      });
-    }, p);
-
-  for (const [label, viewport, path, contact] of [
-    ["desktop", { width: 1440, height: 900 }, "/", "/contact/"],
-    ["phone", { width: 375, height: 812 }, "/", "/contact/"],
-    ["phone Arabic", { width: 375, height: 812 }, "/ar/", "/ar/contact/"],
-  ] as const) {
-    test(`p=0 Book CTA is really clickable (${label})`, async ({ page }) => {
-      await page.setViewportSize(viewport);
-      await page.goto(path);
-      await expect(page.locator("[data-hero]")).toHaveAttribute(
-        "data-mode",
-        "scrub",
-      );
-      await page.locator('[data-hero] [data-hero-cta="book"]').click();
-      await expect(page).toHaveURL(new RegExp(`${contact}$`));
+    // Ridge from 0.32 of the 13 s loop, ride from 0.68: real playback, no seeking.
+    await expect(page.locator('[data-act="ridge"]')).toHaveCSS("opacity", "1", {
+      timeout: 8000,
     });
-  }
+    await expect(page.locator('[data-act="intro"]')).toHaveCSS("opacity", "0");
+    await expect(page.locator('a[data-chapter="ridge"]')).toHaveAttribute(
+      "aria-current",
+      "true",
+    );
+    await expect(page.locator('[data-act="ride"]')).toHaveCSS("opacity", "1", {
+      timeout: 8000,
+    });
+    await expect(page.locator('a[data-chapter="ride"]')).toHaveAttribute(
+      "aria-current",
+      "true",
+    );
+  });
 
-  test("at p=0.5 the ridge act, not the intro, receives pointer events", async ({
+  test("the pause button stops the footage and the copy, and resumes them", async ({
     page,
   }) => {
     await page.goto("/");
-    await expect(page.locator("[data-hero]")).toHaveAttribute(
-      "data-mode",
-      "scrub",
+    await untilPlaying(page);
+    const toggle = page.locator("[data-hero-toggle]");
+    await expect(toggle).toHaveAttribute("aria-pressed", "false");
+    await expect(toggle).toHaveAccessibleName("Pause video");
+    await toggle.click();
+    await expect(toggle).toHaveAttribute("aria-pressed", "true");
+    await expect(toggle).toHaveAccessibleName("Play video");
+    await expect.poll(() => playing(page)).toBe(false);
+    const t = await currentTime(page);
+    const p = await hero(page).evaluate((el) =>
+      el.style.getPropertyValue("--p"),
     );
-    await scrollToProgress(page, 0.5);
+    await page.waitForTimeout(1000);
+    expect(await currentTime(page)).toBe(t);
+    expect(
+      await hero(page).evaluate((el) => el.style.getPropertyValue("--p")),
+    ).toBe(p);
+    await toggle.click();
+    await expect(toggle).toHaveAttribute("aria-pressed", "false");
+    await expect.poll(() => playing(page)).toBe(true);
+    await expect.poll(() => currentTime(page)).toBeGreaterThan(t);
+  });
+
+  test("keyboard focus inside the copy holds the loop still", async ({
+    page,
+  }) => {
+    await page.goto("/");
+    await untilPlaying(page);
+    await page.locator('[data-hero] [data-hero-cta="book"]').focus();
+    await expect.poll(() => playing(page)).toBe(false);
+    // The visitor's own pause state is untouched.
+    await expect(page.locator("[data-hero-toggle]")).toHaveAttribute(
+      "aria-pressed",
+      "false",
+    );
+    await page.locator("[data-hero-toggle]").focus();
+    await expect.poll(() => playing(page)).toBe(true);
+  });
+
+  test("refused autoplay keeps the poster and offers the play button", async ({
+    page,
+  }) => {
+    const errors: string[] = [];
+    page.on("pageerror", (e) => errors.push(e.message));
+    await page.addInitScript(() => {
+      HTMLMediaElement.prototype.play = function () {
+        return Promise.reject(new DOMException("blocked", "NotAllowedError"));
+      };
+    });
+    await page.goto("/");
+    await expect(hero(page)).toHaveAttribute("data-mode", "play");
+    const toggle = page.locator("[data-hero-toggle]");
+    await expect(toggle).toHaveAttribute("aria-pressed", "true");
+    await expect(toggle).toHaveAccessibleName("Play video");
+    await expect(hero(page)).not.toHaveAttribute("data-ready", /.*/);
+    await expect(page.locator(".ctr-hero__poster")).toBeVisible();
+    expect(errors).toEqual([]);
+  });
+
+  test("a video that fails to load falls back to the static hero", async ({
+    page,
+  }) => {
+    await page.route(/\.mp4(\?|$)/, (route) => route.abort());
+    await page.goto("/");
+    await expect(hero(page)).toHaveAttribute("data-mode", "static");
+    await expect(hero(page)).not.toHaveAttribute("data-ready", /.*/);
+    await expect(page.locator(".ctr-hero__poster")).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+    await expect(page.locator('[data-act="ridge"]')).toBeHidden();
+    await expect(page.locator("[data-hero-toggle]")).toBeHidden();
+  });
+
+  test("a rail click jumps the loop to that chapter", async ({ page }) => {
+    await page.goto("/");
+    await untilPlaying(page);
+    await page.locator("[data-hero-toggle]").click(); // hold still for the assertions
+    await page.locator('a[data-chapter="ride"]').click();
+    await expect(page).toHaveURL(/#ride$/);
+    await expect(page.locator('[data-act="ride"]')).toHaveCSS("opacity", "1");
+    await expect(page.locator('a[data-chapter="ride"]')).toHaveAttribute(
+      "aria-current",
+      "true",
+    );
+    // ride chapter is p=0.72 of the 13 s loop
+    await expect.poll(() => currentTime(page)).toBeGreaterThan(8.8);
+    expect(await currentTime(page)).toBeLessThan(10);
+  });
+
+  test("#ridge deep link opens on the ridge act and its footage", async ({
+    page,
+  }) => {
+    await page.goto("/#ridge");
     await expect(page.locator('[data-act="ridge"]')).toHaveCSS("opacity", "1");
+    await untilPlaying(page);
+    // ridge chapter is p=0.36 of the 13 s loop (~4.7 s), never frame 0
+    const t = await currentTime(page);
+    expect(t).toBeGreaterThan(4.3);
+    expect(t).toBeLessThan(8);
+  });
+
+  test("only the act on show is clickable and focusable", async ({ page }) => {
+    await page.goto("/");
+    await untilPlaying(page);
+    await page.locator("[data-hero-toggle]").click();
+    await expect(
+      page.locator('[data-act="ride"] [data-hero-cta="plan"]'),
+    ).toHaveAttribute("tabindex", "-1");
+    await page.locator('a[data-chapter="ridge"]').click();
+    await expect(page.locator('[data-act="ridge"]')).toHaveCSS("opacity", "1");
+    await expect(
+      page.locator('[data-act="intro"] [data-hero-cta="book"]'),
+    ).toHaveAttribute("tabindex", "-1");
     await expect
       .poll(() =>
         page.evaluate(() => {
@@ -340,148 +404,63 @@ test.describe("Scroll hero", () => {
       .toBe("ridge");
   });
 
-  test("dock links are out of the tab order until the dock appears", async ({
+  test("pauses while scrolled out of view and resumes on return", async ({
     page,
   }) => {
     await page.goto("/");
-    await expect(page.locator("[data-hero]")).toHaveAttribute(
-      "data-mode",
-      "scrub",
-    );
-    const tabindexes = () =>
-      page
-        .locator("[data-hero-dock] a")
-        .evaluateAll((els) => els.map((e) => e.getAttribute("tabindex")));
-    expect(await tabindexes()).toEqual(["-1", "-1"]);
-    await scrollToProgress(page, 0.5);
-    await expect(page.locator("[data-hero]")).toHaveAttribute(
-      "data-dock",
-      "on",
-    );
-    expect(await tabindexes()).toEqual([null, null]);
+    await untilPlaying(page);
+    await page.locator("#groups").scrollIntoViewIfNeeded();
+    await expect.poll(() => playing(page)).toBe(false);
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await expect.poll(() => playing(page)).toBe(true);
   });
 
-  test("deep link resyncs the video to the ridge frame once it is ready", async ({
-    page,
-  }) => {
-    await page.addInitScript(() => {
-      const w = window as unknown as { __seeks: number[] };
-      w.__seeks = [];
-      const desc = Object.getOwnPropertyDescriptor(
-        HTMLMediaElement.prototype,
-        "currentTime",
-      )!;
-      Object.defineProperty(HTMLMediaElement.prototype, "currentTime", {
-        get() {
-          return desc.get!.call(this);
-        },
-        set(v: number) {
-          w.__seeks.push(v);
-          desc.set!.call(this, v);
-        },
-      });
-    });
-    await page.goto("/#ridge");
-    await expect(page.locator("[data-hero]")).toHaveAttribute(
-      "data-ready",
-      "true",
-    );
-    // duration is read from the same element the controller seeks
-    await expect
-      .poll(() =>
-        page.evaluate(() => {
-          const seeks = (window as unknown as { __seeks: number[] }).__seeks;
-          return seeks.length ? seeks[seeks.length - 1] : null;
-        }),
-      )
-      .not.toBeNull();
-    const last = await page.evaluate(() => {
-      const seeks = (window as unknown as { __seeks: number[] }).__seeks;
-      return seeks[seeks.length - 1]!;
-    });
-    // ridge chapter is p=0.5; the v2 clip is 13 s, so the target is ~6.5 s, never frame 0
-    expect(last).toBeGreaterThan(5.5);
-    expect(last).toBeLessThan(7.5);
-  });
-
-  test("on a slow connection the hero is only ready once the whole clip is seekable", async ({
-    page,
-  }) => {
-    // Regression: streamed progressively, every seek past the buffered edge stalled and
-    // restarted the download, so on a slow link the scrub sat on frame 0 for good.
-    test.setTimeout(60_000);
-    const cdp = await page.context().newCDPSession(page);
-    await cdp.send("Network.emulateNetworkConditions", {
-      offline: false,
-      latency: 40,
-      downloadThroughput: 1024 * 1024,
-      uploadThroughput: 1024 * 1024,
-    });
-    // The hero's <video> is created in script, unlike the loader's and ambient clips'.
-    await page.addInitScript(() => {
-      const w = window as unknown as { __heroVideo?: HTMLVideoElement };
-      const create = document.createElement.bind(document);
-      document.createElement = ((
-        tag: string,
-        options?: ElementCreationOptions,
-      ) => {
-        const el = create(tag, options);
-        if (tag === "video") w.__heroVideo ??= el as HTMLVideoElement;
-        return el;
-      }) as typeof document.createElement;
-    });
+  test("skip link moves to the trails section", async ({ page }) => {
     await page.goto("/");
-    await expect(page.locator("[data-hero]")).toHaveAttribute(
-      "data-ready",
-      "true",
-      { timeout: 45_000 },
-    );
-    const buffered = await page.evaluate(() => {
-      const v = (window as unknown as { __heroVideo: HTMLVideoElement })
-        .__heroVideo;
-      const r = v.buffered;
-      return {
-        start: r.length ? r.start(0) : -1,
-        end: r.length ? r.end(r.length - 1) : 0,
-        ranges: r.length,
-        duration: v.duration,
-      };
-    });
-    expect(buffered.ranges).toBe(1);
-    expect(buffered.start).toBe(0);
-    expect(buffered.end).toBeGreaterThan(buffered.duration - 0.1);
+    await page.locator("[data-hero-skip]").focus();
+    await page.keyboard.press("Enter");
+    await expect(page.locator("#trails")).toBeInViewport();
   });
 
-  test("dust motes drift over the hero, and keep drifting through a fast scrub, without errors", async ({
+  test("Arabic: rail sits on the right (inline-start in RTL)", async ({
     page,
   }) => {
+    await page.goto("/ar/");
+    await expect(hero(page)).toHaveAttribute("data-mode", "play");
+    const box = await page.locator(".ctr-hero__rail").boundingBox();
+    const vw = page.viewportSize()!.width;
+    expect(box!.x).toBeGreaterThan(vw / 2);
+    await expect(page.getByRole("heading", { level: 1 })).not.toHaveText(
+      "Explore Lebanon on Horseback",
+    );
+    await expect(page.locator("[data-hero-toggle]")).toHaveAccessibleName(
+      "إيقاف الفيديو مؤقتاً",
+    );
+  });
+
+  for (const [label, viewport, path, contact] of [
+    ["desktop", { width: 1440, height: 900 }, "/", "/contact/"],
+    ["phone", { width: 375, height: 812 }, "/", "/contact/"],
+    ["phone Arabic", { width: 375, height: 812 }, "/ar/", "/ar/contact/"],
+  ] as const) {
+    test(`Book CTA is really clickable (${label})`, async ({ page }) => {
+      await page.setViewportSize(viewport);
+      await page.goto(path);
+      await expect(hero(page)).toHaveAttribute("data-mode", "play");
+      await page.locator('[data-hero] [data-hero-cta="book"]').click();
+      await expect(page).toHaveURL(new RegExp(`${contact}$`));
+    });
+  }
+
+  test("dust motes drift over the hero without errors", async ({ page }) => {
     const errors: string[] = [];
     page.on("pageerror", (e) => errors.push(e.message));
     page.on("console", (m) => {
       if (m.type() === "error") errors.push(m.text());
     });
     await page.goto("/");
-    await expect(page.locator("[data-hero]")).toHaveAttribute(
-      "data-ready",
-      "true",
-    );
-    await expect(page.locator("[data-hero]")).toHaveAttribute(
-      "data-fx",
-      "dust",
-    );
-
-    // Non-transparent pixels on the FX canvas.
-    const painted = (): Promise<number> =>
-      page.evaluate(() => {
-        const c = document.querySelector<HTMLCanvasElement>("[data-hero-fx]")!;
-        const data = c
-          .getContext("2d")!
-          .getImageData(0, 0, c.width, c.height).data;
-        let n = 0;
-        for (let i = 3; i < data.length; i += 4) if (data[i] !== 0) n++;
-        return n;
-      });
-
+    await untilPlaying(page);
+    await expect(hero(page)).toHaveAttribute("data-fx", "dust");
     // The canvas must be sized to the stage, not left at the 1x1 it has while display:none.
     expect(
       await page.evaluate(
@@ -489,172 +468,57 @@ test.describe("Scroll hero", () => {
           document.querySelector<HTMLCanvasElement>("[data-hero-fx]")!.width,
       ),
     ).toBeGreaterThan(300);
-
-    // At rest: a faint constant drift (rate/spawn logic is unit-tested in hero-math).
     await expect
-      .poll(painted, { timeout: 8000, intervals: [250] })
+      .poll(
+        () =>
+          page.evaluate(() => {
+            const c =
+              document.querySelector<HTMLCanvasElement>("[data-hero-fx]")!;
+            const data = c
+              .getContext("2d")!
+              .getImageData(0, 0, c.width, c.height).data;
+            let n = 0;
+            for (let i = 3; i < data.length; i += 4) if (data[i] !== 0) n++;
+            return n;
+          }),
+        { timeout: 8000, intervals: [250] },
+      )
       .toBeGreaterThan(0);
-
-    for (const target of [0.4, 0.5, 0.6, 0.7, 0.6, 0.5, 0.4]) {
-      await scrollToProgress(page, target);
-      await page.waitForTimeout(40);
-    }
-    expect(await painted()).toBeGreaterThan(0);
     expect(errors).toEqual([]);
   });
 
-  test("snap does not fire while a pointer is held down, and may after release", async ({
+  test("the panel's blurred backdrop mirrors real frames once playing", async ({
     page,
   }) => {
     await page.goto("/");
-    await expect(page.locator("[data-hero]")).toHaveAttribute(
-      "data-mode",
-      "scrub",
-    );
-    // Let the video/layout settle so 0.47 stays near the ridge chapter.
-    await expect(page.locator("[data-hero]")).toHaveAttribute(
-      "data-ready",
-      "true",
-    );
-    await page.mouse.move(700, 450);
-    await page.mouse.down();
-    await scrollToProgress(page, 0.47);
-    const held = await page.evaluate(() => window.scrollY);
-    // Negative check: the idle timer is 160ms, so a wrongly-fired snap would have moved us well
-    // within this window. The window is also long enough for the velocity estimate (which decays
-    // per rendered frame, and frames are slow in headless Chromium) to settle, so that the
-    // post-release snap below is not rejected as "still moving".
-    await page.waitForTimeout(1500);
-    expect(await page.evaluate(() => window.scrollY)).toBe(held);
-    await page.mouse.up();
-    await expect.poll(() => page.evaluate(() => window.scrollY)).not.toBe(held);
-  });
-
-  test("a blur during a held mouse press releases the snap guard", async ({
-    page,
-  }) => {
-    await page.goto("/");
-    await expect(page.locator("[data-hero]")).toHaveAttribute(
-      "data-ready",
-      "true",
-    );
-    await page.mouse.move(700, 450);
-    await page.mouse.down();
-    await scrollToProgress(page, 0.47);
-    const held = await page.evaluate(() => window.scrollY);
-    // Bounded negative wait (see the pointer-held test): lets the velocity estimate settle too.
-    await page.waitForTimeout(1500);
-    expect(await page.evaluate(() => window.scrollY)).toBe(held);
-    await page.evaluate(() => window.dispatchEvent(new Event("blur")));
-    await expect.poll(() => page.evaluate(() => window.scrollY)).not.toBe(held);
-  });
-
-  test.describe("touch", () => {
-    test.use({ hasTouch: true });
-
-    for (const withPointerCancel of [false, true]) {
-      test(`snap does not fire under a held finger${withPointerCancel ? " even after a touch pointercancel" : ""}`, async ({
-        page,
-      }) => {
-        await page.goto("/");
-        await expect(page.locator("[data-hero]")).toHaveAttribute(
-          "data-ready",
-          "true",
-        );
-        const cdp = await page.context().newCDPSession(page);
-        await cdp.send("Input.dispatchTouchEvent", {
-          type: "touchStart",
-          touchPoints: [{ x: 700, y: 450 }],
-        });
-        await scrollToProgress(page, 0.47);
-        const held = await page.evaluate(() => window.scrollY);
-        // Bounded waits: the frame-based velocity estimate must settle first (slow headless frames),
-        // otherwise a snap would be rejected as "still moving" and the test could not fail.
-        await page.waitForTimeout(1200);
-        if (withPointerCancel) {
-          // What a browser does when it takes the drag over as a native pan.
-          await page.evaluate(() =>
-            window.dispatchEvent(
-              new PointerEvent("pointercancel", { pointerType: "touch" }),
-            ),
-          );
-        }
-        // Negative check: a wrongly-fired snap (160 ms idle timer) would show well inside this window.
-        await page.waitForTimeout(600);
-        expect(await page.evaluate(() => window.scrollY)).toBe(held);
-        await cdp.send("Input.dispatchTouchEvent", {
-          type: "touchEnd",
-          touchPoints: [],
-        });
-        await expect
-          .poll(() => page.evaluate(() => window.scrollY))
-          .not.toBe(held);
-      });
-    }
-  });
-
-  test.describe("canvas paint", () => {
-    // Samples a grid of the main canvas: counts non-transparent pixels and
-    // pixels brighter than near-black.
-    const sampleCanvas = (page: Page) =>
-      page.evaluate(() => {
-        const c =
-          document.querySelector<HTMLCanvasElement>("[data-hero-canvas]")!;
-        const ctx = c.getContext("2d")!;
-        let opaque = 0;
-        let bright = 0;
-        for (let i = 1; i <= 8; i++) {
-          for (let j = 1; j <= 8; j++) {
-            const x = Math.floor((c.width * i) / 9);
-            const y = Math.floor((c.height * j) / 9);
-            const d = ctx.getImageData(x, y, 1, 1).data;
-            const r = d[0] ?? 0;
-            const g = d[1] ?? 0;
-            const b = d[2] ?? 0;
-            const a = d[3] ?? 0;
-            if (a > 0) opaque++;
-            if (a > 0 && 0.2126 * r + 0.7152 * g + 0.0722 * b > 20) bright++;
+    await untilPlaying(page);
+    await expect
+      .poll(() =>
+        page.evaluate(() => {
+          const c = document.querySelector<HTMLCanvasElement>(
+            "[data-hero-backdrop]",
+          )!;
+          const ctx = c.getContext("2d")!;
+          let bright = 0;
+          for (let i = 1; i <= 6; i++) {
+            for (let j = 1; j <= 6; j++) {
+              const d = ctx.getImageData(
+                Math.floor((c.width * i) / 7),
+                Math.floor((c.height * j) / 7),
+                1,
+                1,
+              ).data;
+              const lum =
+                0.2126 * (d[0] ?? 0) +
+                0.7152 * (d[1] ?? 0) +
+                0.0722 * (d[2] ?? 0);
+              if ((d[3] ?? 0) > 0 && lum > 20) bright++;
+            }
           }
-        }
-        return { opaque, bright };
-      });
-
-    for (const url of ["/", "/#ridge"]) {
-      test(`canvas holds a real frame once ready (${url})`, async ({
-        page,
-      }) => {
-        await page.goto(url);
-        const root = page.locator("[data-hero]");
-        await expect(root).toHaveAttribute("data-mode", "scrub");
-        await expect(root).toHaveAttribute("data-ready", "true");
-        const { opaque, bright } = await sampleCanvas(page);
-        expect(opaque).toBeGreaterThan(0);
-        expect(bright).toBeGreaterThan(0);
-      });
-    }
-
-    test("canvas stays transparent, and the poster visible, while not ready", async ({
-      page,
-    }) => {
-      // Block the video so the hero can never become ready.
-      await page.route(/\.mp4(\?|$)/, (route) => route.abort());
-      await page.goto("/");
-      const root = page.locator("[data-hero]");
-      await expect(root).toHaveAttribute("data-mode", "scrub");
-      await page.waitForTimeout(800);
-      await expect(root).not.toHaveAttribute("data-ready", /.*/);
-      await expect(page.locator("[data-hero-canvas]")).toHaveCSS(
-        "opacity",
-        "0",
-      );
-      await expect(page.locator(".ctr-hero__poster")).toBeVisible();
-      // The hero keeps scrubbing copy without a video.
-      await scrollToProgress(page, 0.5);
-      await expect(page.locator('[data-act="ridge"]')).toHaveCSS(
-        "opacity",
-        "1",
-      );
-    });
+          return bright;
+        }),
+      )
+      .toBeGreaterThan(0);
   });
 
   test.describe("analytics", () => {
@@ -675,44 +539,59 @@ test.describe("Scroll hero", () => {
     const named = (all: Call[], name: string) =>
       all.filter((c) => c[0] === "event" && c[1] === name);
 
-    test("no chapter is reported at load; ridge is reported once after scrolling", async ({
+    test("chapter clicks and the pause control are tracked; playback alone is not", async ({
       page,
     }) => {
       await stubGtag(page);
       await page.goto("/");
-      await expect(page.locator("[data-hero]")).toHaveAttribute(
-        "data-mode",
-        "scrub",
-      );
+      await untilPlaying(page);
       await page.waitForTimeout(700);
-      expect(named(await calls(page), "hero_chapter_reached")).toEqual([]);
-      await scrollToProgress(page, 0.5);
+      expect(named(await calls(page), "hero_chapter_click")).toEqual([]);
+      await page.locator('a[data-chapter="ridge"]').click();
+      await page.locator("[data-hero-toggle]").click();
       await expect
-        .poll(async () => named(await calls(page), "hero_chapter_reached"))
-        .toEqual([["event", "hero_chapter_reached", { chapter: "ridge" }]]);
-      await page.waitForTimeout(300);
-      expect(named(await calls(page), "hero_chapter_reached")).toHaveLength(1);
+        .poll(async () => [
+          ...named(await calls(page), "hero_chapter_click"),
+          ...named(await calls(page), "hero_video_toggle"),
+        ])
+        .toEqual([
+          ["event", "hero_chapter_click", { chapter: "ridge" }],
+          ["event", "hero_video_toggle", { state: "paused" }],
+        ]);
     });
 
-    test("dock WhatsApp click is tracked as dock-whatsapp", async ({
-      page,
-    }) => {
+    test("hero CTA clicks are tracked by name", async ({ page }) => {
       await stubGtag(page);
-      await page.context().route(/wa\.me/, (route) => route.abort());
       await page.goto("/");
-      await expect(page.locator("[data-hero]")).toHaveAttribute(
-        "data-mode",
-        "scrub",
-      );
-      await scrollToProgress(page, 0.5);
-      await expect(page.locator("[data-hero]")).toHaveAttribute(
-        "data-dock",
-        "on",
-      );
-      await page.locator('[data-hero-cta="dock-whatsapp"]').click();
+      await expect(hero(page)).toHaveAttribute("data-mode", "play");
+      // "Explore" stays on the page (#trails), so the recorded call can be read back.
+      await page.locator('[data-hero] [data-hero-cta="explore"]').click();
       await expect
         .poll(async () => named(await calls(page), "hero_cta_click"))
-        .toEqual([["event", "hero_cta_click", { cta: "dock-whatsapp" }]]);
+        .toEqual([["event", "hero_cta_click", { cta: "explore" }]]);
+    });
+
+    test("a throwing analytics hook never breaks the hero", async ({
+      page,
+    }) => {
+      const errors: string[] = [];
+      page.on("pageerror", (e) => errors.push(String(e)));
+      await page.addInitScript(() => {
+        (window as unknown as { gtag: () => void }).gtag = () => {
+          throw "analytics exploded"; // a non-Error throw
+        };
+      });
+      await page.goto("/");
+      await untilPlaying(page);
+      await page.locator('a[data-chapter="ride"]').click();
+      await expect(page.locator('[data-act="ride"]')).toHaveCSS("opacity", "1");
+      await page.locator("[data-hero-toggle]").click();
+      await expect(page.locator("[data-hero-toggle]")).toHaveAttribute(
+        "aria-pressed",
+        "true",
+      );
+      await expect(hero(page)).toHaveAttribute("data-mode", "play");
+      expect(errors).toEqual([]);
     });
   });
 
@@ -727,10 +606,7 @@ test.describe("Scroll hero", () => {
       }) => {
         await page.setViewportSize(vp);
         await page.goto("/");
-        await expect(page.locator("[data-hero]")).toHaveAttribute(
-          "data-mode",
-          "static",
-        );
+        await expect(hero(page)).toHaveAttribute("data-mode", "static");
         await page.waitForLoadState("networkidle");
         const bottom = await page.evaluate(
           () =>
@@ -744,69 +620,7 @@ test.describe("Scroll hero", () => {
     }
   });
 
-  test("a single wheel tick into the ridge snap radius settles on the ridge chapter", async ({
-    page,
-  }) => {
-    await page.goto("/");
-    await expect(page.locator("[data-hero]")).toHaveAttribute(
-      "data-ready",
-      "true",
-    );
-    // p=0.43 is just outside the ridge radius (0.06); one ~100px tick lands inside it.
-    await scrollToProgress(page, 0.43);
-    await page.waitForTimeout(600);
-    const before = await page.evaluate(() => window.scrollY);
-    const ridgeY = await page.evaluate(() => {
-      const el = document.querySelector<HTMLElement>("[data-hero]")!;
-      const stage = el.querySelector<HTMLElement>("[data-hero-stage]")!;
-      const top = el.getBoundingClientRect().top + window.scrollY;
-      const sticky = parseFloat(getComputedStyle(stage).top);
-      return top - sticky + 0.5 * (el.offsetHeight - stage.offsetHeight);
-    });
-    await page.mouse.move(700, 450);
-    await page.mouse.wheel(0, 100);
-    await expect
-      .poll(() => page.evaluate(() => window.scrollY), { timeout: 8000 })
-      .toBeGreaterThan(before);
-    await expect
-      .poll(
-        async () =>
-          Math.abs((await page.evaluate(() => window.scrollY)) - ridgeY),
-        {
-          timeout: 8000,
-        },
-      )
-      .toBeLessThanOrEqual(2);
-  });
-
-  test("a throwing analytics hook never freezes or errors the hero", async ({
-    page,
-  }) => {
-    const errors: string[] = [];
-    page.on("pageerror", (e) => errors.push(String(e)));
-    await page.addInitScript(() => {
-      (window as unknown as { gtag: () => void }).gtag = () => {
-        throw "analytics exploded"; // a non-Error throw
-      };
-    });
-    await page.goto("/");
-    await expect(page.locator("[data-hero]")).toHaveAttribute(
-      "data-mode",
-      "scrub",
-    );
-    await scrollToProgress(page, 0.5);
-    await expect(page.locator('[data-act="ridge"]')).toHaveCSS("opacity", "1");
-    await expect(page.locator('[data-act="intro"]')).toHaveCSS("opacity", "0");
-    await scrollToProgress(page, 0.9);
-    await expect(page.locator('[data-act="ride"]')).toHaveCSS("opacity", "1");
-    await expect(page.locator("[data-hero]")).toHaveAttribute(
-      "data-mode",
-      "scrub",
-    );
-    expect(errors).toEqual([]);
-  });
-
-  test("French: scrub hero, LTR, FR headline, rail on the left", async ({
+  test("French: autoplay hero, LTR, FR headline, rail on the left", async ({
     page,
   }) => {
     const fr = JSON.parse(
@@ -816,14 +630,14 @@ test.describe("Scroll hero", () => {
       ),
     ) as Record<string, string>;
     await page.goto("/fr/");
-    await expect(page.locator("[data-hero]")).toHaveAttribute(
-      "data-mode",
-      "scrub",
-    );
+    await expect(hero(page)).toHaveAttribute("data-mode", "play");
     await expect(page.locator("html")).toHaveAttribute("lang", "fr");
     await expect(page.locator("html")).toHaveAttribute("dir", "ltr");
     await expect(page.getByRole("heading", { level: 1 })).toHaveText(
       fr["brand.hero"]!,
+    );
+    await expect(page.locator("[data-hero-toggle]")).toHaveAccessibleName(
+      fr["hero.pause"]!,
     );
     const box = await page.locator(".ctr-hero__rail").boundingBox();
     const vw = page.viewportSize()!.width;
@@ -926,7 +740,7 @@ test.describe("Mobile layout", () => {
 test.describe("Mobile UX", () => {
   test.use({ viewport: { width: 390, height: 844 } });
 
-  // The bar deliberately yields to the hero (which has its own dock) and to the booking form,
+  // The bar deliberately yields to the hero (which has its own Book CTA) and to the booking form,
   // so it is asserted on content pages rather than on "/" or "/contact/".
   for (const path of ["/trails/", "/ar/trails/", "/fr/trails/"]) {
     test(`sticky WhatsApp/Call bar and 44px targets (${path})`, async ({
@@ -1081,10 +895,14 @@ test.describe("Ambient clips", () => {
     const clips = page.locator("[data-ambient-video]");
     // Treks + groups panels, plus the About band's standalone blurred backdrop.
     await expect(clips).toHaveCount(3);
-    for (const clip of await clips.all()) {
+    for (const clip of await clips.all())
+      await expect(clip.locator("..")).toHaveAttribute("aria-hidden", "true");
+    // The About band sits just under the one-screen hero, inside the load margin; the treks
+    // and groups clips are far below it and must not be fetched yet.
+    for (const id of ["#treks", "#groups"]) {
+      const clip = page.locator(`${id} [data-ambient-video]`);
       await expect(clip).toHaveAttribute("preload", "none");
       await expect(clip).not.toHaveAttribute("src", /.*/);
-      await expect(clip.locator("..")).toHaveAttribute("aria-hidden", "true");
     }
     const group = page.locator("#groups [data-ambient-video]");
     await group.scrollIntoViewIfNeeded();

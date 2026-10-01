@@ -1,7 +1,10 @@
 ---
+// Home hero: one screen, the v2 clip autoplays on a seamless 13 s loop and the three acts
+// cross-fade in time with its three shots (src/scripts/scroll-hero.ts, timings in
+// hero-math.ts). Without JS, or under reduced motion / Save-Data / 2G / low memory, it stays
+// "static": the poster and Act I only.
 import { useTranslations, path, withBase, type Locale } from "../i18n";
 import { contact } from "../data/siteSettings";
-import WhatsAppButton from "./WhatsAppButton.astro";
 import { heroMedia, HERO_MOBILE_MEDIA } from "../data/heroMedia";
 
 interface Props {
@@ -28,7 +31,6 @@ const chapters = [
   class="ctr-hero"
   data-hero
   data-mode="static"
-  data-dock="off"
   data-layout={heroMedia.layout}
   data-fx={heroMedia.fx}
   data-video-desktop={`${media}/${heroMedia.video.desktop}`}
@@ -70,14 +72,22 @@ const chapters = [
           class="ctr-hero__poster"
         />
       </picture>
-      <canvas class="ctr-hero__canvas" data-hero-canvas></canvas>
+      <video
+        class="ctr-hero__video"
+        muted
+        loop
+        playsinline
+        disablepictureinpicture
+        preload="none"
+        tabindex="-1"
+        data-hero-video
+      ></video>
     </div>
 
     <div class="ctr-hero__grade" aria-hidden="true"></div>
     <div class="ctr-hero__shafts" aria-hidden="true"></div>
     <canvas class="ctr-hero__fx" data-hero-fx aria-hidden="true"></canvas>
     <div class="ctr-hero__scrim" aria-hidden="true"></div>
-    <div class="ctr-hero__bar" data-hero-bar aria-hidden="true"></div>
 
     <nav class="ctr-hero__rail" aria-label={t("hero.railLabel")}>
       <ol>
@@ -133,24 +143,43 @@ const chapters = [
     </div>
 
     <p class="ctr-hero__coords" aria-hidden="true">{t("hero.location")} · {coords}</p>
-    <p class="ctr-hero__cue" aria-hidden="true"><i></i>{t("hero.scrollCue")}</p>
 
-    <div class="ctr-hero__dock" data-hero-dock>
-      <a href={path("/contact/", locale)} class="btn-primary" data-hero-cta="dock-book">{t("cta.book")}</a>
-      <WhatsAppButton label={t("cta.whatsapp")} class="!bg-warm-white !text-cedar-deep" heroCta="dock-whatsapp" />
-    </div>
-
-    <div class="ctr-hero__handoff" aria-hidden="true"></div>
+    <!-- WCAG 2.2.2: motion that starts on its own and runs past 5 s needs a pause control. -->
+    <button
+      type="button"
+      class="ctr-hero__toggle"
+      aria-pressed="false"
+      aria-label={t("hero.pause")}
+      data-label-pause={t("hero.pause")}
+      data-label-play={t("hero.play")}
+      data-hero-toggle
+    >
+      <svg class="ctr-hero__icon-pause" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+        <rect x="6" y="5" width="4" height="14" rx="1" fill="currentColor"></rect>
+        <rect x="14" y="5" width="4" height="14" rx="1" fill="currentColor"></rect>
+      </svg>
+      <svg class="ctr-hero__icon-play" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+        <path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5Z" fill="currentColor"></path>
+      </svg>
+    </button>
   </div>
 </section>
 
 <style>
   .ctr-hero {
-    --hero-top: 4.5rem;
+    /* First-paint estimate of everything above the hero (header + trust bar), refined by JS
+       (syncHeroTop). Matching the common case keeps that refinement from moving the
+       vertically centred copy, a layout shift. */
+    --hero-top: 6.75rem;
     --p: 0;
     position: relative;
     background: var(--color-cedar-deep);
     color: var(--color-warm-white);
+  }
+  @media (max-width: 767px) {
+    .ctr-hero {
+      --hero-top: 7.25rem; /* the trust bar wraps to two lines on phones */
+    }
   }
   .ctr-hero__stage {
     position: relative;
@@ -167,22 +196,24 @@ const chapters = [
     position: absolute;
     inset: 0;
     z-index: -3;
-    transform: scale(calc(1 + var(--p) * 0.08));
-    transform-origin: 50% 60%;
   }
   .ctr-hero__poster,
-  .ctr-hero__canvas {
+  .ctr-hero__video {
     position: absolute;
     inset: 0;
     width: 100%;
     height: 100%;
     object-fit: cover;
   }
-  .ctr-hero__canvas {
+  .ctr-hero__video {
+    display: none;
     opacity: 0;
     transition: opacity 0.4s ease;
   }
-  .ctr-hero[data-ready] .ctr-hero__canvas {
+  .ctr-hero[data-mode="play"] .ctr-hero__video {
+    display: block;
+  }
+  .ctr-hero[data-ready] .ctr-hero__video {
     opacity: 1;
   }
   .ctr-hero__grade {
@@ -215,12 +246,9 @@ const chapters = [
   }
   .ctr-hero__shafts,
   .ctr-hero__fx,
-  .ctr-hero__bar,
   .ctr-hero__rail,
-  .ctr-hero__dock,
-  .ctr-hero__cue,
   .ctr-hero__coords,
-  .ctr-hero__handoff {
+  .ctr-hero__toggle {
     display: none;
   }
 
@@ -323,111 +351,58 @@ const chapters = [
     pointer-events: auto;
   }
 
-  /* ---- Scrub mode (JS-enabled, capable devices only) ---- */
-  .ctr-hero[data-mode="scrub"] {
-    height: 480vh;
+  /* ---- Play mode (JS-enabled, capable devices only) ----
+     Still one screen: the acts stack in one grid cell (so the stage sizes to the tallest) and
+     cross-fade in place as the loop plays. */
+  .ctr-hero[data-mode="play"] .ctr-hero__acts {
+    display: grid;
+    padding-inline: 1.25rem;
   }
-  @media (max-width: 767px) {
-    .ctr-hero[data-mode="scrub"] {
-      height: 360vh;
-    }
-  }
-  .ctr-hero[data-mode="scrub"] .ctr-hero__stage {
-    position: sticky;
-    top: var(--hero-top);
-    height: calc(100svh - var(--hero-top));
-    height: calc(100dvh - var(--hero-top));
-    min-height: 0;
+  .ctr-hero[data-mode="play"] .ctr-hero__act {
+    grid-area: 1 / 1;
     display: block;
-  }
-  .ctr-hero[data-mode="scrub"] .ctr-hero__acts {
-    position: absolute;
-    inset: 0;
-    max-width: none;
-    padding: 0;
-  }
-  .ctr-hero[data-mode="scrub"] .ctr-hero__act {
-    position: absolute;
-    top: 50%;
-    display: block;
-    width: min(46rem, calc(100% - 2.5rem));
+    align-self: center;
+    width: min(46rem, 100%);
     opacity: var(--o, 0);
-    transform: translateY(-50%);
     translate: 0 calc((1 - var(--o, 0)) * 18px);
     will-change: opacity, translate;
   }
-  .ctr-hero[data-mode="scrub"] .ctr-hero__act--intro {
+  .ctr-hero[data-mode="play"] .ctr-hero__act--intro {
     --o: 1;
-    inset-inline-start: 1.25rem;
   }
-  .ctr-hero[data-mode="scrub"] .ctr-hero__act--ridge {
-    inset-inline: 1.25rem;
-    margin-inline: auto;
+  .ctr-hero[data-mode="play"] .ctr-hero__act--ridge {
+    justify-self: center;
     text-align: center;
   }
-  .ctr-hero[data-mode="scrub"] .ctr-hero__act--ridge .ctr-hero__eyebrow {
+  .ctr-hero[data-mode="play"] .ctr-hero__act--ridge .ctr-hero__eyebrow {
     justify-content: center;
   }
-  .ctr-hero[data-mode="scrub"] .ctr-hero__act--ridge .ctr-hero__h2,
-  .ctr-hero[data-mode="scrub"] .ctr-hero__act--ridge .ctr-hero__lead {
+  .ctr-hero[data-mode="play"] .ctr-hero__act--ridge .ctr-hero__h2,
+  .ctr-hero[data-mode="play"] .ctr-hero__act--ridge .ctr-hero__lead {
     margin-inline: auto;
   }
-  .ctr-hero[data-mode="scrub"] .ctr-hero__act--ride {
-    inset-inline-end: 1.25rem;
+  .ctr-hero[data-mode="play"] .ctr-hero__act--ride {
+    justify-self: end;
     text-align: end;
   }
-  .ctr-hero[data-mode="scrub"] .ctr-hero__act--ride .ctr-hero__eyebrow {
+  .ctr-hero[data-mode="play"] .ctr-hero__act--ride .ctr-hero__eyebrow,
+  .ctr-hero[data-mode="play"] .ctr-hero__act--ride .ctr-hero__ctas {
     justify-content: flex-end;
   }
-  .ctr-hero[data-mode="scrub"] .ctr-hero__act--ride .ctr-hero__h2 {
+  .ctr-hero[data-mode="play"] .ctr-hero__act--ride .ctr-hero__h2,
+  .ctr-hero[data-mode="play"] .ctr-hero__act--ride .ctr-hero__lead {
     margin-inline-start: auto;
-  }
-  .ctr-hero[data-mode="scrub"] .ctr-hero__act--ride .ctr-hero__lead {
-    margin-inline-start: auto;
-  }
-  .ctr-hero[data-mode="scrub"] .ctr-hero__act--ride .ctr-hero__ctas {
-    justify-content: flex-end;
-  }
-  /* Phones: keep the chapter rail (left/inline-start gutter) clear of act copy. */
-  @media (max-width: 767px) {
-    .ctr-hero[data-mode="scrub"] .ctr-hero__act {
-      width: calc(100% - 5rem);
-    }
-    .ctr-hero[data-mode="scrub"] .ctr-hero__act--intro {
-      inset-inline-start: 3rem;
-    }
-    .ctr-hero[data-mode="scrub"] .ctr-hero__act--ridge {
-      inset-inline: 2.5rem;
-      width: auto;
-    }
   }
   @media (min-width: 768px) {
-    .ctr-hero[data-mode="scrub"] .ctr-hero__act--intro {
-      inset-inline-start: 7.5rem;
-    }
-    .ctr-hero[data-mode="scrub"] .ctr-hero__act--ride {
-      inset-inline-end: 8vw;
+    .ctr-hero[data-mode="play"] .ctr-hero__acts {
+      max-width: none;
+      padding-inline: 7.5rem 8vw;
     }
   }
 
-  .ctr-hero[data-mode="scrub"] .ctr-hero__bar {
-    display: block;
-    position: absolute;
-    inset-inline: 0;
-    top: 0;
-    z-index: 20;
-    height: 3px;
-    background: var(--color-gold);
-    box-shadow: 0 0 16px rgb(201 162 39 / 0.7);
-    transform-origin: 0 50%;
-    transform: scaleX(var(--p));
-  }
-  :global(html[dir="rtl"]) .ctr-hero[data-mode="scrub"] .ctr-hero__bar {
-    transform-origin: 100% 50%;
-  }
-
-  /* Chapter rail */
-  .ctr-hero[data-mode="scrub"] .ctr-hero__rail {
+  /* Chapter rail: the active chapter follows the footage, the gold line fills over the loop.
+     Desktop: a vertical rail in the inline-start gutter. */
+  .ctr-hero[data-mode="play"] .ctr-hero__rail {
     display: block;
     position: absolute;
     inset-inline-start: 1.25rem;
@@ -495,7 +470,7 @@ const chapters = [
     text-transform: none;
   }
 
-  .ctr-hero[data-mode="scrub"] .ctr-hero__coords {
+  .ctr-hero[data-mode="play"] .ctr-hero__coords {
     display: block;
     position: absolute;
     inset-inline-start: 1.25rem;
@@ -505,93 +480,82 @@ const chapters = [
     font-weight: 600;
     letter-spacing: 0.12em;
     color: rgb(251 247 238 / 0.7);
-    opacity: calc(1 - var(--p) * 3);
   }
-  .ctr-hero[data-mode="scrub"] .ctr-hero__cue {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    position: absolute;
-    inset-inline: 0;
-    bottom: 1.1rem;
-    justify-content: center;
-    z-index: 20;
-    font-size: 0.8125rem;
-    font-weight: 700;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    color: rgb(251 247 238 / 0.75);
-    opacity: calc(1 - var(--p) * 8);
-    pointer-events: none;
-  }
-  .ctr-hero__cue i {
-    display: block;
-    width: 1px;
-    height: 1.75rem;
-    background: var(--color-gold);
-  }
-  :global(html[dir="rtl"]) .ctr-hero__cue,
   :global(html[dir="rtl"]) .ctr-hero__coords {
     letter-spacing: 0;
     text-transform: none;
   }
 
+  /* Pause / play */
+  .ctr-hero[data-mode="play"] .ctr-hero__toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    top: 0.75rem;
+    inset-inline-end: 0.75rem;
+    z-index: 25;
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: 999px;
+    border: 1px solid rgb(251 247 238 / 0.35);
+    background: rgb(22 17 12 / 0.55);
+    color: var(--color-warm-white);
+    backdrop-filter: blur(8px);
+    cursor: pointer;
+    transition: background 0.2s ease;
+  }
+  .ctr-hero__toggle:hover {
+    background: rgb(22 17 12 / 0.8);
+  }
+  .ctr-hero__toggle:focus-visible {
+    outline: 2px solid var(--color-gold);
+    outline-offset: 2px;
+  }
+  .ctr-hero__icon-play,
+  .ctr-hero__toggle[aria-pressed="true"] .ctr-hero__icon-pause {
+    display: none;
+  }
+  .ctr-hero__toggle[aria-pressed="true"] .ctr-hero__icon-play {
+    display: block;
+  }
+
+  /* Phones: the rail runs along the bottom edge (numbers only), so the copy keeps the full
+     width it has in static mode and the upgrade does not reflow it. */
   @media (max-width: 767px) {
-    .ctr-hero[data-mode="scrub"] .ctr-hero__rail {
-      inset-inline-start: 0.5rem;
+    .ctr-hero[data-mode="play"] .ctr-hero__rail {
+      top: auto;
+      bottom: 1rem;
+      inset-inline-start: 1.25rem;
+      transform: none;
     }
-    /* Phone Act I is tall enough that the bottom-edge cue and coordinates collide with the chips. */
-    .ctr-hero[data-mode="scrub"] .ctr-hero__cue,
-    .ctr-hero[data-mode="scrub"] .ctr-hero__coords {
+    .ctr-hero__rail ol {
+      grid-auto-flow: column;
+      padding-inline-start: 0;
+      padding-top: 0.75rem;
+    }
+    .ctr-hero__rail ol::before,
+    .ctr-hero__rail ol::after {
+      inset-inline: 0;
+      bottom: auto;
+      width: auto;
+      height: 1px;
+    }
+    .ctr-hero__rail ol::after {
+      transform-origin: 0 50%;
+      transform: scaleX(var(--p));
+    }
+    :global(html[dir="rtl"]) .ctr-hero__rail ol::after {
+      transform-origin: 100% 50%;
+    }
+    /* Phone Act I is tall enough that the bottom-edge coordinates collide with the chips. */
+    .ctr-hero[data-mode="play"] .ctr-hero__coords {
       display: none;
     }
   }
 
-  /* Sticky booking dock */
-  .ctr-hero[data-mode="scrub"] .ctr-hero__dock {
-    display: flex;
-    gap: 0.5rem;
-    position: absolute;
-    inset-inline-end: 1.25rem;
-    bottom: 1rem;
-    z-index: 25;
-    padding: 0.4rem;
-    border-radius: 999px;
-    background: rgb(22 17 12 / 0.55);
-    backdrop-filter: blur(8px);
-    opacity: 0;
-    translate: 0 12px;
-    pointer-events: none;
-    transition:
-      opacity 0.3s ease,
-      translate 0.3s ease;
-  }
-  .ctr-hero[data-mode="scrub"][data-dock="on"] .ctr-hero__dock {
-    opacity: 1;
-    translate: 0 0;
-    pointer-events: auto;
-  }
-  .ctr-hero__dock :global(a) {
-    min-height: 2.75rem;
-    padding: 0.5rem 1rem;
-    font-size: 0.85rem;
-  }
-
-  /* Scroll hand-off into the next (light) section */
-  .ctr-hero[data-mode="scrub"] .ctr-hero__handoff {
-    display: block;
-    position: absolute;
-    inset-inline: 0;
-    bottom: 0;
-    z-index: 10;
-    height: 38%;
-    pointer-events: none;
-    background: linear-gradient(0deg, var(--color-warm-white), transparent);
-    opacity: clamp(0, calc((var(--p) - 0.92) * 12.5), 1);
-  }
-
   /* Ambient light shafts + FX canvas */
-  .ctr-hero[data-mode="scrub"] .ctr-hero__shafts {
+  .ctr-hero[data-mode="play"] .ctr-hero__shafts {
     display: block;
     position: absolute;
     inset: -20% -10%;
@@ -604,8 +568,11 @@ const chapters = [
       transparent 11% 20%
     );
     mix-blend-mode: screen;
-    opacity: calc(0.35 + var(--p) * 0.3);
+    opacity: 0.45;
     animation: ctr-shafts 14s ease-in-out infinite alternate;
+  }
+  .ctr-hero[data-paused] .ctr-hero__shafts {
+    animation-play-state: paused;
   }
   @keyframes ctr-shafts {
     from {
@@ -615,7 +582,7 @@ const chapters = [
       transform: translateX(3%);
     }
   }
-  .ctr-hero[data-mode="scrub"] .ctr-hero__fx {
+  .ctr-hero[data-mode="play"] .ctr-hero__fx {
     display: block;
     position: absolute;
     inset: 0;
@@ -637,8 +604,8 @@ const chapters = [
     .ctr-hero[data-layout="panel"] .ctr-hero__stage {
       --panel-gap: clamp(1rem, 2.4vh, 1.75rem);
       --panel-end: max(1.25rem, 4vw);
-      /* Height leaves room under the panel for the booking dock, and for the trust bar that
-         still sits above the stage at p=0 (the sticky stage is sized as if it were gone). */
+      /* Sized from the header alone (not --hero-top, which JS refines after first paint), so
+         the panel never resizes once shown; the 3.5rem leaves room for the trust bar. */
       --panel-h: calc(100dvh - var(--header-h, 4.5rem) - 2 * var(--panel-gap) - 3.5rem);
       --panel-w: min(calc(var(--panel-h) * 3 / 4), 46vw);
       --copy-start: 3rem;
@@ -675,18 +642,11 @@ const chapters = [
       inset-inline-end: var(--panel-end);
       width: var(--panel-w);
       height: calc(var(--panel-w) * 4 / 3);
-      /* The scroll zoom lives on the poster/canvas instead, so the panel box stays put. */
-      transform: none;
       overflow: hidden;
       border-radius: 1.25rem;
       box-shadow:
         0 30px 80px -24px rgb(0 0 0 / 0.65),
         0 0 0 1px rgb(251 247 238 / 0.14);
-    }
-    .ctr-hero[data-layout="panel"] .ctr-hero__poster,
-    .ctr-hero[data-layout="panel"] .ctr-hero__canvas {
-      transform: scale(calc(1 + var(--p) * 0.08));
-      transform-origin: 50% 60%;
     }
     .ctr-hero[data-layout="panel"] .ctr-hero__scrim {
       background:
@@ -699,8 +659,8 @@ const chapters = [
     .ctr-hero[data-layout="panel"] .ctr-hero__h2 {
       font-size: clamp(2.4rem, 4.6vw, 5rem);
     }
-    /* Static mode: copy in normal flow, kept clear of the panel, wrapped at the same width
-       as in scrub mode so the upgrade does not reflow it. */
+    /* Copy kept clear of the panel, wrapped at the same width in both modes so the upgrade
+       to play mode does not reflow it. */
     .ctr-hero[data-layout="panel"] .ctr-hero__acts {
       max-width: none;
       padding-inline: var(--copy-start) calc(var(--panel-w) + var(--panel-end) + 2.5rem);
@@ -708,23 +668,23 @@ const chapters = [
     .ctr-hero[data-layout="panel"] .ctr-hero__act {
       max-width: 40rem;
     }
-    /* Scrub mode: every act on the copy side, cross-fading in place. */
-    .ctr-hero[data-layout="panel"][data-mode="scrub"] .ctr-hero__acts {
-      padding: 0;
-    }
-    .ctr-hero[data-layout="panel"][data-mode="scrub"] .ctr-hero__act {
-      inset-inline: var(--copy-start) auto;
-      width: min(40rem, calc(100% - var(--copy-start) - var(--panel-w) - var(--panel-end) - 2.5rem));
-      margin-inline: 0;
+    /* Play mode: every act on the copy side, cross-fading in place. */
+    .ctr-hero[data-layout="panel"][data-mode="play"] .ctr-hero__act {
+      justify-self: start;
       text-align: start;
     }
-    .ctr-hero[data-layout="panel"][data-mode="scrub"] .ctr-hero__act .ctr-hero__eyebrow,
-    .ctr-hero[data-layout="panel"][data-mode="scrub"] .ctr-hero__act .ctr-hero__ctas {
+    .ctr-hero[data-layout="panel"][data-mode="play"] .ctr-hero__act .ctr-hero__eyebrow,
+    .ctr-hero[data-layout="panel"][data-mode="play"] .ctr-hero__act .ctr-hero__ctas {
       justify-content: flex-start;
     }
-    .ctr-hero[data-layout="panel"][data-mode="scrub"] .ctr-hero__act .ctr-hero__h2,
-    .ctr-hero[data-layout="panel"][data-mode="scrub"] .ctr-hero__act .ctr-hero__lead {
+    .ctr-hero[data-layout="panel"][data-mode="play"] .ctr-hero__act .ctr-hero__h2,
+    .ctr-hero[data-layout="panel"][data-mode="play"] .ctr-hero__act .ctr-hero__lead {
       margin-inline: 0;
+    }
+    /* The pause control sits in the panel's top corner, like a video player's. */
+    .ctr-hero[data-layout="panel"][data-mode="play"] .ctr-hero__toggle {
+      top: calc(var(--panel-gap) + 0.75rem);
+      inset-inline-end: calc(var(--panel-end) + 0.75rem);
     }
   }
   @media (min-aspect-ratio: 4/5) and (min-width: 768px) {

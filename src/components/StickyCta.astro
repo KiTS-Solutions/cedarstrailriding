@@ -12,8 +12,8 @@ const t = useTranslations(locale);
 const telHref = `tel:${contact.phones[0]?.replace(/\s+/g, "")}`;
 ---
 
-{/* Phone-only persistent booking actions: Book, WhatsApp, Call. Hidden while the scroll hero
-    (which has its own dock) or a booking form is on screen — see the observer below. */}
+{/* Phone-only persistent booking actions: Book, WhatsApp, Call. Hidden while the hero
+    (whose intro carries its own Book CTA) or a booking form is on screen — see the observer below. */}
 <div
   id="sticky-cta"
   data-sticky-contact
