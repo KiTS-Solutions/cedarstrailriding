@@ -10,6 +10,8 @@ it should be resolved before the site goes live publicly.
       the booking form shows a visible dev-mode notice instead of delivering submissions.
       Register it to `info@cedarstrailriding.com` (HostGator alias forwarding to
       `admin@cedarstrailriding.com` — the key and every booking land in the admin mailbox).
+      GitHub Pages demo: set it as repo variable `PUBLIC_WEB3FORMS_ACCESS_KEY` (read by
+      `.github/workflows/pages.yml`). Vercel: set it again there at cutover.
       After the first live test, check that mailbox's Spam folder and whitelist the Web3Forms
       sender in cPanel -> Spam Filters if needed.
 - [ ] `PUBLIC_GA4_ID` — GA4 measurement ID.

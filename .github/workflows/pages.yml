@@ -31,6 +31,9 @@ jobs:
           SITE_ORIGIN: https://kits-solutions.github.io
           SITE_BASE: /cedarstrailriding
           PUBLIC_NOINDEX: "true"
+          # Repo variable (Settings -> Secrets and variables -> Actions -> Variables). Public by
+          # design (it ships in the HTML); unset = form shows its dev-mode notice instead.
+          PUBLIC_WEB3FORMS_ACCESS_KEY: ${{ vars.PUBLIC_WEB3FORMS_ACCESS_KEY }}
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
