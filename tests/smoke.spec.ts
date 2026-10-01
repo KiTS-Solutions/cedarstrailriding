@@ -171,7 +171,7 @@ test.describe("Header", () => {
     await expect(header(page)).not.toHaveAttribute("data-state", /.*/);
     const strip = page.locator("[data-topbar]");
     await expect(strip.locator('a[href="tel:+96170211041"]')).toBeVisible();
-    await expect(strip.locator('a[href="mailto:info@cedarsxtreme.com"]')).toBeVisible();
+    await expect(strip.locator('a[href="mailto:info@cedarstrailriding.com"]')).toBeVisible();
     await expect(
       header(page).locator('a[href^="https://wa.me/"]'),
     ).toBeVisible();

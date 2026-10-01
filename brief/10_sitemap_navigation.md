@@ -24,7 +24,7 @@ Complete route/navigation plan for the trilingual static build.
 ## Footer (all pages)
 - Brand + tagline + "Managed by Cedars Xtreme"
 - Columns: Explore / Company / Contact / Follow
-- Contact: +961 70 211 041 · +961 76 004 686 · info@cedarsxtreme.com · WhatsApp
+- Contact: +961 70 211 041 · +961 76 004 686 · info@cedarstrailriding.com · WhatsApp
 - Follow: @cedarstrailriding · @cedarsxtreme · Facebook
 - **Lebanon map (REQUIRED — featured in marketing case study):** inline SVG outline of Lebanon with
   a single pin at base coords (33.6864028, 35.5902012) + label "We operate all over Lebanon."

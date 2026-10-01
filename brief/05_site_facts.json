@@ -1,5 +1,5 @@
 {
-  "$schema_note": "Canonical machine-readable spec for the Cedars Trail Riding website build. Unknown fields carry null; do not invent values. UPDATED 2026-09-17 with client-supplied contact/location; UPDATED again 2026-09-17 with the received CTR + 3 sibling brand logos (see build_decisions.logo and build_decisions.brand_family_footer).",
+  "$schema_note": "Canonical machine-readable spec for the Cedars Trail Riding website build. Unknown fields carry null; do not invent values. UPDATED 2026-09-17 with client-supplied contact/location; UPDATED again 2026-09-17 with the received CTR + 3 sibling brand logos (see build_decisions.logo and build_decisions.brand_family_footer). UPDATED 2026-10-02: public email switched from info@cedarsxtreme.com to info@cedarstrailriding.com (HostGator alias → admin@cedarstrailriding.com).",
   "brand": {
     "name": "Cedars Trail Riding",
     "abbreviation": "CTR",
@@ -27,7 +27,7 @@
     "whatsapp": "+961 70 211 041",
     "whatsapp_alt": "+961 76 004 686",
     "wa_link": "https://wa.me/96170211041",
-    "email": "info@cedarsxtreme.com",
+    "email": "info@cedarstrailriding.com",
     "address": "Samqaniyeh, Beiteddine, Shouf District, Lebanon",
     "plus_code": "MHPXVG5V+FV (canonical)",
     "plus_code_area_short": "MHPR+H3 Samqaniyeh (Google listing short code)",
@@ -211,7 +211,7 @@
     "languages": ["en", "ar", "fr"],
     "translations_status": "AR + FR drafted (MT-quality) in 12_translation_pack.md; client review before launch; fallback to EN",
     "booking": "booking request form + WhatsApp + click-to-call",
-    "booking_form_backend": "Web3Forms → info@cedarsxtreme.com (access key to be created by client/agency)",
+    "booking_form_backend": "Web3Forms → info@cedarstrailriding.com (access key to be created by client/agency)",
     "analytics": ["GA4", "Meta Pixel"],
     "pricing": "do NOT publish prices; use 'Contact us for pricing' CTAs and WhatsApp inquire",
     "operating_hours": "year-round, daily (per client; seasons still shape trails)",

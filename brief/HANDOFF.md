@@ -22,7 +22,7 @@ FAQ · Contact/Book.
 | Stack | **Astro** (static), minimal JS, no backend |
 | Hosting | **Vercel** — domain `cedarstrailriding.com` |
 | Languages | EN `/` · AR RTL `/ar/` · FR `/fr/` (AR/FR = client-review drafts) |
-| Booking | **Web3Forms** form → `info@cedarsxtreme.com` + **WhatsApp** `wa.me/96170211041` + click-to-call |
+| Booking | **Web3Forms** form → `info@cedarstrailriding.com` + **WhatsApp** `wa.me/96170211041` + click-to-call |
 | Phones | +961 70 211 041 · +961 76 004 686 (both WhatsApp, both shown) |
 | Pricing | **No prices published** — "contact us for pricing" CTAs |
 | Hours | Year-round, daily · trails seasonal · Beirut pickup on request |
