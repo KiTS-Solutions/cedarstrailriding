@@ -31,12 +31,12 @@ BUILD REQUIREMENTS
 - Booking: NO PRICING shown anywhere. Contact page only, with
   (a) WhatsApp deep link wa.me/96170211041 (prefilled text),
   (b) tel: links +961 70 211 041 / +961 76 004 686,
-  (c) request form per brief/11_booking_form_spec.md (Web3Forms backend → info@cedarsxtreme.com;
+  (c) request form per brief/11_booking_form_spec.md (Web3Forms backend → info@cedarstrailriding.com;
       use an env var WEB3FORMS_ACCESS_KEY placeholder until the key is provided).
 - Analytics: GA4 + Meta Pixel (IDs via env vars; render only when set to avoid broken tags in dev).
 - Contact facts to render exactly:
   - Phones: +961 70 211 041, +961 76 004 686 (WhatsApp same numbers)
-  - Email: info@cedarsxtreme.com
+  - Email: info@cedarstrailriding.com
   - Location: Samqaniyeh, Beiteddine | Shouf District, "We operate all over Lebanon."
   - Map embed: lat 33.6864028, lng 35.5902012; plus-code MHPXVG5V+FV
   - Hours: year-round daily; trails seasonal.

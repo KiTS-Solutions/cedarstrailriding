@@ -60,7 +60,7 @@ backend, deployed to Vercel. Full context: `brief/README.md` and `brief/HANDOFF.
 - **Analytics:** GA4 + Meta Pixel wired in `src/layouts/BaseLayout.astro`, both env-var driven
   (`PUBLIC_GA4_ID`, `PUBLIC_META_PIXEL_ID`); render tags only when the ID is set.
 - **Contact facts** (render exactly, don't paraphrase): phones `+961 70 211 041` /
-  `+961 76 004 686` (both WhatsApp-enabled), email `info@cedarsxtreme.com`, location "Samqaniyeh,
+  `+961 76 004 686` (both WhatsApp-enabled), email `info@cedarstrailriding.com`, location "Samqaniyeh,
   Beiteddine | Shouf District — We operate all over Lebanon," coords `33.6864028, 35.5902012`.
 - **Header** (`src/components/Header.astro` + `src/scripts/header-scroll.ts`): logo is the
   mark + wordmark split from the original (`siteSettings.logoMarkSrc` / `logoWordmarkSrc`, CSS

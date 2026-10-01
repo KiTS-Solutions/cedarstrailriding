@@ -116,7 +116,7 @@ should render it but keep it greppable for removal.
   availability, routes, and pricing.`
 - Buttons: `WhatsApp` (wa.me/96170211041) · `Call +961 70 211 041` · `Booking form`
 - Map: embed Google Maps pin (33.6864028, 35.5902012)
-- Line: `info@cedarsxtreme.com` · `Based in Samqaniyeh, Beiteddine | Shouf District`
+- Line: `info@cedarstrailriding.com` · `Based in Samqaniyeh, Beiteddine | Shouf District`
 - Line: `Transport from Beirut available on request.`
 
 ---

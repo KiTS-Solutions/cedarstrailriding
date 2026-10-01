@@ -10,7 +10,8 @@ Everything the public sources could NOT tell us. Get these answered by the clien
 ### ✅ Resolved
 - **Booking method** → app form + WhatsApp + click-to-call (you chose this).
 - **Contact** → phones +961 70 211 041 / +961 76 004 686; WhatsApp = same numbers; email
-  = info@cedarsxtreme.com.
+  = info@cedarstrailriding.com (switched from info@cedarsxtreme.com on 2026-10-02; HostGator
+  alias forwarding to admin@cedarstrailriding.com).
 - **Location** → Samqaniyeh, Beiteddine, Shouf District; operate all over Lebanon; Google pin
   MHPR+H3 (4.9★).
 - **Languages** → EN + AR + FR.
@@ -56,7 +57,7 @@ Everything the public sources could NOT tell us. Get these answered by the clien
 ## D. Technical & scope
 
 ### ✅ Resolved (final build decisions)
-- **Stack:** Astro (static) · **Hosting:** Vercel · **Form backend:** Web3Forms → info@cedarsxtreme.com
+- **Stack:** Astro (static) · **Hosting:** Vercel · **Form backend:** Web3Forms → info@cedarstrailriding.com
 - **Analytics:** GA4 + Meta Pixel · **Translations:** AR/FR drafted (MT) in `12_translation_pack.md`,
   client reviews before launch; EN ships first if needed.
 - **Brand family footer:** will include full brand list — CLIENT TO SUPPLY NAMES (pending).
