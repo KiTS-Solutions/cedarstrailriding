@@ -1,23 +1,49 @@
 ---
-// Softened full-bleed copy of an AmbientVideo clip, the section-level twin of the hero's
-// panel backdrop (ScrollHero.astro .ctr-hero__backdrop): same filter, same 1/3-resolution
-// canvas. It does not load the clip itself — it mirrors frames from the AmbientVideo inside
-// the nearest [data-ambient-scope] ancestor, so the two stay in sync and the clip is fetched
-// and decoded once. Until a frame is drawn (or ever, under reduced motion / Save-Data) the
-// blurred poster shows instead (src/scripts/ambient-video.ts).
+// Softened full-bleed copy of a v2 clip, the section-level twin of the hero's panel backdrop
+// (ScrollHero.astro .ctr-hero__backdrop): same filter, same 1/3-resolution canvas.
+//
+// Two modes:
+// - mirror (no `video`): mirrors frames from the AmbientVideo inside the nearest
+//   [data-ambient-scope] ancestor, so the sharp panel and its backdrop stay in sync and the
+//   clip is fetched and decoded once.
+// - standalone (`video` set): for sections with no sharp panel, plays the clip itself through
+//   the same lazy, visibility-gated AmbientVideo playback.
+// Until a frame shows (or ever, under reduced motion / Save-Data) the blurred poster stands
+// in (src/scripts/ambient-video.ts).
 import { withBase } from "../i18n";
 
 interface Props {
   poster: string;
+  /** Standalone mode: the clip to play. Omit to mirror the section's AmbientVideo. */
+  video?: string;
+  /** "side" darkens the inline-start text column most; "even" suits centered copy. */
+  scrim?: "side" | "even";
 }
 
-const { poster } = Astro.props;
+const { poster, video, scrim = "side" } = Astro.props;
 ---
 
 <div class="ambient-backdrop" aria-hidden="true">
   <img src={withBase(poster)} alt="" width="54" height="96" loading="lazy" decoding="async" />
-  <canvas width="1" height="1" data-ambient-backdrop></canvas>
-  <div class="ambient-backdrop__scrim"></div>
+  {
+    video ? (
+      <video
+        class="ambient-backdrop__media"
+        muted
+        loop
+        playsinline
+        preload="none"
+        width="540"
+        height="960"
+        data-src={withBase(video)}
+        data-ambient-video
+        tabindex="-1"
+      />
+    ) : (
+      <canvas class="ambient-backdrop__media" width="1" height="1" data-ambient-backdrop />
+    )
+  }
+  <div class:list={["ambient-backdrop__scrim", `ambient-backdrop__scrim--${scrim}`]}></div>
 </div>
 
 <style>
@@ -28,7 +54,7 @@ const { poster } = Astro.props;
     overflow: hidden;
   }
   .ambient-backdrop img,
-  .ambient-backdrop canvas {
+  .ambient-backdrop__media {
     position: absolute;
     inset: 0;
     width: 100%;
@@ -37,18 +63,21 @@ const { poster } = Astro.props;
     filter: blur(6px) saturate(1.15) brightness(0.62);
     transform: scale(1.04);
   }
-  .ambient-backdrop canvas {
+  .ambient-backdrop__media {
     opacity: 0;
     transition: opacity 0.4s ease;
   }
-  .ambient-backdrop canvas[data-drawn] {
+  canvas.ambient-backdrop__media[data-drawn],
+  video.ambient-backdrop__media[data-playing] {
     opacity: 1;
   }
-  /* Keeps the copy at AA contrast over bright sky in the footage: heaviest behind the text
-     (inline start), lightest behind the sharp panel. */
   .ambient-backdrop__scrim {
     position: absolute;
     inset: 0;
+  }
+  /* Keeps the copy at AA contrast over bright sky in the footage: heaviest behind the text
+     (inline start), lightest behind the sharp panel. */
+  .ambient-backdrop__scrim--side {
     background: linear-gradient(
       to var(--scrim-dir, right),
       rgb(60 71 16 / 0.7),
@@ -56,22 +85,32 @@ const { poster } = Astro.props;
       rgb(60 71 16 / 0.15)
     );
   }
-  :global([dir="rtl"]) .ambient-backdrop__scrim {
+  :global([dir="rtl"]) .ambient-backdrop__scrim--side {
     --scrim-dir: left;
   }
   @media (max-width: 767px) {
     /* Stacked layout: text above, panel below. */
-    .ambient-backdrop__scrim {
+    .ambient-backdrop__scrim--side,
+    :global([dir="rtl"]) .ambient-backdrop__scrim--side {
       --scrim-dir: bottom;
     }
-    :global([dir="rtl"]) .ambient-backdrop__scrim {
-      --scrim-dir: bottom;
-    }
+  }
+  /* Centered copy: darkest in the middle where the text sits, footage showing at the edges. */
+  .ambient-backdrop__scrim--even {
+    background: radial-gradient(
+      ellipse 70% 85% at 50% 50%,
+      rgb(60 71 16 / 0.78),
+      rgb(60 71 16 / 0.5)
+    );
   }
 </style>
 
 <script>
-  import { initAmbientBackdrops } from "../scripts/ambient-video";
+  import { initAmbientBackdrops, initAmbientVideos } from "../scripts/ambient-video";
 
   initAmbientBackdrops(document.querySelectorAll<HTMLCanvasElement>("[data-ambient-backdrop]"));
+  // Standalone clips; initAmbientVideos skips any the AmbientVideo script already took.
+  initAmbientVideos(
+    document.querySelectorAll<HTMLVideoElement>(".ambient-backdrop [data-ambient-video]"),
+  );
 </script>
