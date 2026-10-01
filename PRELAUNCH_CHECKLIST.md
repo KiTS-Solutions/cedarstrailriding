@@ -8,11 +8,14 @@ it should be resolved before the site goes live publicly.
 ## Credentials (site won't fully function without these)
 - [ ] `PUBLIC_WEB3FORMS_ACCESS_KEY` — create a free Web3Forms account, get the key. Until set,
       the booking form shows a visible dev-mode notice instead of delivering submissions.
+      Register it to `info@cedarsxtreme.com` (HostGator mailbox — the key is emailed there).
+      After the first live test, check that mailbox's Spam folder and whitelist the Web3Forms
+      sender in cPanel -> Spam Filters if needed.
 - [ ] `PUBLIC_GA4_ID` — GA4 measurement ID.
 - [ ] `PUBLIC_META_PIXEL_ID` — Meta Pixel ID.
 - [ ] `PUBLIC_TURNSTILE_SITE_KEY` — Cloudflare Turnstile site key (booking form anti-spam;
       the honeypot field works without it, Turnstile is additional).
-- [ ] Vercel/DNS access confirmed for `cedarstrailriding.com`.
+- [ ] Vercel/DNS access confirmed for `cedarstrailriding.com` (DNS + email are at HostGator).
 
 ## Content still owed by the client (brief/06_open_questions.md)
 - [ ] Founder name, story, founding year — About page currently shows mission copy only.
@@ -140,3 +143,7 @@ it should be resolved before the site goes live publicly.
 - [ ] Install/authorize the Vercel GitHub app for `KiTS-Solutions`, then Project Settings -> Git -> connect the repo (or run `vercel login` locally and `vercel deploy`).
 - [ ] Set env vars in Vercel (Production + Preview): `PUBLIC_WEB3FORMS_ACCESS_KEY`, `PUBLIC_GA4_ID`, `PUBLIC_META_PIXEL_ID`, `PUBLIC_TURNSTILE_SITE_KEY`.
 - [ ] Attach `cedarstrailriding.com` once DNS access is confirmed; the project has Vercel Auth (SSO) protection on by default, so disable it for public launch.
+- [ ] DNS stays at HostGator (site on Vercel, email on HostGator). In HostGator's zone editor change
+      **only** the apex `A` record and the `www` `CNAME` to the values Vercel shows when the domain is
+      attached. Do **not** touch MX / SPF / DKIM / DMARC records, and do **not** move nameservers to
+      Vercel — either would break HostGator email. Screenshot the zone before editing.
