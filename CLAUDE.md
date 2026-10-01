@@ -76,7 +76,7 @@ backend, deployed to Vercel. Full context: `brief/README.md` and `brief/HANDOFF.
   Lebanon" collision (`brief/04_seo_and_audit.md`).
 - **Accessibility:** WCAG AA target, native `<details>` FAQ accordion (keyboard-accessible by
   default), skip-to-content link, `lang`/`dir` set per locale.
-- **Hero:** src/components/ScrollHero.astro + src/scripts/{scroll-hero,hero-fx,hero-math}.ts — scroll-scrubbed video with static fallback. Footage variant is `HERO_VARIANT` in `src/data/heroMedia.ts`: **v2** (live) = CTR's own vertical footage, portrait-panel layout on wide screens; **v1** = the old AI-generated landscape clip, kept as a fallback (git tag `hero-v1`). The v2 master (`horse-hero-v2/*.MOV`, git-ignored, ~150 MB) also feeds `WelcomeLoader.astro` (home only) and `AmbientVideo.astro` loops — regenerate everything with `scripts/encode-hero-v2.sh`. See README.md § Hero.
+- **Hero:** src/components/ScrollHero.astro + src/scripts/{scroll-hero,hero-fx,hero-math}.ts — one-screen autoplaying video loop (acts cross-fade with the footage, pause button, rail jumps) with static fallback; the names predate the switch from scroll-scrubbing. Footage variant is `HERO_VARIANT` in `src/data/heroMedia.ts`: **v2** (live) = CTR's own vertical footage, portrait-panel layout on wide screens; **v1** = the old AI-generated landscape clip, kept as a fallback (git tag `hero-v1`). The v2 master (`horse-hero-v2/*.MOV`, git-ignored, ~150 MB) also feeds `WelcomeLoader.astro` (home only) and `AmbientVideo.astro` loops — regenerate everything with `scripts/encode-hero-v2.sh`. See README.md § Hero.
 
 ## Non-negotiables
 

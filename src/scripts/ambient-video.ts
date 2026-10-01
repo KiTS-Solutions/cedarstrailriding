@@ -65,15 +65,24 @@ export function initAmbientVideos(videos: NodeListOf<HTMLVideoElement>): void {
       { threshold: PLAY_THRESHOLD },
     );
 
-    videos.forEach((v) => {
-      // The component script runs once per page however many clips it renders.
-      if (v.dataset.ambientInit) return;
-      v.dataset.ambientInit = "true";
-      // Reveal over the poster only once real frames are showing.
-      v.addEventListener("playing", () => (v.dataset.playing = "true"), { once: true });
-      loader.observe(v);
-      player.observe(v);
-    });
+    const start = (): void => {
+      videos.forEach((v) => {
+        // The component script runs once per page however many clips it renders.
+        if (v.dataset.ambientInit) return;
+        v.dataset.ambientInit = "true";
+        // Reveal over the poster only once real frames are showing.
+        v.addEventListener("playing", () => (v.dataset.playing = "true"), {
+          once: true,
+        });
+        loader.observe(v);
+        player.observe(v);
+      });
+    };
+    // The one-screen hero puts the About band's clip inside the load margin at page load.
+    // `load` waits for the hero video's first frame, so on a slow link the hero clip gets
+    // the bandwidth first.
+    if (document.readyState === "complete") start();
+    else window.addEventListener("load", start, { once: true });
 
     document.addEventListener("visibilitychange", () => {
       visible.forEach((v) => (document.hidden ? v.pause() : play(v)));
@@ -113,7 +122,13 @@ function mirror(canvas: HTMLCanvasElement, video: FrameVideo): void {
     const w = sw * scale;
     const h = sh * scale;
     try {
-      ctx.drawImage(video, (canvas.width - w) / 2, (canvas.height - h) / 2, w, h);
+      ctx.drawImage(
+        video,
+        (canvas.width - w) / 2,
+        (canvas.height - h) / 2,
+        w,
+        h,
+      );
     } catch (err) {
       if (!(err instanceof DOMException)) throw err;
       return;
@@ -142,7 +157,9 @@ function mirror(canvas: HTMLCanvasElement, video: FrameVideo): void {
   new ResizeObserver(resize).observe(canvas);
 }
 
-export function initAmbientBackdrops(canvases: NodeListOf<HTMLCanvasElement>): void {
+export function initAmbientBackdrops(
+  canvases: NodeListOf<HTMLCanvasElement>,
+): void {
   try {
     canvases.forEach((canvas) => {
       if (canvas.dataset.ambientInit) return;
@@ -154,6 +171,9 @@ export function initAmbientBackdrops(canvases: NodeListOf<HTMLCanvasElement>): v
       if (video) mirror(canvas, video);
     });
   } catch (err) {
-    console.warn("[ambient-backdrop]", err instanceof Error ? err.message : err);
+    console.warn(
+      "[ambient-backdrop]",
+      err instanceof Error ? err.message : err,
+    );
   }
 }

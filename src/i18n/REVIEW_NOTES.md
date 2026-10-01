@@ -34,3 +34,5 @@ files as the client approves more translated copy.
   v2 hero footage (ridge, not river) and the welcome screen. New EN copy, not in the brief: needs
   client sign-off; AR/FR are drafts. The v1 `hero.chapter2` / `hero.act2.body` ("River") stay for
   the fallback variant.
+- `hero.pause`, `hero.play` (EN/AR/FR, 2026-10-01) — accessible labels for the autoplaying
+  hero's pause/play button (replaces the removed `hero.scrollCue`). AR/FR are drafts.

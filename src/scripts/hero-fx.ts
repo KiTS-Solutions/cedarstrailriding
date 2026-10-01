@@ -1,7 +1,7 @@
 import { dustRate, splashRate } from "./hero-math";
 
 export interface Fx {
-  update(dt: number, velocity: number, p: number): void;
+  update(dt: number, p: number): void;
   resize(): void;
 }
 
@@ -104,8 +104,8 @@ export function createFx(
   const spawn = style === "dust" ? spawnDust : spawnSplash;
   const draw = style === "dust" ? drawDust : drawSplash;
 
-  const update = (dt: number, velocity: number, p: number): void => {
-    carry += rate(velocity, p) * dt;
+  const update = (dt: number, p: number): void => {
+    carry += rate(p) * dt;
     while (carry >= 1) {
       if (pool.length < MAX_PARTICLES) spawn();
       carry -= 1;

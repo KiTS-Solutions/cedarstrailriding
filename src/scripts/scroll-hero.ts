@@ -1,15 +1,14 @@
+// Controller for ScrollHero.astro. Upgrades the static hero (poster + Act I) to "play" mode on
+// capable devices: the clip autoplays on a seamless loop and the three acts, the chapter rail
+// and the blurred backdrop all follow its playback position (timings in hero-math.ts).
 import {
   ACTS,
   CHAPTERS,
   actOpacity,
   activeChapter,
-  canScrub,
-  nearestSnap,
-  progressToScrollY,
-  scrollProgress,
-  smoothVelocity,
-  snapCandidate,
-  SNAP_MAX_VELOCITY,
+  canAutoplay,
+  liteVideo,
+  loopProgress,
   videoTime,
   type ActName,
 } from "./hero-math";
@@ -30,12 +29,9 @@ type NavigatorWithHints = Navigator & {
 };
 
 const ACT_NAMES = Object.keys(ACTS) as ActName[];
-const SEEK_EPSILON = 0.018;
 const OPACITY_EPSILON = 0.005;
 const FOCUS_THRESHOLD = 0.35;
-const SNAP_IDLE_MS = 160;
-const MOVED_THRESHOLD = 0.02;
-/** The backdrop is drawn at 1/3 of its CSS size: soft enough under a light blur, cheap per seek. */
+/** The backdrop is drawn at 1/3 of its CSS size: soft enough under a light blur, cheap per frame. */
 const BACKDROP_DOWNSCALE = 3;
 
 class HeroError extends Error {
@@ -82,23 +78,19 @@ function setFocusable(act: HTMLElement, focusable: boolean): void {
   });
 }
 
-// A faded-out act must be inert: later acts stack above earlier ones and would swallow taps.
+// A faded-out act must be inert: the acts share one grid cell and would swallow taps.
 function setActActive(act: HTMLElement, active: boolean): void {
   setFocusable(act, active);
   act.style.pointerEvents = active ? "" : "none";
 }
 
-// Static flow: everything above the hero (header, mobile nav row, trust bar) counts, so the
-// stage fills exactly the rest of the viewport. Scrub mode: only the sticky header does.
+// Everything above the hero (header, mobile nav row, trust bar) counts, so the stage fills
+// exactly the rest of the viewport.
 function syncHeroTop(root: HTMLElement): void {
   const header = document.querySelector<HTMLElement>("header");
-  const top =
-    root.dataset.mode === "scrub"
-      ? (header?.offsetHeight ?? 0)
-      : root.getBoundingClientRect().top + window.scrollY;
+  const top = root.getBoundingClientRect().top + window.scrollY;
   root.style.setProperty("--hero-top", `${Math.round(top)}px`);
-  // Mode-independent, so the v2 portrait panel keeps its size across the static -> scrub
-  // upgrade (sizing it from --hero-top made it resize, a layout shift).
+  // The v2 portrait panel is sized from the header alone, so it never resizes once shown.
   root.style.setProperty(
     "--header-h",
     `${Math.round(header?.offsetHeight ?? 0)}px`,
@@ -112,7 +104,7 @@ export function initScrollHero(root: HTMLElement): void {
     window.addEventListener("resize", () => syncHeroTop(root));
 
     const hints = navigator as NavigatorWithHints;
-    const enabled = canScrub({
+    const enabled = canAutoplay({
       reducedMotion: matchMedia("(prefers-reduced-motion: reduce)").matches,
       saveData: hints.connection?.saveData === true,
       effectiveType: hints.connection?.effectiveType,
@@ -129,10 +121,9 @@ export function initScrollHero(root: HTMLElement): void {
 }
 
 function upgrade(root: HTMLElement): void {
-  const stage = must<HTMLElement>(root, "[data-hero-stage]");
-  const canvas = must<HTMLCanvasElement>(root, "[data-hero-canvas]");
-  const ctx = canvas.getContext("2d");
-  if (!ctx) throw new HeroError("2d canvas unavailable");
+  const video = must<HTMLVideoElement>(root, "[data-hero-video]");
+  const toggle = must<HTMLButtonElement>(root, "[data-hero-toggle]");
+  const actsBox = must<HTMLElement>(root, ".ctr-hero__acts");
   const fxCanvas = must<HTMLCanvasElement>(root, "[data-hero-fx]");
   const fxStyle: FxStyle = root.dataset.fx === "dust" ? "dust" : "splash";
   let fx: Fx | null = createFx(fxCanvas, fxStyle);
@@ -155,391 +146,271 @@ function upgrade(root: HTMLElement): void {
     ]),
   );
 
-  const dock = root.querySelector<HTMLElement>("[data-hero-dock]");
-  if (dock) setFocusable(dock, false); // dock starts off; keep it out of the tab order
-
-  root.dataset.mode = "scrub";
-  syncHeroTop(root);
-
-  // ---- Video: lazily fetched after first paint, source chosen by viewport ----
+  // ---- Source, chosen by viewport and connection ----
   const portrait = matchMedia(
     "(max-width: 767px) and (orientation: portrait)",
   ).matches;
   const smallLandscape = matchMedia(
     "(max-height: 500px) and (pointer: coarse)",
   ).matches;
+  const lite = liteVideo(
+    (navigator as NavigatorWithHints).connection?.effectiveType,
+  );
   const src = portrait
     ? root.dataset.videoMobile
     : smallLandscape
       ? (root.dataset.videoCompact ?? root.dataset.videoDesktop)
-      : root.dataset.videoDesktop;
+      : lite
+        ? root.dataset.videoMobile
+        : root.dataset.videoDesktop;
   if (!src) throw new HeroError("missing data-video-* source");
 
-  const video = document.createElement("video");
-  video.muted = true;
-  video.playsInline = true;
-  video.preload = "auto";
-  video.setAttribute("aria-hidden", "true");
+  root.dataset.mode = "play";
+  syncHeroTop(root);
+  video.muted = true; // the attribute alone does not satisfy every autoplay policy
 
-  let duration = 5.7;
-  let lastTime = -1;
-  let ready = false;
-
-  // object-fit: cover, in canvas terms.
-  const drawCover = (
-    target: CanvasRenderingContext2D,
-    cw: number,
-    ch: number,
-  ): void => {
-    const sw = video.videoWidth;
-    const sh = video.videoHeight;
-    const scale = Math.max(cw / sw, ch / sh);
-    const w = sw * scale;
-    const h = sh * scale;
-    target.drawImage(video, (cw - w) / 2, (ch - h) / 2, w, h);
-  };
-
-  // Returns true only when a frame was actually painted.
-  const draw = (): boolean => {
-    if (!video.videoWidth || !video.videoHeight) return false;
-    try {
-      drawCover(ctx, canvas.width, canvas.height);
-      // display:none (phones) leaves it at 1x1: skip the useless draw.
-      if (backdrop && backdropCtx && backdrop.width > 1)
-        drawCover(backdropCtx, backdrop.width, backdrop.height);
-    } catch (err) {
-      if (!(err instanceof DOMException)) throw err;
-      return false;
-    }
-    return true;
-  };
-
-  // The canvas fades in over the poster only after it holds a real frame; until then it is
-  // transparent, so a failed/undecoded video leaves the poster visible.
-  const paint = (): void => {
-    if (!draw() || root.dataset.ready) return;
-    root.dataset.ready = "true";
-    // The welcome loader waits on this to know the hero has a real frame to reveal.
-    root.dispatchEvent(new CustomEvent("ctr:hero-ready", { bubbles: true }));
-  };
-
-  const resize = (): void => {
-    const rect = canvas.getBoundingClientRect();
-    const dpr = Math.min(window.devicePixelRatio || 1, portrait ? 1.5 : 2);
-    canvas.width = Math.max(1, Math.round(rect.width * dpr));
-    canvas.height = Math.max(1, Math.round(rect.height * dpr));
-    if (backdrop) {
-      const b = backdrop.getBoundingClientRect();
-      backdrop.width = Math.max(1, Math.round(b.width / BACKDROP_DOWNSCALE));
-      backdrop.height = Math.max(1, Math.round(b.height / BACKDROP_DOWNSCALE));
-    }
-    if (ready) draw();
-  };
-
-  video.addEventListener("loadedmetadata", () => {
-    duration = video.duration || duration;
-  });
-  video.addEventListener("loadeddata", () => {
-    ready = true;
-    // The user may already be past frame 0 (deep link, restored scroll) with no scroll
-    // event to trigger a seek, so resync now. `seeked` repaints the canvas.
-    lastTime = -1;
-    if (p >= 0) {
-      lastTime = videoTime(p, duration);
-      try {
-        video.currentTime = lastTime;
-      } catch (err) {
-        if (!(err instanceof DOMException)) throw err;
-      }
-    }
-    // A seek to the current time may never fire `seeked`, so always paint what is decoded.
-    paint();
-  });
-  video.addEventListener("seeked", paint);
-  video.addEventListener("error", () => {
-    // Keep the poster; scrolling still drives copy and rail.
-    ready = false;
-    delete root.dataset.ready;
-  });
-
-  // The scrub seeks anywhere in the clip on every scroll frame. Streamed progressively, each
-  // seek past the buffered edge stalled and restarted the range download, so on a slow link
-  // the hero never got past frame 0. Download the whole clip first, then seek in memory; the
-  // poster stands in meanwhile. Fall back to streaming if the fetch itself fails.
-  const startVideo = async (): Promise<void> => {
-    try {
-      const res = await fetch(src);
-      if (!res.ok)
-        throw new HeroError(`video fetch failed: HTTP ${res.status}`);
-      video.src = URL.createObjectURL(await res.blob());
-    } catch (err) {
-      console.warn(
-        "[scroll-hero] streaming the video instead:",
-        err instanceof Error ? err.message : err,
-      );
-      video.src = src;
-    }
-    video.load();
-  };
-  const queueVideo = (): void => void startVideo();
-  // Safari lacks requestIdleCallback; `in` would narrow the else branch to never.
-  if (typeof window.requestIdleCallback === "function")
-    window.requestIdleCallback(queueVideo, { timeout: 1500 });
-  else window.setTimeout(queueVideo, 300);
-
-  // ---- Frame loop (runs only while the hero is on screen) ----
+  // ---- State ----
   let p = -1;
   let raf = 0;
-  let visible = true;
   let lastFrameAt = performance.now();
-  let velocity = 0;
-  let snapTimer = 0;
-  let pointerHeld = false; // mouse / pen button
-  let touchHeld = false; // one or more fingers down
-  let moved = false;
-  const reached = new Set<string>();
+  let visible = true;
+  let userPaused = false;
+  let focusInside = false;
+  let halted = false;
+  let pendingSeek: number | null = null;
   const lastOpacity: Record<ActName, number> = {
     intro: -1,
     ridge: -1,
     ride: -1,
   };
 
-  let halted = false;
-  // A throw in the frame loop must not leave a frozen half-upgraded hero: fall back to static.
+  // ---- Rendering ----
+  const drawBackdrop = (): void => {
+    if (!backdrop || !backdropCtx || backdrop.width < 2) return;
+    const sw = video.videoWidth;
+    const sh = video.videoHeight;
+    if (!sw || !sh) return;
+    // object-fit: cover, in canvas terms.
+    const scale = Math.max(backdrop.width / sw, backdrop.height / sh);
+    const w = sw * scale;
+    const h = sh * scale;
+    try {
+      backdropCtx.drawImage(
+        video,
+        (backdrop.width - w) / 2,
+        (backdrop.height - h) / 2,
+        w,
+        h,
+      );
+    } catch (err) {
+      if (!(err instanceof DOMException)) throw err;
+    }
+  };
+
+  const renderAt = (next: number): void => {
+    if (next === p) return;
+    p = next;
+    root.style.setProperty("--p", p.toFixed(4));
+    for (const name of ACT_NAMES) {
+      const o = actOpacity(p, ACTS[name]);
+      if (
+        Math.abs(o - lastOpacity[name]) > OPACITY_EPSILON ||
+        o === 0 ||
+        o === 1
+      ) {
+        lastOpacity[name] = o;
+        acts[name].style.setProperty("--o", o.toFixed(3));
+        setActActive(acts[name], o > FOCUS_THRESHOLD);
+      }
+    }
+    const idx = activeChapter(p);
+    CHAPTERS.forEach((c, i) => {
+      const link = railLinks.get(c.id);
+      if (!link) return;
+      if (i === idx) link.setAttribute("aria-current", "true");
+      else link.removeAttribute("aria-current");
+    });
+  };
+
+  const render = (): void => {
+    renderAt(loopProgress(video.currentTime, video.duration));
+    drawBackdrop();
+  };
+
+  const resizeBackdrop = (): void => {
+    if (!backdrop) return;
+    const b = backdrop.getBoundingClientRect();
+    backdrop.width = Math.max(1, Math.round(b.width / BACKDROP_DOWNSCALE));
+    backdrop.height = Math.max(1, Math.round(b.height / BACKDROP_DOWNSCALE));
+    drawBackdrop();
+  };
+
+  // A throw anywhere in the loop must not leave a frozen half-upgraded hero.
   const fallBackToStatic = (err: unknown): void => {
+    if (halted) return;
     halted = true;
-    window.clearTimeout(snapTimer);
+    cancelAnimationFrame(raf);
+    video.pause();
+    video.removeAttribute("src");
+    video.load();
     delete root.dataset.ready;
+    delete root.dataset.paused;
     root.dataset.mode = "static";
+    ACT_NAMES.forEach((name) => {
+      acts[name].style.removeProperty("--o");
+      setActActive(acts[name], true);
+    });
     syncHeroTop(root);
     console.warn(
-      "[scroll-hero] frame failed, using static hero:",
+      "[scroll-hero] using the static hero:",
       err instanceof Error ? err.message : err,
     );
   };
 
-  const step = (now: number): void => {
-    const dt = Math.max(0.001, (now - lastFrameAt) / 1000);
-    lastFrameAt = now;
-
-    const rect = root.getBoundingClientRect();
-    const stickyTop = parseFloat(getComputedStyle(stage).top) || 0;
-    const next = scrollProgress(
-      rect.top,
-      root.offsetHeight,
-      stage.offsetHeight,
-      stickyTop,
-    );
-    const instant = Math.abs(next - (p < 0 ? next : p)) / dt;
-    velocity = smoothVelocity(velocity, instant, dt);
-
-    if (next !== p) {
-      p = next;
-      root.style.setProperty("--p", p.toFixed(4));
-
-      for (const name of ACT_NAMES) {
-        const o = actOpacity(p, ACTS[name]);
-        if (
-          Math.abs(o - lastOpacity[name]) > OPACITY_EPSILON ||
-          o === 0 ||
-          o === 1
-        ) {
-          lastOpacity[name] = o;
-          acts[name].style.setProperty("--o", o.toFixed(3));
-          setActActive(acts[name], o > FOCUS_THRESHOLD);
-        }
-      }
-
-      const idx = activeChapter(p);
-      CHAPTERS.forEach((c, i) => {
-        const link = railLinks.get(c.id);
-        if (!link) return;
-        if (i === idx) link.setAttribute("aria-current", "true");
-        else link.removeAttribute("aria-current");
-      });
-      const chapter = CHAPTERS[idx];
-      // Not until the user has actually scrolled: the opening chapter is not "reached" at load.
-      if (p > MOVED_THRESHOLD) moved = true;
-      if (moved && chapter && !reached.has(chapter.id)) {
-        reached.add(chapter.id);
-        track("hero_chapter_reached", { chapter: chapter.id });
-      }
-
-      const dockState = p > 0.34 ? "on" : "off";
-      if (root.dataset.dock !== dockState) {
-        root.dataset.dock = dockState;
-        if (dock) setFocusable(dock, dockState === "on");
-      }
-
-      if (ready) {
-        const t = videoTime(p, duration);
-        if (Math.abs(t - lastTime) > SEEK_EPSILON) {
-          lastTime = t;
-          try {
-            video.currentTime = t;
-          } catch (err) {
-            if (!(err instanceof DOMException)) throw err;
-          }
-        }
-      }
-    }
-
-    // The FX layer is decorative: if it ever throws, drop it rather than freeze the scrub loop.
-    try {
-      fx?.update(dt, velocity, p);
-    } catch (err) {
-      fx = null;
-      fxCanvas
-        .getContext("2d")
-        ?.clearRect(0, 0, fxCanvas.width, fxCanvas.height);
-      console.warn(
-        "[hero] fx disabled:",
-        err instanceof Error ? err.message : err,
-      );
-    }
-  };
+  // ---- Frame loop: runs only while the clip is meant to be playing ----
+  const shouldPlay = (): boolean =>
+    !halted && visible && !userPaused && !focusInside && !document.hidden;
 
   const frame = (now: number): void => {
     raf = 0;
-    if (halted) return;
+    if (!shouldPlay()) return;
+    const dt = Math.max(0.001, (now - lastFrameAt) / 1000);
+    lastFrameAt = now;
     try {
-      step(now);
+      render();
+      // The FX layer is decorative: if it ever throws, drop it rather than stop the hero.
+      try {
+        fx?.update(dt, Math.max(0, p));
+      } catch (err) {
+        fx = null;
+        fxCanvas
+          .getContext("2d")
+          ?.clearRect(0, 0, fxCanvas.width, fxCanvas.height);
+        console.warn(
+          "[hero] fx disabled:",
+          err instanceof Error ? err.message : err,
+        );
+      }
     } catch (err) {
       fallBackToStatic(err);
       return;
     }
-    if (visible) schedule();
+    raf = requestAnimationFrame(frame);
   };
 
-  const schedule = (): void => {
-    if (!halted && !raf) raf = requestAnimationFrame(frame);
-  };
-
-  new IntersectionObserver(
-    ([entry]) => {
-      visible = entry?.isIntersecting ?? true;
-      if (visible) {
-        lastFrameAt = performance.now();
-        schedule();
-      }
-    },
-    { rootMargin: "100px 0px" },
-  ).observe(root);
-
-  // ---- Chapters: click, deep-link, soft snap ----
-  const scrollToProgress = (target: number, behavior: ScrollBehavior): void => {
-    const stickyTop = parseFloat(getComputedStyle(stage).top) || 0;
-    const docTop = root.getBoundingClientRect().top + window.scrollY;
-    window.scrollTo({
-      top: progressToScrollY(
-        target,
-        docTop,
-        root.offsetHeight,
-        stage.offsetHeight,
-        stickyTop,
-      ),
-      behavior,
+  const sync = (): void => {
+    if (halted) return;
+    root.toggleAttribute("data-paused", !shouldPlay());
+    if (!shouldPlay()) {
+      video.pause();
+      return;
+    }
+    if (!video.getAttribute("src")) {
+      video.src = src;
+      video.preload = "auto";
+    }
+    video.play().catch((err: unknown) => {
+      // A pause() racing a pending play() rejects with AbortError: expected, harmless.
+      if (err instanceof DOMException && err.name === "AbortError") return;
+      // Autoplay refused (power saving, policy): keep the poster, offer the play button.
+      setUserPaused(true);
+      announceReady();
     });
+    if (!raf) {
+      lastFrameAt = performance.now();
+      raf = requestAnimationFrame(frame);
+    }
   };
 
+  // ---- Readiness (the welcome loader waits on this) ----
+  let announced = false;
+  const announceReady = (): void => {
+    if (announced) return;
+    announced = true;
+    root.dispatchEvent(new CustomEvent("ctr:hero-ready", { bubbles: true }));
+  };
+
+  video.addEventListener("loadedmetadata", () => {
+    if (pendingSeek === null) return;
+    video.currentTime = videoTime(pendingSeek, video.duration);
+    pendingSeek = null;
+  });
+  video.addEventListener("playing", () => {
+    if (!root.dataset.ready) root.dataset.ready = "true";
+    announceReady();
+  });
+  // Paused seeks (rail clicks, deep links) still have to update the copy and the backdrop.
+  video.addEventListener("seeked", render);
+  video.addEventListener("error", () =>
+    fallBackToStatic(
+      new HeroError(`video failed to load (${video.error?.code ?? "?"})`),
+    ),
+  );
+
+  // ---- Pause / play control ----
+  const setUserPaused = (paused: boolean): void => {
+    userPaused = paused;
+    toggle.setAttribute("aria-pressed", String(paused));
+    const label = paused ? toggle.dataset.labelPlay : toggle.dataset.labelPause;
+    if (label) toggle.setAttribute("aria-label", label);
+    sync();
+  };
+  toggle.addEventListener("click", () => {
+    setUserPaused(!userPaused);
+    track("hero_video_toggle", { state: userPaused ? "paused" : "playing" });
+  });
+
+  // Rotating copy must hold still while a keyboard user is inside it (WCAG 2.2.2).
+  actsBox.addEventListener("focusin", () => {
+    focusInside = true;
+    sync();
+  });
+  actsBox.addEventListener("focusout", (e) => {
+    if (e.relatedTarget instanceof Node && actsBox.contains(e.relatedTarget))
+      return;
+    focusInside = false;
+    sync();
+  });
+
+  // ---- Chapters: rail clicks and deep links jump the loop ----
+  const jumpTo = (target: number): void => {
+    renderAt(target);
+    if (
+      video.readyState >= HTMLMediaElement.HAVE_METADATA &&
+      video.duration > 0
+    )
+      video.currentTime = videoTime(target, video.duration);
+    else pendingSeek = target;
+  };
   CHAPTERS.forEach((c) => {
     railLinks.get(c.id)?.addEventListener("click", (event) => {
       event.preventDefault();
       history.replaceState(null, "", `#${c.id}`);
-      scrollToProgress(c.p, "smooth");
+      jumpTo(c.p);
+      track("hero_chapter_click", { chapter: c.id });
     });
   });
 
-  const hashChapter = CHAPTERS.find((c) => `#${c.id}` === location.hash);
-  if (hashChapter)
-    requestAnimationFrame(() => scrollToProgress(hashChapter.p, "instant"));
-
-  const isHeld = (): boolean => touchHeld || pointerHeld;
-  const runSnap = (isRetry: boolean): void => {
-    if (halted || !visible || isHeld()) return;
-    const target = nearestSnap(p, velocity);
-    if (target !== null) {
-      scrollToProgress(target, "smooth");
-      return;
-    }
-    // The idle timer can beat the velocity filter (a single wheel tick is still decaying
-    // after 160 ms): try once more, bounded, only when velocity is the sole blocker.
-    if (!isRetry && velocity > SNAP_MAX_VELOCITY && snapCandidate(p) !== null)
-      snapTimer = window.setTimeout(() => runSnap(true), SNAP_IDLE_MS);
-  };
-  const armSnap = (): void => {
-    window.clearTimeout(snapTimer);
-    snapTimer = window.setTimeout(() => runSnap(false), SNAP_IDLE_MS);
-  };
-  // Wheel/keys cancel a pending snap; the next scroll event re-arms it.
-  ["wheel", "keydown"].forEach((type) =>
-    window.addEventListener(type, () => window.clearTimeout(snapTimer), {
-      passive: true,
-    }),
-  );
-
-  // A held finger/button must never be snapped under; re-arm once nothing is held.
-  // Touch state comes from touch events only: browsers fire `pointercancel` on touch
-  // pointers when they take over a drag as a native pan, while the finger is still down.
-  const releaseIfIdle = (): void => {
-    if (!isHeld()) armSnap();
-  };
-  const syncTouches = (event: TouchEvent): void => {
-    touchHeld = event.touches.length > 0;
-    if (touchHeld) window.clearTimeout(snapTimer);
-    else releaseIfIdle();
-  };
-  ["touchstart", "touchmove", "touchend", "touchcancel"].forEach((type) =>
-    window.addEventListener(type, (e) => syncTouches(e as TouchEvent), {
-      passive: true,
-    }),
-  );
-  window.addEventListener(
-    "pointerdown",
-    (e) => {
-      if (e.pointerType === "touch") return;
-      pointerHeld = true;
-      window.clearTimeout(snapTimer);
+  // ---- Visibility: play only while on screen and in a visible tab ----
+  new IntersectionObserver(
+    ([entry]) => {
+      visible = entry?.isIntersecting ?? true;
+      sync();
     },
-    { passive: true },
-  );
-  ["pointerup", "pointercancel"].forEach((type) =>
-    window.addEventListener(
-      type,
-      (e) => {
-        if ((e as PointerEvent).pointerType === "touch") return;
-        pointerHeld = false;
-        releaseIfIdle();
-      },
-      { passive: true },
-    ),
-  );
-  // Safety net against a stuck flag (release happened outside the page / tab was hidden).
-  const resetHeld = (): void => {
-    pointerHeld = false;
-    touchHeld = false;
-  };
-  window.addEventListener("blur", () => {
-    resetHeld();
-    armSnap();
-  });
-  document.addEventListener("visibilitychange", () => {
-    if (document.hidden) resetHeld();
-  });
+    { threshold: 0.1 },
+  ).observe(root);
+  document.addEventListener("visibilitychange", sync);
 
-  const onScroll = (): void => {
-    schedule();
-    armSnap();
-  };
-  window.addEventListener("scroll", onScroll, { passive: true });
   window.addEventListener("resize", () => {
-    resize();
+    resizeBackdrop();
     fx?.resize();
-    schedule();
   });
 
-  resize();
-  // The fx canvas is display:none until data-mode="scrub" is set, so size it only now.
+  // ---- Start ----
+  const hashChapter = CHAPTERS.find((c) => `#${c.id}` === location.hash);
+  jumpTo(hashChapter?.p ?? 0);
+  resizeBackdrop();
+  // The fx canvas is display:none until data-mode="play" is set, so size it only now.
   fx?.resize();
-  schedule();
+  sync();
 }

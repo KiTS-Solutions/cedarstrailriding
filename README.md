@@ -67,18 +67,24 @@ src/
 
 ## Hero
 
-The home page opens with a scroll-scrubbed video hero (`src/components/ScrollHero.astro`,
-controller `src/scripts/scroll-hero.ts`, ambient particles `src/scripts/hero-fx.ts`, pure maths
-`src/scripts/hero-math.ts`).
+The home page opens with a one-screen autoplaying video hero (`src/components/ScrollHero.astro`,
+controller `src/scripts/scroll-hero.ts`, ambient particles `src/scripts/hero-fx.ts`, pure timing
+maths `src/scripts/hero-math.ts`; the file names predate the switch from scroll-scrubbing).
+
+- **Playback:** the clip autoplays muted on a seamless 13 s loop. The three acts (intro → Ridge →
+  Ride) cross-fade in time with its three shots, and the 01/02/03 rail follows along (vertical in
+  the inline-start gutter on wide screens, a row along the bottom on phones). A rail click or a
+  `#ridge` / `#ride` deep link jumps the loop to that act. The video pauses when off screen, in a
+  hidden tab, while keyboard focus is inside the copy, or via the pause/play button (WCAG 2.2.2);
+  if the browser refuses autoplay the poster stays and the button offers Play. A clip that fails
+  to load drops the hero back to static.
 
 - **Two footage variants**, switched by `HERO_VARIANT` in `src/data/heroMedia.ts`:
   - **v2 (live):** CTR's own vertical (9:16) footage shot for the site. Phones in portrait get it
     full-bleed; anything wider than 4:5 gets a full-height 3:4 panel (a 3:4 window on the 9:16
     footage) at the inline end over a lightly softened copy of the same frame, with all three acts
-    on the inline-start side (mirrors in RTL). Each act scrubs a real-time ~4–5 s slice of its
-    shot (no speed-up), so the footage moves calmly under the scroll. The clip is downloaded in
-    full before scrubbing starts (seeking a half-streamed file stalls on slow links); the poster
-    stands in until then.
+    on the inline-start side (mirrors in RTL). Each shot is a real-time ~4–5 s slice (no
+    speed-up). 24 fps playback encodes: 2.5 MB desktop panel, 1.2 MB phone / 3g, 0.5 MB landscape phone.
     Chapters Shouf → Ridge → Ride, golden-hour dust particles. Assets in `public/images/hero/v2/`.
   - **v1 (fallback, tag `hero-v1`):** the AI-generated landscape river clip, full-bleed everywhere,
     chapter "River", water-splash particles. Assets in `public/images/hero/v1/`, unchanged.
@@ -89,10 +95,10 @@ controller `src/scripts/scroll-hero.ts`, ambient particles `src/scripts/hero-fx.
   (`src/components/AmbientVideo.astro` + `src/scripts/ambient-video.ts`) in the Treks band and the
   Groups block, on the home page and on `/treks/` and `/groups/`, and the gallop loop (the
   flag-bearer sprinting at the camera) behind the home page's About band.
-- **Regenerate v2** (hero scrub, loader loop, ambient loops, posters) from the master:
+- **Regenerate v2** (hero loop, loader loop, ambient loops, posters) from the master:
   `scripts/encode-hero-v2.sh horse-hero-v2/horse-lebflag.MOV`. The script documents the shot map
-  (4 takes cut at 33.3 / 60.6 / 67.8 s → 6 clips) and solves the scrub's segment lengths so each shot
-  crossfade lands on an act hand-off (`HERO_SEGMENT_BOUNDARIES` in `hero-math.ts`, unit-tested).
+  (4 takes cut at 33.3 / 60.6 / 67.8 s → 6 clips) and solves the hero loop's segment lengths so each shot
+  crossfade lands on an act hand-off; the loop's tail crossfades into frame 0 so it has no seam (`HERO_SEGMENT_BOUNDARIES` in `hero-math.ts`, unit-tested).
   The 150 MB `.MOV` is git-ignored (over GitHub's 100 MB file limit) — keep it with the client's media.
 - **Regenerate v1** from its 4K master: `DESKTOP_CRF=26 scripts/encode-hero.sh <master.mp4> 0.8 0.05`
   (writes to `public/images/hero/v1/`). That master lives outside the repo as
@@ -100,8 +106,12 @@ controller `src/scripts/scroll-hero.ts`, ambient particles `src/scripts/hero-fx.
 - **Tests:** `npm run test:unit` (hero maths), `npm run test:e2e` (hero smoke tests in `tests/smoke.spec.ts`).
   If port 4321 is busy (e.g. a running `astro dev`), use `PORT=4399 npm run test:e2e` — the
   Playwright config builds and serves `dist/` on that port instead.
-- **Capability gate:** `prefers-reduced-motion`, Save-Data, 2g/3g effective connection, or
-  `deviceMemory < 4` get the static hero (poster, no video request); everyone else gets scrub mode.
+- **Capability gate:** `prefers-reduced-motion`, Save-Data, a 2g effective connection, or
+  `deviceMemory < 4` get the static hero (poster + Act I, no video request); everyone else gets
+  play mode. A "3g" estimate is *not* excluded — Chrome reports it for any RTT over ~270 ms, which
+  is ordinary broadband in Lebanon — it gets the 540p clip instead. Ambient clips further down the
+  page wait for the `load` event (which waits for the hero's first frame), so the hero gets the
+  bandwidth first.
 - **Licence:** v2 is the client's own footage (rider consent still to confirm); v1 is AI-generated.
   See `PRELAUNCH_CHECKLIST.md` (Hero video) for both sign-off items.
 - **Measured performance, v2 (2026-10-01, Lighthouse 13.5.0, local uncompressed static build):**
