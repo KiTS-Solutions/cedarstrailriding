@@ -12,6 +12,7 @@ import WhatsAppButton from "../components/WhatsAppButton.astro";
 import BookingForm from "../components/BookingForm.astro";
 import ScrollHero from "../components/ScrollHero.astro";
 import AmbientVideo from "../components/AmbientVideo.astro";
+import AmbientBackdrop from "../components/AmbientBackdrop.astro";
 import { v2Clips } from "../data/heroMedia";
 
 interface Props {
@@ -71,7 +72,12 @@ const horseSlots = horses.length > 0 ? horses : Array.from({ length: HORSE_PLACE
   </div>
 </section>
 
-<section id="treks" class="bg-cedar-deep px-4 py-16 text-warm-white sm:px-6">
+<section
+  id="treks"
+  class="relative isolate overflow-hidden bg-cedar-deep px-4 py-16 text-warm-white sm:px-6"
+  data-ambient-scope
+>
+  <AmbientBackdrop poster={v2Clips.ridge.poster} />
   <div class="mx-auto grid max-w-5xl items-center gap-10 md:grid-cols-[1fr_auto]">
     <div class="text-center md:text-start">
       <h2 class="font-display text-3xl font-semibold">{t("home.treksHeading")}</h2>
