@@ -8,8 +8,8 @@
 //   visitor scrolls / taps / presses a key, and at MAX_MS regardless.
 // - The exit is staged in CSS ([data-state="out"]); the node is removed after EXIT_MS.
 
-const MIN_MS = 3000;
-const MAX_MS = 4500;
+const MIN_MS = 5000;
+const MAX_MS = 8000;
 const EXIT_MS = 1250; // matches the CSS exit: 0.2 s delay + 1 s dissolve
 const CLIP_GRACE_MS = 900;
 

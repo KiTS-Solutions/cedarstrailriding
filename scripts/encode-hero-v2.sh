@@ -9,6 +9,7 @@
 #   loader       = clip 2 flag close-up, seamless loop
 #   ambient-group= clip 4 (riding behind the group), seamless loop
 #   ambient-ridge= clip 5 (wide sunset ridge), seamless loop
+#   ambient-gallop= clip 3 (flag-bearer sprinting at the camera), seamless loop — About backdrop
 #
 # Usage: scripts/encode-hero-v2.sh <master.MOV>
 # Env:   HD_CRF (29) MOBILE_CRF (30) COMPACT_CRF (30) LOOP_CRF (28) HERO_GOP (1) SCRUB_FPS (12)
@@ -87,6 +88,7 @@ scrub 360 640 "${COMPACT_CRF:-30}" "$OUT/ride-compact.mp4"
 loop 21.5 4.0 0.6 540 960 "${LOOP_CRF:-28}" "$OUT/loader.mp4"
 loop 60.7 6.0 0.8 540 960 "${LOOP_CRF:-28}" "$OUT/ambient-group.mp4"
 loop 72.0 7.0 0.8 540 960 "${LOOP_CRF:-28}" "$OUT/ambient-ridge.mp4"
+loop 52.6 6.0 0.8 540 960 "${LOOP_CRF:-28}" "$OUT/ambient-gallop.mp4"
 
 # Posters = frame 0 so the poster -> canvas / poster -> video swap is seamless.
 still "$OUT/ride-hd.mp4" "$OUT/poster-hd.webp" "gblur=sigma=0.6" 68
@@ -95,6 +97,7 @@ still "$OUT/ride-mobile.mp4" "$OUT/poster-mobile.webp" "gblur=sigma=0.7" 65
 still "$OUT/loader.mp4" "$OUT/loader.webp" "scale=360:640:flags=lanczos,gblur=sigma=0.5" 62
 still "$OUT/ambient-group.mp4" "$OUT/ambient-group.webp"
 still "$OUT/ambient-ridge.mp4" "$OUT/ambient-ridge.webp"
+still "$OUT/ambient-gallop.mp4" "$OUT/ambient-gallop.webp"
 
 for f in "$OUT"/*.mp4; do
   printf '%-40s %8s B  %ss\n' "$f" "$(stat -c %s "$f")" \

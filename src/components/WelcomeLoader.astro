@@ -3,8 +3,8 @@
 // paint by the inline script BaseLayout puts in <head> when `welcome` is set (sets
 // html[data-welcome="on"]); without it — no JS, reduced motion, Save-Data, a deep link or
 // a repeat visit this session — this markup stays display:none and fetches nothing.
-// It plays for at least ~3 s (welcome-loader.ts), enters and leaves with a staged fade, and
-// a CSS animation fades it out at 5.2 s even if welcome-loader.ts never runs. Until the
+// It plays for at least ~5 s (welcome-loader.ts), enters and leaves with a staged fade, and
+// a CSS animation fades it out at 8.7 s even if welcome-loader.ts never runs. Until the
 // clip starts, the video box shows the poster as a CSS background (no inline script in the
 // body: it let the parser yield a first paint before the page was tall enough to scroll,
 // and the late scrollbar shifted the RTL layout).
@@ -65,8 +65,8 @@ const poster = withBase(v2Clips.loader.poster);
     transition:
       opacity 1s var(--ease-dissolve) 0.2s,
       visibility 0s linear 1.2s;
-    /* Fail-safe: gone by ~6 s even if the controller script never loads. */
-    animation: ctr-loader-out 0.85s var(--ease) 5.2s forwards;
+    /* Fail-safe: gone by ~9.5 s even if the controller script never loads. */
+    animation: ctr-loader-out 0.85s var(--ease) 8.7s forwards;
   }
   :global(html[data-welcome="on"]) .ctr-loader[data-state="out"] {
     opacity: 0;
