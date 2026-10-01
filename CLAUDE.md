@@ -36,8 +36,8 @@ backend, deployed to Vercel. Full context: `brief/README.md` and `brief/HANDOFF.
 - `brief/10_sitemap_navigation.md` — routes & nav structure (implemented in `src/pages/`)
 - `brief/08_homepage_content.md` / `brief/03_messaging_and_copy.md` — EN master copy
 - `brief/12_translation_pack.md` — EN/AR/FR strings (transcribed into `src/i18n/locales/*.json`;
-  see `src/i18n/REVIEW_NOTES.md` for which strings were added beyond the brief and still need
-  native review)
+  all AR/FR strings approved 2026-10-01; log any string added after that in
+  `src/i18n/REVIEW_NOTES.md` for its own review)
 - `brief/07_image_assets.md` / `brief/15_media_asset_list.md` — image status (see
   `src/data/gallery.ts` for the placeholder slots still open)
 - `brief/06_open_questions.md` — everything still pending from the client (mirrored into

@@ -43,7 +43,7 @@ it should be resolved before the site goes live publicly.
 - [ ] Confirm usage rights for the 3 TripAdvisor photos currently live in the gallery/hero
       (`public/images/gallery/`, sourced from `brief/assets/`) — see `brief/07_image_assets.md`
       section A. Assumed to belong to the client but not yet confirmed in writing.
-- [ ] Native speaker review of all AR/FR copy — current translations are MT-quality drafts from
+- [x] AR/FR translations approved 2026-10-01 (all strings in the locale files). Original note: MT-quality drafts from
       `brief/12_translation_pack.md`, plus a handful of build-added strings noted in
       `src/i18n/REVIEW_NOTES.md`. Any key not present in `src/i18n/locales/{ar,fr}.json`
       currently falls back to English by design — extend those files as translations are approved.
@@ -67,8 +67,9 @@ it should be resolved before the site goes live publicly.
       "AI-generated" on the site. Replace with real CTR footage when available
       (`scripts/encode-hero.sh` regenerates all hero assets from a new master; shipped command:
       `DESKTOP_CRF=26 scripts/encode-hero.sh <master.mp4> 0.8 0.05`).
-- [ ] Native review of new hero copy (EN Act II/III + AR/FR `hero.*`, incl. the v2 `hero.v2.*` and
-      `loader.*` strings), see `src/i18n/REVIEW_NOTES.md`.
+- [x] AR/FR hero translations (`hero.*`, `hero.v2.*`, `loader.*`) — approved 2026-10-01.
+- [ ] Client sign-off on the new **EN** hero copy (Act II/III, v2 ridge chapter, loader) — not in
+      the brief; see `src/i18n/REVIEW_NOTES.md`.
 - [ ] v1 only: phone crop pans 0.8→0.05; at ~2.8 s the portrait crop cuts the horse's head (v2 is
       shot vertically, so no crop).
 - [ ] Lighthouse on `/`, `/ar/`, `/fr/` at 375px and 1440px (LCP < 2.5s, CLS < 0.1) — the
@@ -123,14 +124,14 @@ it should be resolved before the site goes live publicly.
 
 ## Mobile UX (2026-09-20 pass)
 - [x] Sticky bottom WhatsApp/Call bar (mobile), compact collapsible menu, 44px tap targets, booking-form input hints (autocomplete/inputmode/+961 placeholder), LTR phone numbers in AR, theme-color + viewport-fit.
-- [ ] Native review of `nav.menu` AR/FR label (see `src/i18n/REVIEW_NOTES.md`).
+- [x] `nav.menu` AR/FR label — approved 2026-10-01.
 - [x] Landscape phones (`max-height:500px` + coarse pointer) now get a 1.5 MB 854x480 clip (`ride-compact.mp4`) instead of the 4.68 MB desktop one. Needs real-device check.
 - [x] Favicon/apple-touch-icon/manifest icons generated from the CTR badge (replaced the default Astro favicon); hero small text raised to 13px.
 - [ ] Still open: hero chips as a scrollable row, real-device test of the sticky bar below the one-screen hero. (2026-10-01: "3g" estimates now get the autoplay hero on the 540p clip; only 2g/Save-Data stay poster-only.)
 
 ## i18n completeness (2026-09-20)
 - [x] All 142 EN keys now exist in AR and FR (46 + trail descriptors/durations added as drafts; no more silent English fallback on `/ar/` and `/fr/`).
-- [ ] Native AR/FR review of all newly added strings (listed in `src/i18n/REVIEW_NOTES.md`).
+- [x] AR/FR review of all newly added strings — approved 2026-10-01 (listed in `src/i18n/REVIEW_NOTES.md`).
 - [ ] Testimonials (`src/data/testimonials.ts`) are English source reviews shown as-is on AR/FR pages — decide: keep original language with a label, or commission approved translations.
 
 ## Hosting (Vercel)

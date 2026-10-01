@@ -1,10 +1,16 @@
 # Translation review notes
 
+> **All AR/FR translations approved — 2026-10-01.** This covers every string currently in
+> `ar.json` / `fr.json`, both the translation-pack transcriptions and the build-added strings
+> listed below (the list stays as provenance). Strings added after this date need their own
+> review: log them here. Not covered (copy, not translation): client sign-off on the new
+> **EN** hero Act II/III and v2 ridge/loader copy (`hero.*`, `hero.v2.*`, `loader.*`).
+
 Most `ar.json` / `fr.json` strings are transcribed verbatim from
 `brief/12_translation_pack.md` (client-review drafts, MT-quality per that file).
 
-Strings below were **added by the build** (not present in the translation pack) and need
-the same native-speaker review pass before launch:
+Strings below were **added by the build** (not present in the translation pack); they were
+approved in the same 2026-10-01 pass:
 
 - `form.success` (AR/FR) — the brief's success message promised a 24h WhatsApp reply
   ("Request sent! We'll reply on WhatsApp within 24 hours."). The build shipped a softer,
