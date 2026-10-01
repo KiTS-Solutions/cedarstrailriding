@@ -39,3 +39,8 @@ files as the client approves more translated copy.
 - `footer.credit.by`, `footer.credit.pitch`, `footer.credit.whatsapp` (EN/AR/FR, 2026-10-01) — the
   KiTS agency credit in the footer (`SiteCredit.astro`). Agency copy, not client copy; AR/FR are
   drafts.
+- `nav.trailsDesc`, `nav.treksDesc`, `nav.groupsDesc`, `nav.aboutDesc`, `nav.galleryDesc`,
+  `nav.faqDesc` (EN/AR/FR, 2026-10-01) — one-line descriptions under each item in the mobile menu
+  drawer. Trails/treks/groups/about are trimmed from existing brief copy (`home.*CardDesc`,
+  positioning) and their existing AR/FR translations; gallery and FAQ lines are new EN copy needing
+  client sign-off. AR/FR are drafts.

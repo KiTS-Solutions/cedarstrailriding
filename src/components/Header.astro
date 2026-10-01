@@ -1,8 +1,10 @@
 ---
 import { path, useTranslations, withBase, type Locale } from "../i18n";
-import { brand, logoSrc } from "../data/siteSettings";
+import { brand, contact, logoMarkSrc, logoWordmarkSrc } from "../data/siteSettings";
 import LanguageSwitcher from "./LanguageSwitcher.astro";
 import WhatsAppButton from "./WhatsAppButton.astro";
+import TopBar from "./TopBar.astro";
+import Icon from "./Icon.astro";
 
 interface Props {
   locale: Locale;
@@ -12,62 +14,94 @@ interface Props {
 const { locale, route } = Astro.props;
 const t = useTranslations(locale);
 
-const navItems: { key: string; label: string; route: string }[] = [
-  { key: "trails", label: t("nav.trails"), route: "/trails/" },
-  { key: "treks", label: t("nav.treks"), route: "/treks/" },
-  { key: "groups", label: t("nav.groups"), route: "/groups/" },
-  { key: "about", label: t("nav.about"), route: "/about/" },
-  { key: "gallery", label: t("nav.gallery"), route: "/gallery/" },
-  { key: "faq", label: t("nav.faq"), route: "/faq/" },
+// Home is the only page with a full-bleed hero, so it's the only page where the header
+// overlays the content (transparent until the hero scrolls out from under it).
+const isHome = route === "/";
+
+const navItems: { key: string; route: string }[] = [
+  { key: "trails", route: "/trails/" },
+  { key: "treks", route: "/treks/" },
+  { key: "groups", route: "/groups/" },
+  { key: "about", route: "/about/" },
+  { key: "gallery", route: "/gallery/" },
+  { key: "faq", route: "/faq/" },
 ];
+const current = (itemRoute: string) => (route === itemRoute ? "page" : undefined);
+const telHref = (phone: string) => `tel:${phone.replace(/\s+/g, "")}`;
 ---
 
-<header class="sticky top-0 z-50 border-b border-cedar-deep/10 bg-warm-white/95 backdrop-blur">
-  <div class="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-2 sm:px-6 sm:py-3">
-    <a href={path("/", locale)} class="flex items-center gap-2">
-      <img src={withBase(logoSrc)} alt={brand.name} width="72" height="48" decoding="async" class="h-11 w-auto sm:h-12" />
-      <span class="sr-only">{brand.name}</span>
-    </a>
+<TopBar locale={locale} variant={isHome ? "announcement" : "utility"} />
 
-    <nav aria-label="Primary" class="hidden items-center gap-6 lg:flex">
-      {
-        navItems.map((item) => (
-          <a
-            href={path(item.route, locale)}
-            class="inline-flex min-h-11 items-center text-sm font-medium text-ink hover:text-cedar-deep"
-          >
-            {item.label}
-          </a>
-        ))
-      }
-    </nav>
-
-    <div class="flex items-center gap-2 sm:gap-3">
-      <LanguageSwitcher locale={locale} route={route} class="hidden sm:flex" />
-      <a href={path("/contact/", locale)} class="btn-primary hidden min-h-11 sm:inline-flex">
-        {t("cta.book")}
+{/* The <header> box keeps a constant layout height (--site-header-h); scroll states only change
+    the visible bar inside it, so shrinking/hiding never shifts the page. States, set by the
+    script below: data-scrolled (stuck: shadow + compact on desktop), data-state="top" (home,
+    hero behind: transparent with light text), data-hidden (phones, scrolling down). */}
+<header id="site-header" class="site-header" data-overlay={isHome ? "" : undefined}>
+  <div class="site-header__bar">
+    <div class="mx-auto flex h-full max-w-7xl items-center justify-between gap-3 px-4 sm:px-6">
+      {/* dir="ltr": the lockup is Latin (mark, then wordmark) and must not mirror on /ar/. */}
+      <a href={path("/", locale)} class="site-logo flex shrink-0 items-center gap-2.5" dir="ltr">
+        <span class="logo-mark" style={`--src: url(${withBase(logoMarkSrc)})`} aria-hidden="true"></span>
+        <span class="logo-word" style={`--src: url(${withBase(logoWordmarkSrc)})`} aria-hidden="true"></span>
+        <span class="sr-only">{brand.name}</span>
       </a>
-      <button
-        type="button"
-        id="menu-open"
-        class="inline-flex size-11 items-center justify-center rounded-full border border-cedar-deep/20 text-cedar-deep transition-colors hover:bg-cedar-deep/10 lg:hidden"
-        aria-label={t("nav.menu")}
-        aria-expanded="false"
-        aria-controls="mobile-menu"
-      >
-        <svg aria-hidden="true" viewBox="0 0 24 24" class="size-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-          <path d="M4 7h16M4 12h16M4 17h16"></path>
-        </svg>
-      </button>
+
+      <nav aria-label="Primary" class="hidden items-center gap-3 lg:flex xl:gap-7">
+        {
+          navItems.map((item) => (
+            <a href={path(item.route, locale)} class="nav-link" aria-current={current(item.route)}>
+              {t(`nav.${item.key}`)}
+            </a>
+          ))
+        }
+      </nav>
+
+      <div class="flex items-center gap-2 sm:gap-3">
+        <LanguageSwitcher locale={locale} route={route} class="hidden sm:flex" />
+        {/* Dropped at lg–xl, where the full nav needs the room (the FR labels are the longest). */}
+        <WhatsAppButton
+          label={t("cta.whatsapp")}
+          iconOnly
+          class="icon-btn hidden sm:inline-flex lg:hidden xl:inline-flex"
+        />
+        <a
+          href={path("/contact/", locale)}
+          class="btn-primary book-cta hidden min-h-11 whitespace-nowrap sm:inline-flex lg:!px-5 xl:!px-6"
+          aria-current={current("/contact/")}
+        >
+          {t("cta.book")}
+        </a>
+        <button
+          type="button"
+          id="menu-open"
+          class="icon-btn inline-flex lg:hidden"
+          aria-label={t("nav.menu")}
+          aria-expanded="false"
+          aria-controls="mobile-menu"
+        >
+          <Icon name="menu" class="size-6" />
+        </button>
+      </div>
     </div>
   </div>
 </header>
 
+{/* Runs before first paint so the home header starts transparent over the hero instead of
+    flashing solid; without JS it simply stays solid (still readable everywhere). */}
+<script is:inline>
+  (function () {
+    var header = document.getElementById("site-header");
+    if (header && header.hasAttribute("data-overlay") && window.scrollY < window.innerHeight / 2) {
+      header.dataset.state = "top";
+    }
+  })();
+</script>
+
 {/* Native modal <dialog>: top layer, focus trap, Escape and ::backdrop for free. Slides in from the
     inline-end edge, so it mirrors automatically in RTL. */}
 <dialog id="mobile-menu" class="menu-drawer" aria-label={t("nav.menu")}>
-  <div class="flex h-full flex-col gap-6 overflow-y-auto bg-warm-white px-5 pb-6 pt-3">
-    <div class="flex items-center justify-between gap-3">
+  <div class="flex h-full flex-col gap-5 overflow-y-auto bg-warm-white px-5 pb-6 pt-3">
+    <div class="flex items-center justify-between gap-3 text-cedar-deep">
       <LanguageSwitcher locale={locale} route={route} class="sm:hidden" />
       <button
         type="button"
@@ -75,9 +109,7 @@ const navItems: { key: string; label: string; route: string }[] = [
         class="ms-auto inline-flex size-11 items-center justify-center rounded-full border border-cedar-deep/20 text-cedar-deep transition-colors hover:bg-cedar-deep/10"
         aria-label={t("nav.close")}
       >
-        <svg aria-hidden="true" viewBox="0 0 24 24" class="size-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-          <path d="M6 6l12 12M18 6L6 18"></path>
-        </svg>
+        <Icon name="close" class="size-6" />
       </button>
     </div>
 
@@ -86,11 +118,9 @@ const navItems: { key: string; label: string; route: string }[] = [
         {
           navItems.map((item) => (
             <li>
-              <a
-                href={path(item.route, locale)}
-                class="flex min-h-14 items-center font-display text-xl font-semibold text-cedar-deep"
-              >
-                {item.label}
+              <a href={path(item.route, locale)} class="drawer-link" aria-current={current(item.route)}>
+                <span class="font-display text-xl font-semibold text-cedar-deep">{t(`nav.${item.key}`)}</span>
+                <span class="text-sm leading-snug text-ink/70">{t(`nav.${item.key}Desc`)}</span>
               </a>
             </li>
           ))
@@ -98,14 +128,265 @@ const navItems: { key: string; label: string; route: string }[] = [
       </ul>
     </nav>
 
-    <div class="mt-auto flex flex-col gap-3">
+    {/* Primary actions first so they stay above the fold on short phones; contact details follow. */}
+    <div class="flex flex-col gap-3">
       <a href={path("/contact/", locale)} class="btn-primary min-h-12">{t("cta.book")}</a>
       <WhatsAppButton label={t("cta.whatsapp")} class="min-h-12 !bg-cedar-deep !text-warm-white hover:!bg-cedar-soft" />
+    </div>
+
+    <div class="mt-auto rounded-2xl bg-sand p-4 text-sm">
+      <p class="font-display text-base font-semibold text-cedar-deep">{t("footer.contact")}</p>
+      <ul class="mt-1 grid">
+        {
+          contact.phones.map((phone) => (
+            <li>
+              <a href={telHref(phone)} class="drawer-contact">
+                <Icon name="phone" class="size-4 shrink-0 text-cedar-soft" />
+                <bdi dir="ltr">{phone}</bdi>
+              </a>
+            </li>
+          ))
+        }
+        <li>
+          <a href={`mailto:${contact.email}`} class="drawer-contact">
+            <Icon name="mail" class="size-4 shrink-0 text-cedar-soft" />
+            {contact.email}
+          </a>
+        </li>
+      </ul>
     </div>
   </div>
 </dialog>
 
 <style>
+  /* ---- Header shell ---- */
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    height: var(--site-header-h);
+    /* The box keeps its layout height; only the bar takes clicks, so the strip the compact bar
+       leaves behind never blocks the page under it. */
+    pointer-events: none;
+    transition: transform 0.3s ease;
+  }
+  /* Home: overlay the hero instead of pushing it down. ScrollHero pads its content by the same
+     --site-header-h so nothing sits under the header. */
+  .site-header[data-overlay] {
+    margin-bottom: calc(-1 * var(--site-header-h));
+  }
+  .site-header[data-hidden] {
+    transform: translateY(-100%);
+  }
+
+  .site-header__bar {
+    position: relative;
+    height: var(--site-header-h);
+    pointer-events: auto;
+    color: var(--color-ink);
+    background-color: rgb(251 247 238 / 0.95);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgb(60 71 16 / 0.1);
+    transition:
+      height 0.3s ease,
+      color 0.3s ease,
+      background-color 0.3s ease,
+      border-color 0.3s ease,
+      box-shadow 0.3s ease;
+  }
+  .site-header[data-scrolled] .site-header__bar {
+    box-shadow: 0 12px 32px -20px rgb(28 36 31 / 0.4);
+  }
+  @media (min-width: 1024px) {
+    .site-header[data-scrolled] .site-header__bar {
+      height: 3.5rem;
+    }
+  }
+
+  /* Over the hero: transparent, light text, and a soft top-down scrim so the nav stays legible
+     on bright frames of the footage. */
+  .site-header__bar::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 -2.5rem;
+    z-index: -1;
+    pointer-events: none;
+    background: linear-gradient(to bottom, rgb(22 17 12 / 0.65), rgb(22 17 12 / 0.3) 60%, rgb(22 17 12 / 0));
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  .site-header[data-state="top"] .site-header__bar {
+    color: var(--color-warm-white);
+    background-color: transparent;
+    backdrop-filter: none;
+    border-color: transparent;
+    box-shadow: none;
+  }
+  .site-header[data-state="top"] .site-header__bar::before {
+    opacity: 1;
+  }
+  /* Scrolling through the hero: hero copy now passes under the nav, so frost the bar. */
+  .site-header[data-state="top"][data-scrolled] .site-header__bar {
+    background-color: rgb(22 17 12 / 0.55);
+    backdrop-filter: blur(12px);
+  }
+  .site-header[data-state="top"][data-scrolled] .site-header__bar::before {
+    opacity: 0;
+  }
+
+  /* ---- Logo: mark + wordmark, tinted via mask so they follow the header colour ---- */
+  .site-logo {
+    color: var(--color-cedar-deep);
+    transition: color 0.3s ease;
+  }
+  .site-header[data-state="top"] .site-logo {
+    color: inherit;
+  }
+  .logo-mark,
+  .logo-word {
+    display: block;
+    background-color: currentColor;
+    -webkit-mask: var(--src) center / contain no-repeat;
+    mask: var(--src) center / contain no-repeat;
+    transition: height 0.3s ease;
+  }
+  .logo-mark {
+    height: 2.5rem;
+    aspect-ratio: 161 / 192;
+  }
+  .logo-word {
+    height: 1.75rem;
+    aspect-ratio: 480 / 144;
+  }
+  @media (min-width: 1024px) {
+    .logo-mark {
+      height: 2.75rem;
+    }
+    .logo-word {
+      height: 1.875rem;
+    }
+    .site-header[data-scrolled] .logo-mark {
+      height: 2.25rem;
+    }
+    .site-header[data-scrolled] .logo-word {
+      height: 1.5rem;
+    }
+  }
+
+  /* ---- Desktop nav: gold underline grows from the inline start on hover; stays for the current page ---- */
+  .nav-link {
+    position: relative;
+    display: inline-flex;
+    min-height: 2.75rem;
+    align-items: center;
+    white-space: nowrap;
+    font-size: 0.8125rem; /* 1024–1279: lets the longest (FR) labels fit beside the CTAs */
+    font-weight: 500;
+    color: inherit;
+    transition: color 0.2s ease;
+  }
+  @media (min-width: 1280px) {
+    .nav-link {
+      font-size: 0.875rem;
+    }
+  }
+  .nav-link::after {
+    content: "";
+    position: absolute;
+    inset-inline: 0;
+    bottom: 0.5rem;
+    height: 2px;
+    border-radius: 2px;
+    background: var(--color-gold);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.25s ease;
+  }
+  :global([dir="rtl"]) .nav-link::after {
+    transform-origin: right;
+  }
+  .nav-link:hover {
+    color: var(--color-cedar-deep);
+  }
+  .nav-link[aria-current="page"] {
+    color: var(--color-cedar-deep);
+    font-weight: 600;
+  }
+  .site-header[data-state="top"] .nav-link,
+  .site-header[data-state="top"] .nav-link:hover {
+    color: inherit;
+  }
+  .nav-link:hover::after,
+  .nav-link[aria-current="page"]::after {
+    transform: scaleX(1);
+  }
+
+  /* ---- Round icon buttons (WhatsApp, menu). :global because the WhatsApp link is rendered by
+     a child component, which Astro's attribute-based scoping doesn't reach. ---- */
+  .site-header__bar :global(.icon-btn) {
+    width: 2.75rem;
+    height: 2.75rem;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9999px;
+    border: 1px solid color-mix(in srgb, currentColor 22%, transparent);
+    color: var(--color-cedar-deep);
+    transition:
+      background-color 0.2s ease,
+      color 0.3s ease,
+      border-color 0.3s ease;
+  }
+  .site-header__bar :global(.icon-btn:hover) {
+    background-color: color-mix(in srgb, currentColor 10%, transparent);
+  }
+  .site-header[data-state="top"] :global(.icon-btn) {
+    color: inherit;
+  }
+  .book-cta[aria-current="page"] {
+    box-shadow: 0 0 0 3px rgb(201 162 39 / 0.35);
+  }
+
+  /* ---- Mobile drawer ---- */
+  .drawer-link {
+    position: relative;
+    display: flex;
+    min-height: 3.5rem;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.125rem;
+    padding-block: 0.75rem;
+    padding-inline-start: 0.875rem;
+  }
+  .drawer-link::before {
+    content: "";
+    position: absolute;
+    inset-block: 0.875rem;
+    inset-inline-start: 0;
+    width: 3px;
+    border-radius: 3px;
+    background: transparent;
+    transition: background-color 0.2s ease;
+  }
+  .drawer-link:hover::before {
+    background: rgb(201 162 39 / 0.45);
+  }
+  .drawer-link[aria-current="page"]::before {
+    background: var(--color-gold);
+  }
+  .drawer-contact {
+    display: inline-flex;
+    min-height: 2.75rem;
+    align-items: center;
+    gap: 0.5rem;
+    white-space: nowrap;
+    color: var(--color-cedar-deep);
+    font-weight: 500;
+  }
+  .drawer-contact:hover {
+    text-decoration: underline;
+  }
+
   .menu-drawer {
     /* Reset UA dialog box and pin to the inline-end edge, full height. */
     margin: 0;
@@ -159,6 +440,11 @@ const navItems: { key: string; label: string; route: string }[] = [
     }
   }
   @media (prefers-reduced-motion: reduce) {
+    .site-header,
+    .site-header__bar,
+    .site-header__bar::before,
+    .logo-mark,
+    .logo-word,
     .menu-drawer,
     .menu-drawer::backdrop {
       transition: none;
@@ -167,6 +453,11 @@ const navItems: { key: string; label: string; route: string }[] = [
 </style>
 
 <script>
+  import { initHeaderScroll } from "../scripts/header-scroll";
+
+  const header = document.getElementById("site-header");
+  if (header) initHeaderScroll(header);
+
   const dialog = document.getElementById("mobile-menu") as HTMLDialogElement | null;
   const openBtn = document.getElementById("menu-open");
   const closeBtn = document.getElementById("menu-close");

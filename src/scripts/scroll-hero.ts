@@ -84,17 +84,11 @@ function setActActive(act: HTMLElement, active: boolean): void {
   act.style.pointerEvents = active ? "" : "none";
 }
 
-// Everything above the hero (header, mobile nav row, trust bar) counts, so the stage fills
-// exactly the rest of the viewport.
+// Everything in flow above the hero (the trust bar; the header overlays it) counts, so the
+// stage fills exactly the rest of the viewport.
 function syncHeroTop(root: HTMLElement): void {
-  const header = document.querySelector<HTMLElement>("header");
   const top = root.getBoundingClientRect().top + window.scrollY;
   root.style.setProperty("--hero-top", `${Math.round(top)}px`);
-  // The v2 portrait panel is sized from the header alone, so it never resizes once shown.
-  root.style.setProperty(
-    "--header-h",
-    `${Math.round(header?.offsetHeight ?? 0)}px`,
-  );
 }
 
 export function initScrollHero(root: HTMLElement): void {

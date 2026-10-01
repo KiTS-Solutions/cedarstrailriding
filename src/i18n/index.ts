@@ -21,6 +21,13 @@ export const LOCALE_LABEL: Record<Locale, string> = {
   fr: "FR",
 };
 
+/** Each language's name in itself (endonym): the switcher's accessible name and tooltip. */
+export const LOCALE_NAME: Record<Locale, string> = {
+  en: "English",
+  ar: "العربية",
+  fr: "Français",
+};
+
 /** Base path for a locale's routes: "" for the default (en) locale, "/ar" / "/fr" otherwise. */
 export function localeBase(locale: Locale): string {
   return locale === DEFAULT_LOCALE ? "" : `/${locale}`;
@@ -50,6 +57,8 @@ export function path(route: string, locale: Locale): string {
  */
 export function useTranslations(locale: Locale) {
   return function t(key: string): string {
-    return dictionaries[locale][key] ?? dictionaries[DEFAULT_LOCALE][key] ?? key;
+    return (
+      dictionaries[locale][key] ?? dictionaries[DEFAULT_LOCALE][key] ?? key
+    );
   };
 }
