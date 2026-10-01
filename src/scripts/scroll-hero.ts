@@ -99,7 +99,10 @@ function syncHeroTop(root: HTMLElement): void {
   root.style.setProperty("--hero-top", `${Math.round(top)}px`);
   // Mode-independent, so the v2 portrait panel keeps its size across the static -> scrub
   // upgrade (sizing it from --hero-top made it resize, a layout shift).
-  root.style.setProperty("--header-h", `${Math.round(header?.offsetHeight ?? 0)}px`);
+  root.style.setProperty(
+    "--header-h",
+    `${Math.round(header?.offsetHeight ?? 0)}px`,
+  );
 }
 
 export function initScrollHero(root: HTMLElement): void {
@@ -134,7 +137,9 @@ function upgrade(root: HTMLElement): void {
   const fxStyle: FxStyle = root.dataset.fx === "dust" ? "dust" : "splash";
   let fx: Fx | null = createFx(fxCanvas, fxStyle);
   // Panel layout: a reduced-resolution copy of the frame behind the panel (CSS softens it).
-  const backdrop = root.querySelector<HTMLCanvasElement>("[data-hero-backdrop]");
+  const backdrop = root.querySelector<HTMLCanvasElement>(
+    "[data-hero-backdrop]",
+  );
   const backdropCtx = backdrop?.getContext("2d") ?? null;
 
   const acts = Object.fromEntries(
@@ -160,7 +165,9 @@ function upgrade(root: HTMLElement): void {
   const portrait = matchMedia(
     "(max-width: 767px) and (orientation: portrait)",
   ).matches;
-  const smallLandscape = matchMedia("(max-height: 500px) and (pointer: coarse)").matches;
+  const smallLandscape = matchMedia(
+    "(max-height: 500px) and (pointer: coarse)",
+  ).matches;
   const src = portrait
     ? root.dataset.videoMobile
     : smallLandscape
@@ -255,14 +262,30 @@ function upgrade(root: HTMLElement): void {
     delete root.dataset.ready;
   });
 
-  const startVideo = (): void => {
-    video.src = src;
+  // The scrub seeks anywhere in the clip on every scroll frame. Streamed progressively, each
+  // seek past the buffered edge stalled and restarted the range download, so on a slow link
+  // the hero never got past frame 0. Download the whole clip first, then seek in memory; the
+  // poster stands in meanwhile. Fall back to streaming if the fetch itself fails.
+  const startVideo = async (): Promise<void> => {
+    try {
+      const res = await fetch(src);
+      if (!res.ok)
+        throw new HeroError(`video fetch failed: HTTP ${res.status}`);
+      video.src = URL.createObjectURL(await res.blob());
+    } catch (err) {
+      console.warn(
+        "[scroll-hero] streaming the video instead:",
+        err instanceof Error ? err.message : err,
+      );
+      video.src = src;
+    }
     video.load();
   };
+  const queueVideo = (): void => void startVideo();
   // Safari lacks requestIdleCallback; `in` would narrow the else branch to never.
   if (typeof window.requestIdleCallback === "function")
-    window.requestIdleCallback(startVideo, { timeout: 1500 });
-  else window.setTimeout(startVideo, 300);
+    window.requestIdleCallback(queueVideo, { timeout: 1500 });
+  else window.setTimeout(queueVideo, 300);
 
   // ---- Frame loop (runs only while the hero is on screen) ----
   let p = -1;

@@ -85,4 +85,8 @@ export const v2Clips = {
     video: "/images/hero/v2/ambient-ridge.mp4",
     poster: "/images/hero/v2/ambient-ridge.webp",
   },
+  gallop: {
+    video: "/images/hero/v2/ambient-gallop.mp4",
+    poster: "/images/hero/v2/ambient-gallop.webp",
+  },
 } as const;

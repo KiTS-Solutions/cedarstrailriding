@@ -76,16 +76,19 @@ controller `src/scripts/scroll-hero.ts`, ambient particles `src/scripts/hero-fx.
     full-bleed; anything wider than 4:5 gets a full-height 3:4 panel (a 3:4 window on the 9:16
     footage) at the inline end over a lightly softened copy of the same frame, with all three acts
     on the inline-start side (mirrors in RTL). Each act scrubs a real-time ~4–5 s slice of its
-    shot (no speed-up), so the footage moves calmly under the scroll.
+    shot (no speed-up), so the footage moves calmly under the scroll. The clip is downloaded in
+    full before scrubbing starts (seeking a half-streamed file stalls on slow links); the poster
+    stands in until then.
     Chapters Shouf → Ridge → Ride, golden-hour dust particles. Assets in `public/images/hero/v2/`.
   - **v1 (fallback, tag `hero-v1`):** the AI-generated landscape river clip, full-bleed everywhere,
     chapter "River", water-splash particles. Assets in `public/images/hero/v1/`, unchanged.
 - **The same v2 master also feeds** the first-visit welcome screen (`src/components/WelcomeLoader.astro`
-  + `src/scripts/welcome-loader.ts`, home pages only, once per session; plays at least 3 s with scrolling
-  held (Skip / Escape always work), leaves once the hero is ready (cap 4.5 s) with a staged 1.25 s
-  dissolve; skipped for reduced motion / Save-Data / 2G / deep links; CSS fail-safe fade at 5.2 s) and two ambient loops
+  + `src/scripts/welcome-loader.ts`, home pages only, once per session; plays at least 5 s with scrolling
+  held (Skip / Escape always work), leaves once the hero is ready (cap 8 s) with a staged 1.25 s
+  dissolve; skipped for reduced motion / Save-Data / 2G / deep links; CSS fail-safe fade at 8.7 s), two ambient loops
   (`src/components/AmbientVideo.astro` + `src/scripts/ambient-video.ts`) in the Treks band and the
-  Groups block, on the home page and on `/treks/` and `/groups/`.
+  Groups block, on the home page and on `/treks/` and `/groups/`, and the gallop loop (the
+  flag-bearer sprinting at the camera) behind the home page's About band.
 - **Regenerate v2** (hero scrub, loader loop, ambient loops, posters) from the master:
   `scripts/encode-hero-v2.sh horse-hero-v2/horse-lebflag.MOV`. The script documents the shot map
   (4 takes cut at 33.3 / 60.6 / 67.8 s → 6 clips) and solves the scrub's segment lengths so each shot

@@ -378,6 +378,54 @@ test.describe("Scroll hero", () => {
     expect(last).toBeLessThan(7.5);
   });
 
+  test("on a slow connection the hero is only ready once the whole clip is seekable", async ({
+    page,
+  }) => {
+    // Regression: streamed progressively, every seek past the buffered edge stalled and
+    // restarted the download, so on a slow link the scrub sat on frame 0 for good.
+    test.setTimeout(60_000);
+    const cdp = await page.context().newCDPSession(page);
+    await cdp.send("Network.emulateNetworkConditions", {
+      offline: false,
+      latency: 40,
+      downloadThroughput: 1024 * 1024,
+      uploadThroughput: 1024 * 1024,
+    });
+    // The hero's <video> is created in script, unlike the loader's and ambient clips'.
+    await page.addInitScript(() => {
+      const w = window as unknown as { __heroVideo?: HTMLVideoElement };
+      const create = document.createElement.bind(document);
+      document.createElement = ((
+        tag: string,
+        options?: ElementCreationOptions,
+      ) => {
+        const el = create(tag, options);
+        if (tag === "video") w.__heroVideo ??= el as HTMLVideoElement;
+        return el;
+      }) as typeof document.createElement;
+    });
+    await page.goto("/");
+    await expect(page.locator("[data-hero]")).toHaveAttribute(
+      "data-ready",
+      "true",
+      { timeout: 45_000 },
+    );
+    const buffered = await page.evaluate(() => {
+      const v = (window as unknown as { __heroVideo: HTMLVideoElement })
+        .__heroVideo;
+      const r = v.buffered;
+      return {
+        start: r.length ? r.start(0) : -1,
+        end: r.length ? r.end(r.length - 1) : 0,
+        ranges: r.length,
+        duration: v.duration,
+      };
+    });
+    expect(buffered.ranges).toBe(1);
+    expect(buffered.start).toBe(0);
+    expect(buffered.end).toBeGreaterThan(buffered.duration - 0.1);
+  });
+
   test("dust motes drift over the hero, and keep drifting through a fast scrub, without errors", async ({
     page,
   }) => {
@@ -855,7 +903,9 @@ test.describe("Mobile UX", () => {
   // The bar deliberately yields to the hero (which has its own dock) and to the booking form,
   // so it is asserted on content pages rather than on "/" or "/contact/".
   for (const path of ["/trails/", "/ar/trails/", "/fr/trails/"]) {
-    test(`sticky WhatsApp/Call bar and 44px targets (${path})`, async ({ page }) => {
+    test(`sticky WhatsApp/Call bar and 44px targets (${path})`, async ({
+      page,
+    }) => {
       await page.goto(path);
       const bar = page.locator("[data-sticky-contact]");
       await expect(bar).toBeVisible();
@@ -871,7 +921,10 @@ test.describe("Mobile UX", () => {
   test("language switcher targets in the drawer are 44px", async ({ page }) => {
     await page.goto("/trails/");
     await page.getByRole("button", { name: "Menu", exact: true }).click();
-    const links = page.getByRole("dialog").getByRole("group", { name: "Language" }).getByRole("link");
+    const links = page
+      .getByRole("dialog")
+      .getByRole("group", { name: "Language" })
+      .getByRole("link");
     await expect(links).toHaveCount(3);
     for (const link of await links.all()) {
       expect((await link.boundingBox())!.height).toBeGreaterThanOrEqual(44);
@@ -880,9 +933,18 @@ test.describe("Mobile UX", () => {
 
   test("booking form has mobile input hints", async ({ page }) => {
     await page.goto("/contact/");
-    await expect(page.locator('input[name="phone"]')).toHaveAttribute("inputmode", "tel");
-    await expect(page.locator('input[name="phone"]')).toHaveAttribute("autocomplete", "tel");
-    await expect(page.locator('input[name="email"]')).toHaveAttribute("autocomplete", "email");
+    await expect(page.locator('input[name="phone"]')).toHaveAttribute(
+      "inputmode",
+      "tel",
+    );
+    await expect(page.locator('input[name="phone"]')).toHaveAttribute(
+      "autocomplete",
+      "tel",
+    );
+    await expect(page.locator('input[name="email"]')).toHaveAttribute(
+      "autocomplete",
+      "email",
+    );
   });
 
   test("bar is hidden on desktop", async ({ page }) => {
@@ -895,7 +957,8 @@ test.describe("Mobile UX", () => {
 test.describe("Welcome loader", () => {
   const loader = (page: Page) => page.locator("[data-loader]");
 
-  const sinceNavigation = (page: Page) => page.evaluate(() => performance.now());
+  const sinceNavigation = (page: Page) =>
+    page.evaluate(() => performance.now());
 
   test("plays for its minimum time, then leaves on its own within the cap", async ({
     page,
@@ -904,10 +967,12 @@ test.describe("Welcome loader", () => {
     await expect(page.locator("html")).toHaveAttribute("data-welcome", "on");
     await expect(loader(page)).toBeVisible();
     await expect(loader(page).getByRole("button")).toHaveText("Skip");
-    // Still fully up just before the 3 s minimum, even though the hero is ready by then.
-    await page.waitForTimeout(Math.max(0, 2700 - (await sinceNavigation(page))));
+    // Still fully up just before the 5 s minimum, even though the hero is ready by then.
+    await page.waitForTimeout(
+      Math.max(0, 4700 - (await sinceNavigation(page))),
+    );
     await expect(loader(page)).not.toHaveAttribute("data-state", "out");
-    // 4.5 s cap + 1.25 s staged exit, measured from navigation start.
+    // 8 s cap + 1.25 s staged exit, measured from navigation start.
     await expect(loader(page)).toHaveCount(0, { timeout: 7000 });
     await expect(page.locator("html")).toHaveAttribute("data-welcome", "done");
   });
@@ -923,7 +988,9 @@ test.describe("Welcome loader", () => {
     expect(await page.evaluate(() => window.scrollY)).toBe(0);
     await expect(loader(page)).not.toHaveAttribute("data-state", "out");
     // Past the minimum the same gesture dismisses it.
-    await page.waitForTimeout(Math.max(0, 3100 - (await sinceNavigation(page))));
+    await page.waitForTimeout(
+      Math.max(0, 5100 - (await sinceNavigation(page))),
+    );
     await page.mouse.wheel(0, 100);
     await expect(loader(page)).toHaveCount(0, { timeout: 2500 });
   });
@@ -937,9 +1004,12 @@ test.describe("Welcome loader", () => {
 
   test("is shown once per session", async ({ page }) => {
     await page.goto("/");
-    await expect(loader(page)).toHaveCount(0, { timeout: 7000 });
+    await expect(loader(page)).toHaveCount(0, { timeout: 11000 });
     await page.goto("/fr/");
-    await expect(page.locator("html")).not.toHaveAttribute("data-welcome", /.*/);
+    await expect(page.locator("html")).not.toHaveAttribute(
+      "data-welcome",
+      /.*/,
+    );
     await expect(loader(page)).toHaveCount(0);
   });
 
@@ -954,7 +1024,7 @@ test.describe("Welcome loader", () => {
     await page.route(/\.js(\?|$)/, (route) => route.abort());
     await page.goto("/");
     await expect(loader(page)).toBeVisible();
-    await expect(loader(page)).toBeHidden({ timeout: 8000 });
+    await expect(loader(page)).toBeHidden({ timeout: 11000 });
   });
 
   test.describe("reduced motion", () => {
@@ -1000,19 +1070,25 @@ test.describe("Ambient clips", () => {
     await expect(group).toHaveCSS("opacity", "1");
   });
 
-  test("About band plays its own blurred backdrop clip", async ({ page }) => {
+  test("About band plays the gallop clip as its blurred backdrop", async ({
+    page,
+  }) => {
     await page.goto("/");
     const clip = page.locator("#about .ambient-backdrop [data-ambient-video]");
     await clip.scrollIntoViewIfNeeded();
-    await expect(clip).toHaveAttribute("src", /loader\.mp4$/);
+    await expect(clip).toHaveAttribute("src", /ambient-gallop\.mp4$/);
     await expect(clip).toHaveAttribute("data-playing", "true");
     await expect(clip).toHaveCSS("opacity", "1");
   });
 
   for (const route of ["/", "/treks/"]) {
-    test(`treks backdrop mirrors the panel clip on ${route}`, async ({ page }) => {
+    test(`treks backdrop mirrors the panel clip on ${route}`, async ({
+      page,
+    }) => {
       await page.goto(route);
-      const backdrop = page.locator("[data-ambient-scope] [data-ambient-backdrop]");
+      const backdrop = page.locator(
+        "[data-ambient-scope] [data-ambient-backdrop]",
+      );
       await expect(backdrop).toHaveCount(1);
       await backdrop.scrollIntoViewIfNeeded();
       // Mirrored, not a second copy of the clip.
@@ -1044,15 +1120,21 @@ test.describe("Ambient clips", () => {
       await expect(page.locator("#groups [data-ambient-poster]")).toBeVisible();
     });
 
-    test("backdrops keep the blurred poster and never draw or load", async ({ page }) => {
+    test("backdrops keep the blurred poster and never draw or load", async ({
+      page,
+    }) => {
       await page.goto("/");
       for (const id of ["#about", "#treks"]) {
         await page.locator(id).scrollIntoViewIfNeeded();
         await expect(page.locator(`${id} .ambient-backdrop img`)).toBeVisible();
       }
       await page.waitForTimeout(500);
-      await expect(page.locator("#about .ambient-backdrop video")).not.toHaveAttribute("src", /.*/);
-      await expect(page.locator("#treks [data-ambient-backdrop]")).not.toHaveAttribute("data-drawn", /.*/);
+      await expect(
+        page.locator("#about .ambient-backdrop video"),
+      ).not.toHaveAttribute("src", /.*/);
+      await expect(
+        page.locator("#treks [data-ambient-backdrop]"),
+      ).not.toHaveAttribute("data-drawn", /.*/);
     });
   });
 });
