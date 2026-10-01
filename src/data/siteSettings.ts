@@ -25,6 +25,14 @@ function toPublicPath(repoPath: string): string {
 
 export const logoSrc = toPublicPath(buildDecisions.logo.local_file);
 
+/**
+ * The same logo split into its two parts (cropped from `logo/ctr-1-1-scaled.webp`), so the header
+ * can render the wordmark at a legible size beside the mark. Both are single-colour alpha masks,
+ * tinted with `currentColor` — cedar on the solid header, warm white over the hero.
+ */
+export const logoMarkSrc = "/images/brand/ctr-mark.webp";
+export const logoWordmarkSrc = "/images/brand/ctr-wordmark.webp";
+
 export const brandFamily =
   buildDecisions.brand_family_footer.confirmed_brands.map((entry) => ({
     name: entry.name,

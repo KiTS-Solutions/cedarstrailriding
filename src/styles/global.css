@@ -15,8 +15,22 @@
 }
 
 @layer base {
+  :root {
+    /* Layout height of the sticky header (Header.astro). Constant on purpose: the compact state
+       shrinks only the visible bar, so scrolling never shifts the page. The hero reads it to
+       keep its content clear of the header that overlays it. */
+    --site-header-h: 4rem;
+  }
+  @media (min-width: 1024px) {
+    :root {
+      --site-header-h: 4.5rem;
+    }
+  }
+
   html {
     scroll-behavior: smooth;
+    /* In-page anchors (#trails, #booking-form) land below the sticky header, not under it. */
+    scroll-padding-top: calc(var(--site-header-h) + 1rem);
   }
 
   /* Lock page scroll behind the mobile menu drawer (modal <dialog>). */

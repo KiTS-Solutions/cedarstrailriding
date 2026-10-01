@@ -70,11 +70,130 @@ test.describe("Language switcher", () => {
     page,
   }) => {
     await page.goto("/trails/");
-    await page
-      .getByRole("group", { name: "Language" })
-      .getByRole("link", { name: "ع" })
-      .click();
+    const switcher = page.getByRole("group", { name: "Language" });
+    await expect(
+      switcher.getByRole("link", { name: "English" }),
+    ).toHaveAttribute("aria-current", "true");
+    await switcher.getByRole("link", { name: "العربية" }).click();
     await expect(page).toHaveURL(/\/ar\/trails\/?$/);
+  });
+});
+
+test.describe("Header", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.addInitScript(() => sessionStorage.setItem("ctr-welcome", "1"));
+  });
+  const header = (page: Page) => page.locator("#site-header");
+
+  test("marks the current page in the nav, and only that page", async ({
+    page,
+  }) => {
+    await page.goto("/trails/");
+    const nav = page.getByRole("navigation", { name: "Primary" });
+    await expect(nav.getByRole("link", { name: "Trails" })).toHaveAttribute(
+      "aria-current",
+      "page",
+    );
+    await expect(nav.locator('[aria-current="page"]')).toHaveCount(1);
+    await page.goto("/contact/");
+    await expect(nav.locator('[aria-current="page"]')).toHaveCount(0);
+    await expect(
+      header(page).getByRole("link", { name: "Book Today" }),
+    ).toHaveAttribute("aria-current", "page");
+  });
+
+  test.describe("home overlay", () => {
+    test.use({ reducedMotion: "reduce", viewport: { width: 1440, height: 900 } });
+
+    test("is transparent over the hero and turns solid once past it", async ({
+      page,
+    }) => {
+      await page.goto("/");
+      await expect(header(page)).toHaveAttribute("data-overlay", "");
+      await expect(header(page)).toHaveAttribute("data-state", "top");
+      // The hero starts under the header (overlay), not below it.
+      const heroTop = await page
+        .locator("[data-hero]")
+        .evaluate((el) => el.getBoundingClientRect().top);
+      const headerTop = await header(page).evaluate(
+        (el) => el.getBoundingClientRect().top,
+      );
+      expect(Math.abs(heroTop - headerTop)).toBeLessThan(2);
+
+      await page.evaluate(() => {
+        const hero = document.querySelector("[data-hero]")!;
+        window.scrollTo(0, hero.getBoundingClientRect().bottom + window.scrollY);
+      });
+      await expect(header(page)).toHaveAttribute("data-state", "solid");
+      await expect(header(page)).toHaveAttribute("data-scrolled", "");
+    });
+
+    test("hero content stays clear of the overlaid header", async ({ page }) => {
+      await page.goto("/");
+      const headerBottom = await header(page).evaluate(
+        (el) => el.getBoundingClientRect().bottom,
+      );
+      const plate = (await page.locator(".ctr-hero__plate").boundingBox())!;
+      const eyebrow = (await page
+        .locator('[data-act="intro"] .ctr-hero__eyebrow')
+        .boundingBox())!;
+      expect(plate.y).toBeGreaterThanOrEqual(headerBottom);
+      expect(eyebrow.y).toBeGreaterThanOrEqual(headerBottom);
+    });
+  });
+
+  test("inner pages: solid header with the location/contact strip on desktop", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/trails/");
+    await expect(header(page)).not.toHaveAttribute("data-overlay", "");
+    await expect(header(page)).not.toHaveAttribute("data-state", /.*/);
+    const strip = page.locator("[data-topbar]");
+    await expect(strip.locator('a[href="tel:+96170211041"]')).toBeVisible();
+    await expect(strip.locator('a[href="mailto:info@cedarsxtreme.com"]')).toBeVisible();
+    await expect(
+      header(page).locator('a[href^="https://wa.me/"]'),
+    ).toBeVisible();
+  });
+
+  test("the logo lockup does not mirror on /ar/", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/ar/trails/");
+    const mark = (await page.locator(".logo-mark").boundingBox())!;
+    const word = (await page.locator(".logo-word").boundingBox())!;
+    expect(mark.x).toBeLessThan(word.x);
+  });
+
+  test.describe("phones", () => {
+    test.use({ viewport: { width: 375, height: 812 }, reducedMotion: "no-preference" });
+
+    test("hides on scroll down and returns on scroll up", async ({ page }) => {
+      await page.goto("/trails/");
+      await page.mouse.wheel(0, 600);
+      await expect(header(page)).toHaveAttribute("data-hidden", "");
+      await page.mouse.wheel(0, -120);
+      await expect(header(page)).not.toHaveAttribute("data-hidden", "");
+    });
+
+    test("drawer marks the current page and offers call, WhatsApp and email", async ({
+      page,
+    }) => {
+      await page.goto("/trails/");
+      await page.getByRole("button", { name: "Menu", exact: true }).click();
+      const drawer = page.getByRole("dialog", { name: "Menu" });
+      await expect(drawer.getByRole("link", { name: /^Trails/ })).toHaveAttribute(
+        "aria-current",
+        "page",
+      );
+      await expect(drawer.locator('a[href="tel:+96170211041"]')).toBeVisible();
+      await expect(drawer.locator('a[href="tel:+96176004686"]')).toBeVisible();
+      await expect(drawer.locator('a[href^="https://wa.me/"]')).toBeVisible();
+      await expect(drawer.locator('a[href^="mailto:"]')).toBeVisible();
+      // Primary actions stay above the fold on a short phone.
+      const book = (await drawer.getByRole("link", { name: "Book Today" }).boundingBox())!;
+      expect(book.y + book.height).toBeLessThanOrEqual(812);
+    });
   });
 });
 

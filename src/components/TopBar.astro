@@ -1,0 +1,57 @@
+---
+import { useTranslations, type Locale } from "../i18n";
+import { contact } from "../data/siteSettings";
+import Icon from "./Icon.astro";
+
+interface Props {
+  locale: Locale;
+  /** Home: the brief's announcement/trust bar, all widths. Elsewhere: base + contact strip, desktop only. */
+  variant: "announcement" | "utility";
+}
+
+const { locale, variant } = Astro.props;
+const t = useTranslations(locale);
+const phone = contact.phones[0] ?? "";
+---
+
+{/* Sits above the sticky header and scrolls away with the page; Header's script measures it
+    (data-topbar) to know when the header has become stuck. */}
+{
+  variant === "announcement" ? (
+    <p
+      data-topbar
+      class="bg-cedar-deep px-4 py-2 text-center text-sm font-medium leading-snug text-warm-white"
+    >
+      {t("home.trustBar")}
+    </p>
+  ) : (
+    <div data-topbar class="hidden bg-cedar-deep text-warm-white lg:block">
+      <div class="mx-auto flex max-w-7xl items-center justify-between gap-6 px-6 py-2 text-xs">
+        <p class="flex items-center gap-1.5 text-warm-white/85">
+          <Icon name="pin" class="size-3.5 shrink-0 text-gold" />
+          {t("contact.basedIn")} · {t("contact.operate")}
+        </p>
+        <ul class="flex items-center gap-5">
+          <li>
+            <a
+              href={`tel:${phone.replace(/\s+/g, "")}`}
+              class="inline-flex items-center gap-1.5 text-warm-white/85 transition-colors hover:text-gold"
+            >
+              <Icon name="phone" class="size-3.5 text-gold" />
+              <bdi dir="ltr">{phone}</bdi>
+            </a>
+          </li>
+          <li>
+            <a
+              href={`mailto:${contact.email}`}
+              class="inline-flex items-center gap-1.5 text-warm-white/85 transition-colors hover:text-gold"
+            >
+              <Icon name="mail" class="size-3.5 text-gold" />
+              {contact.email}
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  )
+}

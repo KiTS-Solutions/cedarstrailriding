@@ -60,6 +60,15 @@ backend, deployed to Vercel. Full context: `brief/README.md` and `brief/HANDOFF.
 - **Contact facts** (render exactly, don't paraphrase): phones `+961 70 211 041` /
   `+961 76 004 686` (both WhatsApp-enabled), email `info@cedarsxtreme.com`, location "Samqaniyeh,
   Beiteddine | Shouf District — We operate all over Lebanon," coords `33.6864028, 35.5902012`.
+- **Header** (`src/components/Header.astro` + `src/scripts/header-scroll.ts`): logo is the
+  mark + wordmark split from the original (`siteSettings.logoMarkSrc` / `logoWordmarkSrc`, CSS
+  masks tinted by `currentColor`; `dir="ltr"` so the Latin lockup never mirrors). `TopBar.astro`
+  sits above it: the brief's trust bar on home, a location/phone/email strip on inner pages
+  (desktop only). On home the header overlays the hero (`data-overlay`) — transparent, then
+  frosted while scrolling through the hero, solid past it; the hero pads itself by
+  `--site-header-h` (global.css), the header's constant layout height. Compact on scroll (desktop
+  only, visual only, no layout shift); auto-hides on scroll down below `lg` (off under reduced
+  motion). Current page = `aria-current="page"`.
 - **Footer** (`src/components/Footer.astro`): inline SVG outline of Lebanon
   (`src/components/LebanonMap.astro` — stylized/hand-approximated, not survey-accurate) with a
   pin at the base coords, plus a brand-family strip rendering real logos for 4 confirmed brands

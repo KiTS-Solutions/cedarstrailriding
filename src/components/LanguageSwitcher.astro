@@ -1,5 +1,5 @@
 ---
-import { LOCALES, LOCALE_LABEL, path, type Locale } from "../i18n";
+import { LOCALES, LOCALE_LABEL, LOCALE_NAME, path, type Locale } from "../i18n";
 
 interface Props {
   locale: Locale;
@@ -10,8 +10,11 @@ interface Props {
 const { locale, route, class: className = "" } = Astro.props;
 ---
 
+{/* Colours come from currentColor, so the switcher follows its container — cedar on the solid
+    header, warm white over the hero. The current language gets a gold ring rather than a filled
+    pill, keeping the gold Book CTA the strongest element in the header. */}
 <div
-  class:list={["flex items-center gap-0.5 rounded-full border border-cedar-deep/20 text-sm", className]}
+  class:list={["flex items-center gap-0.5 rounded-full border border-current/20 p-0.5 text-sm", className]}
   role="group"
   aria-label="Language"
 >
@@ -19,12 +22,18 @@ const { locale, route, class: className = "" } = Astro.props;
     LOCALES.map((loc) => (
       <a
         href={path(route, loc)}
+        hreflang={loc}
+        lang={loc}
+        aria-label={LOCALE_NAME[loc]}
+        title={LOCALE_NAME[loc]}
         aria-current={loc === locale ? "true" : undefined}
         class:list={[
           "flex min-h-11 min-w-11 items-center justify-center rounded-full px-2 transition-colors duration-200",
+          // A lone Arabic letter reads smaller than Latin caps at the same size.
+          loc === "ar" && "text-base leading-none",
           loc === locale
-            ? "bg-cedar-deep text-warm-white"
-            : "text-cedar-deep hover:bg-cedar-deep/10",
+            ? "font-semibold ring-2 ring-gold ring-inset"
+            : "opacity-75 hover:bg-current/10 hover:opacity-100",
         ]}
       >
         {LOCALE_LABEL[loc]}

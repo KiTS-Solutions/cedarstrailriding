@@ -1,5 +1,6 @@
 ---
 import { contact } from "../data/siteSettings";
+import Icon from "./Icon.astro";
 
 interface Props {
   label: string;
@@ -7,15 +8,38 @@ interface Props {
   class?: string;
   /** Optional analytics hook: rendered as data-hero-cta when set. */
   heroCta?: string;
+  /** Render just the WhatsApp glyph (label kept as the accessible name and tooltip), unstyled so the caller sizes it. */
+  iconOnly?: boolean;
 }
 
-const { label, message = "Hello Cedars Trail Riding! I'd like to book a ride.", class: className = "", heroCta } =
-  Astro.props;
+const {
+  label,
+  message = "Hello Cedars Trail Riding! I'd like to book a ride.",
+  class: className = "",
+  heroCta,
+  iconOnly = false,
+} = Astro.props;
 
 const phoneDigits = contact.whatsapp.replace(/[^0-9]/g, "");
 const href = `https://wa.me/${phoneDigits}?text=${encodeURIComponent(message)}`;
 ---
 
-<a href={href} target="_blank" rel="noopener noreferrer" data-hero-cta={heroCta} class:list={["btn-primary", className]}>
-  {label}
+<a
+  href={href}
+  target="_blank"
+  rel="noopener noreferrer"
+  data-hero-cta={heroCta}
+  title={iconOnly ? label : undefined}
+  class:list={[!iconOnly && "btn-primary", className]}
+>
+  {
+    iconOnly ? (
+      <>
+        <Icon name="whatsapp" class="size-5" />
+        <span class="sr-only">{label}</span>
+      </>
+    ) : (
+      label
+    )
+  }
 </a>
