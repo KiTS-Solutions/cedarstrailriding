@@ -1037,13 +1037,13 @@ test.describe("Ambient clips", () => {
   }) => {
     await page.goto("/");
     const clips = page.locator("[data-ambient-video]");
-    // Treks + groups panels, plus the About band's standalone blurred backdrop.
-    await expect(clips).toHaveCount(3);
+    // Treks + groups panels, plus the About and horses bands' standalone blurred backdrops.
+    await expect(clips).toHaveCount(4);
     for (const clip of await clips.all())
       await expect(clip.locator("..")).toHaveAttribute("aria-hidden", "true");
-    // The About band sits just under the one-screen hero, inside the load margin; the treks
-    // and groups clips are far below it and must not be fetched yet.
-    for (const id of ["#treks", "#groups"]) {
+    // The About band sits just under the one-screen hero, inside the load margin; the treks,
+    // groups and horses clips are far below it and must not be fetched yet.
+    for (const id of ["#treks", "#groups", "#horses"]) {
       const clip = page.locator(`${id} [data-ambient-video]`);
       await expect(clip).toHaveAttribute("preload", "none");
       await expect(clip).not.toHaveAttribute("src", /.*/);
@@ -1065,6 +1065,17 @@ test.describe("Ambient clips", () => {
     const clip = page.locator("#about .ambient-backdrop [data-ambient-video]");
     await clip.scrollIntoViewIfNeeded();
     await expect(clip).toHaveAttribute("src", /ambient-gallop\.mp4$/);
+    await expect(clip).toHaveAttribute("data-playing", "true");
+    await expect(clip).toHaveCSS("opacity", "1");
+  });
+
+  test("Horses band plays the group clip as its blurred backdrop", async ({
+    page,
+  }) => {
+    await page.goto("/");
+    const clip = page.locator("#horses .ambient-backdrop [data-ambient-video]");
+    await clip.scrollIntoViewIfNeeded();
+    await expect(clip).toHaveAttribute("src", /ambient-group\.mp4$/);
     await expect(clip).toHaveAttribute("data-playing", "true");
     await expect(clip).toHaveCSS("opacity", "1");
   });
