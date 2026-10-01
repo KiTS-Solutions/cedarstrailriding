@@ -165,10 +165,14 @@ const horseSlots =horses.length > 0 ? horses : Array.from({ length: HORSE_PLACEH
   </div>
 </section>
 
-<section id="horses" class="bg-sand px-4 py-12 sm:px-6 sm:py-16">
+<section
+  id="horses"
+  class="relative isolate overflow-hidden bg-cedar-deep px-4 py-12 text-warm-white sm:px-6 sm:py-16"
+>
+  <AmbientBackdrop video={v2Clips.group.video} poster={v2Clips.group.poster} scrim="even" />
   <div class="mx-auto max-w-6xl text-center">
-    <h2 class="font-display text-3xl font-semibold text-cedar-deep">{t("home.horsesHeading")}</h2>
-    <p class="mx-auto mt-3 max-w-2xl text-ink/80">{t("home.horsesIntro")}</p>
+    <h2 class="font-display text-3xl font-semibold">{t("home.horsesHeading")}</h2>
+    <p class="mx-auto mt-3 max-w-2xl">{t("home.horsesIntro")}</p>
     <div class="mt-8 grid gap-6 sm:grid-cols-3">
       {horseSlots.map((horse, i) => (
         <HorseCard horse={horse} comingSoonLabel={t("horses.comingSoon")} class={!horse && i > 0 ? "max-sm:hidden" : ""} />
