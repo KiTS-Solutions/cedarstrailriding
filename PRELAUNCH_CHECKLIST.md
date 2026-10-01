@@ -46,16 +46,34 @@ it should be resolved before the site goes live publicly.
       currently falls back to English by design — extend those files as translations are approved.
 
 ## Hero video
-- [ ] Client sign-off on the hero clip: it is AI-generated ("Powerful Brown Horse Galloping
+- [x] Real CTR footage — 2026-10-01: the v2 hero, welcome screen and ambient loops now use the
+      client's own vertical footage (`horse-hero-v2/horse-lebflag.MOV`, encoded by
+      `scripts/encode-hero-v2.sh`). The AI clip below is kept as the v1 fallback only
+      (`HERO_VARIANT` in `src/data/heroMedia.ts`, git tag `hero-v1`).
+- [ ] Written confirmation that every rider recognisable in the v2 footage (hero, welcome screen,
+      Treks/Groups loops) consents to appearing on the site, and that CTR owns the footage rights.
+- [ ] Confirm the v2 footage location is the Shouf (assumed from the client's answer; the
+      Act II copy says "across the Shouf").
+- [ ] Keep the 150 MB master `horse-hero-v2/horse-lebflag.MOV` somewhere durable — it is
+      git-ignored (over GitHub's 100 MB limit) and is the only source for re-encoding v2.
+- [ ] Real-device check of the v2 welcome screen (iOS low-power mode refuses autoplay: the poster
+      should show instead) and of the ambient loops' play/pause on scroll.
+- [ ] v1 fallback only — client sign-off on the hero clip: it is AI-generated ("Powerful Brown Horse Galloping
       Through a Sunlit River in a Forest" by AMRULQAYS, Pixabay id 230717). Re-verify the Pixabay
       Content License / attribution requirements at publish time and decide whether to disclose
       "AI-generated" on the site. Replace with real CTR footage when available
       (`scripts/encode-hero.sh` regenerates all hero assets from a new master; shipped command:
       `DESKTOP_CRF=26 scripts/encode-hero.sh <master.mp4> 0.8 0.05`).
-- [ ] Native review of new hero copy (EN Act II/III + AR/FR `hero.*`), see `src/i18n/REVIEW_NOTES.md`.
-- [ ] Phone crop pans 0.8→0.05; at ~2.8 s the portrait crop cuts the horse's head — accepted, revisit with real footage.
+- [ ] Native review of new hero copy (EN Act II/III + AR/FR `hero.*`, incl. the v2 `hero.v2.*` and
+      `loader.*` strings), see `src/i18n/REVIEW_NOTES.md`.
+- [ ] v1 only: phone crop pans 0.8→0.05; at ~2.8 s the portrait crop cuts the horse's head (v2 is
+      shot vertically, so no crop).
 - [ ] Lighthouse on `/`, `/ar/`, `/fr/` at 375px and 1440px (LCP < 2.5s, CLS < 0.1) — the
       authoritative item, with measured numbers; re-run it at launch on the real (not local) build.
+      v2 measured 2026-10-01 (local, uncompressed): mobile LCP 2.25–2.40 s on `/`, `/ar/`, `/fr/` with
+      the welcome screen (2.18 s without; v1 on `main` 1.88 s the same day), desktop 0.5–0.58 s,
+      CLS 0.000 on all. Passes the budget but with less headroom than v1: if the Vercel run lands
+      above 2.5 s, the first levers are dropping the welcome screen on phones or trimming its CSS.
       Measured 2026-09-19 (Lighthouse 13.5.0, local build): mobile simulated-throttling LCP ≈ 3.7 s
       on all three locales and also on `/faq/` (hero-free control 3.68 s), so a site-wide baseline,
       likely render-blocking CSS/fonts; DevTools-throttled LCP for `/` = 2.23 s; desktop LCP ≈ 0.76 s;
@@ -66,9 +84,8 @@ it should be resolved before the site goes live publicly.
       loading before launch.
 - [ ] Real-device pass: iPhone Safari and a mid-range Android on real mobile data. Check the
       poster→canvas seam, whether the hero video actually decodes and scrubs (iOS may not decode
-      an element that is never attached/played), and whether the 2.37 MB mobile fetch is acceptable.
-      Also: landscape phones currently receive the 4.68 MB desktop encode — decide whether to key
-      the source on the smaller viewport dimension / `(pointer: coarse)`.
+      an element that is never attached/played), and whether the mobile fetch is acceptable
+      (v2: 2.81 MB mobile, 5.75 MB desktop panel, 1.26 MB landscape-phone; v1 was 2.37 / 4.68 MB).
 - [x] Site-wide LCP work — resolved 2026-09-20: cause was oversized eager brand logos (~545 KB -> ~50 KB after resize, lazy footer images, width/height). Local Lighthouse mobile LCP now 1.8 s `/`, 1.8 s `/ar/`, 2.0 s `/fr/`, 1.3 s `/faq/`; re-verify on the Vercel build. (Original note: render-blocking CSS/fonts and a preload of
       the LCP poster in the `BaseLayout` head. The hero is not the cause (hero-free `/faq/` control
       measures the same mobile LCP.)

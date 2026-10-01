@@ -1,9 +1,12 @@
-import { splashRate } from "./hero-math";
+import { dustRate, splashRate } from "./hero-math";
 
 export interface Fx {
   update(dt: number, velocity: number, p: number): void;
   resize(): void;
 }
+
+/** "splash" = v1 river droplets; "dust" = v2 golden-hour dust motes. */
+export type FxStyle = "splash" | "dust";
 
 interface Particle {
   x: number;
@@ -19,7 +22,10 @@ interface Particle {
 const MAX_PARTICLES = 140;
 const GRAVITY = 900;
 
-export function createFx(canvas: HTMLCanvasElement): Fx | null {
+export function createFx(
+  canvas: HTMLCanvasElement,
+  style: FxStyle = "splash",
+): Fx | null {
   const ctx = canvas.getContext("2d");
   if (!ctx) return null;
 
@@ -38,8 +44,7 @@ export function createFx(canvas: HTMLCanvasElement): Fx | null {
     canvas.height = height;
   };
 
-  const spawn = (): void => {
-    if (pool.length >= MAX_PARTICLES) return;
+  const spawnSplash = (): void => {
     const mist = Math.random() < 0.18;
     pool.push({
       x: width * (0.15 + Math.random() * 0.75),
@@ -53,10 +58,56 @@ export function createFx(canvas: HTMLCanvasElement): Fx | null {
     });
   };
 
+  // Dust rises lazily from the lower half and drifts sideways; a few soft, larger motes
+  // ("mist") read as out-of-focus specks catching the low sun.
+  const spawnDust = (): void => {
+    const mist = Math.random() < 0.15;
+    pool.push({
+      x: width * Math.random(),
+      y: height * (0.45 + Math.random() * 0.55),
+      vx: (Math.random() - 0.35) * 40 * dpr,
+      vy: -(8 + Math.random() * 30) * dpr,
+      life: 0,
+      maxLife: 2.2 + Math.random() * 2.2,
+      r: (mist ? 3 + Math.random() * 4 : 0.6 + Math.random() * 1.3) * dpr,
+      mist,
+    });
+  };
+
+  const drawSplash = (q: Particle, fade: number): void => {
+    if (q.mist) {
+      ctx.fillStyle = `rgba(255,255,255,${(0.07 * fade).toFixed(3)})`;
+      ctx.beginPath();
+      ctx.arc(q.x, q.y, q.r * (1 + q.life * 0.6), 0, Math.PI * 2);
+      ctx.fill();
+    } else {
+      ctx.strokeStyle = `rgba(255,255,255,${(0.75 * fade).toFixed(3)})`;
+      ctx.lineWidth = q.r;
+      ctx.lineCap = "round";
+      ctx.beginPath();
+      ctx.moveTo(q.x, q.y);
+      ctx.lineTo(q.x - q.vx * 0.02, q.y - q.vy * 0.02);
+      ctx.stroke();
+    }
+  };
+
+  const drawDust = (q: Particle, fade: number): void => {
+    // Fade in over the first 20% of life too, so motes never pop into existence.
+    const a = Math.min(fade, (q.life / q.maxLife) * 5) * (q.mist ? 0.16 : 0.55);
+    ctx.fillStyle = `rgba(255,222,165,${a.toFixed(3)})`;
+    ctx.beginPath();
+    ctx.arc(q.x, q.y, q.r, 0, Math.PI * 2);
+    ctx.fill();
+  };
+
+  const rate = style === "dust" ? dustRate : splashRate;
+  const spawn = style === "dust" ? spawnDust : spawnSplash;
+  const draw = style === "dust" ? drawDust : drawSplash;
+
   const update = (dt: number, velocity: number, p: number): void => {
-    carry += splashRate(velocity, p) * dt;
+    carry += rate(velocity, p) * dt;
     while (carry >= 1) {
-      spawn();
+      if (pool.length < MAX_PARTICLES) spawn();
       carry -= 1;
     }
 
@@ -69,25 +120,10 @@ export function createFx(canvas: HTMLCanvasElement): Fx | null {
         pool.splice(i, 1);
         continue;
       }
-      if (!q.mist) q.vy += GRAVITY * dpr * dt;
+      if (style === "splash" && !q.mist) q.vy += GRAVITY * dpr * dt;
       q.x += q.vx * dt;
       q.y += q.vy * dt;
-      const fade = 1 - q.life / q.maxLife;
-
-      if (q.mist) {
-        ctx.fillStyle = `rgba(255,255,255,${(0.07 * fade).toFixed(3)})`;
-        ctx.beginPath();
-        ctx.arc(q.x, q.y, q.r * (1 + q.life * 0.6), 0, Math.PI * 2);
-        ctx.fill();
-      } else {
-        ctx.strokeStyle = `rgba(255,255,255,${(0.75 * fade).toFixed(3)})`;
-        ctx.lineWidth = q.r;
-        ctx.lineCap = "round";
-        ctx.beginPath();
-        ctx.moveTo(q.x, q.y);
-        ctx.lineTo(q.x - q.vx * 0.02, q.y - q.vy * 0.02);
-        ctx.stroke();
-      }
+      draw(q, 1 - q.life / q.maxLife);
     }
   };
 

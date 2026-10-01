@@ -4,8 +4,10 @@ import { DIR, LOCALES, path, useTranslations, withBase, type Locale } from "../i
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
 import StickyCta from "../components/StickyCta.astro";
+import WelcomeLoader from "../components/WelcomeLoader.astro";
 import JsonLd from "../components/JsonLd.astro";
 import { breadcrumbSchema } from "../data/jsonld";
+import { heroPosterPreloads } from "../data/heroMedia";
 
 interface Props {
   locale: Locale;
@@ -14,6 +16,8 @@ interface Props {
   description?: string;
   jsonLd?: Record<string, unknown>[];
   breadcrumbs?: { name: string; url: string }[];
+  /** Home pages: show the first-visit welcome screen and preload the hero poster (LCP). */
+  welcome?: boolean;
 }
 
 const {
@@ -23,6 +27,7 @@ const {
   description,
   jsonLd = [],
   breadcrumbs,
+  welcome = false,
 } = Astro.props;
 
 const t = useTranslations(locale);
@@ -60,6 +65,35 @@ if (/tennessee/i.test(pageTitle) || /tennessee/i.test(pageDescription)) {
     <link rel="manifest" href={withBase("/manifest.webmanifest")} />
     <link rel="canonical" href={canonicalURL} />
     <title>{pageTitle}</title>
+    {
+      welcome &&
+        heroPosterPreloads.map((p) => (
+          <link rel="preload" as="image" type="image/webp" href={withBase(p.href)} media={p.media} fetchpriority="high" />
+        ))
+    }
+    {
+      welcome && (
+        <script is:inline>
+          (function () {
+            // Decide before first paint so the welcome screen never flashes in or out.
+            try {
+              var c = navigator.connection;
+              if (
+                sessionStorage.getItem("ctr-welcome") ||
+                location.hash ||
+                matchMedia("(prefers-reduced-motion: reduce)").matches ||
+                (c && (c.saveData || /2g/.test(c.effectiveType || "")))
+              )
+                return;
+              sessionStorage.setItem("ctr-welcome", "1");
+              document.documentElement.dataset.welcome = "on";
+            } catch (e) {
+              // Storage blocked: skip the welcome rather than show it on every page view.
+            }
+          })();
+        </script>
+      )
+    }
     <meta name="description" content={pageDescription} />
 
     {
@@ -127,6 +161,7 @@ if (/tennessee/i.test(pageTitle) || /tennessee/i.test(pageDescription)) {
     >
       {t("a11y.skip")}
     </a>
+    {welcome && <WelcomeLoader locale={locale} />}
     <Header locale={locale} route={route} />
     <main id="main" class="flex-1">
       <slot />

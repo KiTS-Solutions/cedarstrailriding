@@ -1,0 +1,47 @@
+---
+// Decorative, muted looping clip (v2 footage). The poster is a natively lazy <img> (a video
+// `poster` attribute is fetched eagerly, competing with the hero's LCP image); the clip
+// loads only as it nears the viewport, fades in over the poster once playing, and plays
+// only while visible. Reduced motion, Save-Data and 2G keep the poster
+// (src/scripts/ambient-video.ts).
+import { withBase } from "../i18n";
+
+interface Props {
+  video: string;
+  poster: string;
+  /** Sizing/shape classes for the frame (aspect ratio, width, radius). */
+  class?: string;
+}
+
+const { video, poster, class: className = "" } = Astro.props;
+---
+
+<div class:list={["relative overflow-hidden bg-cedar-deep", className]} aria-hidden="true">
+  <img
+    class="absolute inset-0 h-full w-full object-cover"
+    src={withBase(poster)}
+    alt=""
+    width="540"
+    height="960"
+    loading="lazy"
+    decoding="async"
+    data-ambient-poster
+  />
+  <video
+    class="absolute inset-0 h-full w-full object-cover opacity-0 transition-opacity duration-500 data-[playing]:opacity-100"
+    muted
+    loop
+    playsinline
+    preload="none"
+    width="540"
+    height="960"
+    data-src={withBase(video)}
+    data-ambient-video
+    tabindex="-1"></video>
+</div>
+
+<script>
+  import { initAmbientVideos } from "../scripts/ambient-video";
+
+  initAmbientVideos(document.querySelectorAll<HTMLVideoElement>("[data-ambient-video]"));
+</script>

@@ -2,6 +2,7 @@
 import { useTranslations, path, withBase, type Locale } from "../i18n";
 import { contact } from "../data/siteSettings";
 import WhatsAppButton from "./WhatsAppButton.astro";
+import { heroMedia, HERO_MOBILE_MEDIA } from "../data/heroMedia";
 
 interface Props {
   locale: Locale;
@@ -12,11 +13,13 @@ const t = useTranslations(locale);
 
 const { lat, lng } = contact.coordinates;
 const coords = `${lat.toFixed(2)}°N ${lng.toFixed(2)}°E`;
-const media = withBase("/images/hero");
+const media = withBase(heroMedia.dir);
+const panel = heroMedia.layout === "panel";
+const { poster } = heroMedia;
 
 const chapters = [
   { id: "shouf", n: "01", label: t("hero.chapter1") },
-  { id: "river", n: "02", label: t("hero.chapter2") },
+  { id: "ridge", n: "02", label: t(heroMedia.copy.chapter2) },
   { id: "ride", n: "03", label: t("hero.chapter3") },
 ] as const;
 ---
@@ -26,26 +29,43 @@ const chapters = [
   data-hero
   data-mode="static"
   data-dock="off"
-  data-video-desktop={`${media}/ride-desktop.mp4`}
-  data-video-mobile={`${media}/ride-mobile.mp4`}
-  data-video-compact={`${media}/ride-compact.mp4`}
+  data-layout={heroMedia.layout}
+  data-fx={heroMedia.fx}
+  data-video-desktop={`${media}/${heroMedia.video.desktop}`}
+  data-video-mobile={`${media}/${heroMedia.video.mobile}`}
+  data-video-compact={`${media}/${heroMedia.video.compact}`}
   aria-label={t("hero.aria")}
 >
   <a href="#trails" class="ctr-hero__skip" data-hero-skip>{t("hero.skip")}</a>
 
   <div class="ctr-hero__stage" data-hero-stage>
+    {
+      panel && (
+        <div class="ctr-hero__backdrop" aria-hidden="true">
+          <picture>
+            <source
+              media={HERO_MOBILE_MEDIA}
+              srcset={`${media}/${poster.mobile}`}
+              type="image/webp"
+            />
+            <img src={`${media}/${poster.desktop.src}`} alt="" width="36" height="64" decoding="async" />
+          </picture>
+          <canvas width="1" height="1" data-hero-backdrop />
+        </div>
+      )
+    }
     <div class="ctr-hero__plate" aria-hidden="true">
       <picture>
         <source
-          media="(max-width: 767px) and (orientation: portrait)"
-          srcset={`${media}/poster-mobile.webp`}
+          media={HERO_MOBILE_MEDIA}
+          srcset={`${media}/${poster.mobile}`}
           type="image/webp"
         />
         <img
-          src={`${media}/poster-desktop.webp`}
+          src={`${media}/${poster.desktop.src}`}
           alt=""
-          width="1600"
-          height="900"
+          width={poster.desktop.width}
+          height={poster.desktop.height}
           fetchpriority="high"
           class="ctr-hero__poster"
         />
@@ -96,10 +116,10 @@ const chapters = [
         </div>
       </div>
 
-      <div class="ctr-hero__act ctr-hero__act--river" data-act="river">
+      <div class="ctr-hero__act ctr-hero__act--ridge" data-act="ridge">
         <p class="ctr-hero__eyebrow">{t("hero.act2.eyebrow")}</p>
         <h2 class="ctr-hero__h2">{t("hero.act2.title")}</h2>
-        <p class="ctr-hero__lead">{t("hero.act2.body")}</p>
+        <p class="ctr-hero__lead">{t(heroMedia.copy.act2Body)}</p>
       </div>
 
       <div class="ctr-hero__act ctr-hero__act--ride" data-act="ride">
@@ -213,7 +233,7 @@ const chapters = [
     margin-inline: auto;
     padding: 4rem 1.25rem;
   }
-  .ctr-hero__act--river,
+  .ctr-hero__act--ridge,
   .ctr-hero__act--ride {
     display: none;
   }
@@ -340,16 +360,16 @@ const chapters = [
     --o: 1;
     inset-inline-start: 1.25rem;
   }
-  .ctr-hero[data-mode="scrub"] .ctr-hero__act--river {
+  .ctr-hero[data-mode="scrub"] .ctr-hero__act--ridge {
     inset-inline: 1.25rem;
     margin-inline: auto;
     text-align: center;
   }
-  .ctr-hero[data-mode="scrub"] .ctr-hero__act--river .ctr-hero__eyebrow {
+  .ctr-hero[data-mode="scrub"] .ctr-hero__act--ridge .ctr-hero__eyebrow {
     justify-content: center;
   }
-  .ctr-hero[data-mode="scrub"] .ctr-hero__act--river .ctr-hero__h2,
-  .ctr-hero[data-mode="scrub"] .ctr-hero__act--river .ctr-hero__lead {
+  .ctr-hero[data-mode="scrub"] .ctr-hero__act--ridge .ctr-hero__h2,
+  .ctr-hero[data-mode="scrub"] .ctr-hero__act--ridge .ctr-hero__lead {
     margin-inline: auto;
   }
   .ctr-hero[data-mode="scrub"] .ctr-hero__act--ride {
@@ -376,7 +396,7 @@ const chapters = [
     .ctr-hero[data-mode="scrub"] .ctr-hero__act--intro {
       inset-inline-start: 3rem;
     }
-    .ctr-hero[data-mode="scrub"] .ctr-hero__act--river {
+    .ctr-hero[data-mode="scrub"] .ctr-hero__act--ridge {
       inset-inline: 2.5rem;
       width: auto;
     }
@@ -603,6 +623,114 @@ const chapters = [
     width: 100%;
     height: 100%;
     pointer-events: none;
+  }
+
+  /* ---- Panel layout (v2 vertical footage) ----
+     Phones in portrait keep the full-bleed stage: 9:16 footage fits them exactly. Anything
+     wider than 4:5 gets a full-height 3:4 panel at the inline end (a 3:4 window on the 9:16
+     footage — wider, so larger, than a full 9:16 frame could be at the same height), a lightly
+     softened copy of the same frame behind it, and all three acts on the inline-start side. */
+  .ctr-hero__backdrop {
+    display: none;
+  }
+  @media (min-aspect-ratio: 4/5) {
+    .ctr-hero[data-layout="panel"] .ctr-hero__stage {
+      --panel-gap: clamp(1rem, 2.4vh, 1.75rem);
+      --panel-end: max(1.25rem, 4vw);
+      /* Height leaves room under the panel for the booking dock, and for the trust bar that
+         still sits above the stage at p=0 (the sticky stage is sized as if it were gone). */
+      --panel-h: calc(100dvh - var(--header-h, 4.5rem) - 2 * var(--panel-gap) - 3.5rem);
+      --panel-w: min(calc(var(--panel-h) * 3 / 4), 46vw);
+      --copy-start: 3rem;
+    }
+    .ctr-hero[data-layout="panel"] .ctr-hero__backdrop {
+      display: block;
+      position: absolute;
+      inset: 0;
+      z-index: -4;
+      overflow: hidden;
+    }
+    .ctr-hero__backdrop img,
+    .ctr-hero__backdrop canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      /* Light softening only: the canvas is drawn at a third of the stage resolution, so this
+         reads as depth of field rather than a smear. */
+      filter: blur(6px) saturate(1.15) brightness(0.62);
+      transform: scale(1.04);
+    }
+    .ctr-hero__backdrop canvas {
+      opacity: 0;
+      transition: opacity 0.4s ease;
+    }
+    .ctr-hero[data-ready] .ctr-hero__backdrop canvas {
+      opacity: 1;
+    }
+    .ctr-hero[data-layout="panel"] .ctr-hero__plate {
+      inset: auto;
+      top: var(--panel-gap);
+      inset-inline-end: var(--panel-end);
+      width: var(--panel-w);
+      height: calc(var(--panel-w) * 4 / 3);
+      /* The scroll zoom lives on the poster/canvas instead, so the panel box stays put. */
+      transform: none;
+      overflow: hidden;
+      border-radius: 1.25rem;
+      box-shadow:
+        0 30px 80px -24px rgb(0 0 0 / 0.65),
+        0 0 0 1px rgb(251 247 238 / 0.14);
+    }
+    .ctr-hero[data-layout="panel"] .ctr-hero__poster,
+    .ctr-hero[data-layout="panel"] .ctr-hero__canvas {
+      transform: scale(calc(1 + var(--p) * 0.08));
+      transform-origin: 50% 60%;
+    }
+    .ctr-hero[data-layout="panel"] .ctr-hero__scrim {
+      background:
+        linear-gradient(90deg, rgb(22 17 12 / 0.7) 0%, rgb(22 17 12 / 0.42) 45%, rgb(22 17 12 / 0.12) 70%, transparent 85%),
+        linear-gradient(0deg, rgb(22 17 12 / 0.5) 0%, transparent 35%);
+    }
+    .ctr-hero[data-layout="panel"] .ctr-hero__h1 {
+      font-size: clamp(2.75rem, 5.4vw, 6rem);
+    }
+    .ctr-hero[data-layout="panel"] .ctr-hero__h2 {
+      font-size: clamp(2.4rem, 4.6vw, 5rem);
+    }
+    /* Static mode: copy in normal flow, kept clear of the panel, wrapped at the same width
+       as in scrub mode so the upgrade does not reflow it. */
+    .ctr-hero[data-layout="panel"] .ctr-hero__acts {
+      max-width: none;
+      padding-inline: var(--copy-start) calc(var(--panel-w) + var(--panel-end) + 2.5rem);
+    }
+    .ctr-hero[data-layout="panel"] .ctr-hero__act {
+      max-width: 40rem;
+    }
+    /* Scrub mode: every act on the copy side, cross-fading in place. */
+    .ctr-hero[data-layout="panel"][data-mode="scrub"] .ctr-hero__acts {
+      padding: 0;
+    }
+    .ctr-hero[data-layout="panel"][data-mode="scrub"] .ctr-hero__act {
+      inset-inline: var(--copy-start) auto;
+      width: min(40rem, calc(100% - var(--copy-start) - var(--panel-w) - var(--panel-end) - 2.5rem));
+      margin-inline: 0;
+      text-align: start;
+    }
+    .ctr-hero[data-layout="panel"][data-mode="scrub"] .ctr-hero__act .ctr-hero__eyebrow,
+    .ctr-hero[data-layout="panel"][data-mode="scrub"] .ctr-hero__act .ctr-hero__ctas {
+      justify-content: flex-start;
+    }
+    .ctr-hero[data-layout="panel"][data-mode="scrub"] .ctr-hero__act .ctr-hero__h2,
+    .ctr-hero[data-layout="panel"][data-mode="scrub"] .ctr-hero__act .ctr-hero__lead {
+      margin-inline: 0;
+    }
+  }
+  @media (min-aspect-ratio: 4/5) and (min-width: 768px) {
+    .ctr-hero[data-layout="panel"] .ctr-hero__stage {
+      --copy-start: max(8.75rem, 9vw); /* clear of the chapter rail's labels */
+    }
   }
 </style>
 

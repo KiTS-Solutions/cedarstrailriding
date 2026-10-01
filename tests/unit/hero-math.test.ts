@@ -7,6 +7,8 @@ import {
   activeChapter,
   canScrub,
   clamp01,
+  dustRate,
+  HERO_SEGMENT_BOUNDARIES,
   nearestSnap,
   progressToScrollY,
   scrollProgress,
@@ -27,11 +29,11 @@ test("intro act is fully visible at p=0 (prototype bug: it was 0)", () => {
   assert.equal(actOpacity(0, ACTS.intro), 1);
 });
 
-test("intro fades out, river fades in across the overlap", () => {
+test("intro fades out, ridge fades in across the overlap", () => {
   assert.equal(actOpacity(0.26, ACTS.intro), 1);
   assert.equal(actOpacity(0.34, ACTS.intro), 0);
-  assert.equal(actOpacity(0.3, ACTS.river), 0);
-  assert.equal(actOpacity(0.38, ACTS.river), 1);
+  assert.equal(actOpacity(0.3, ACTS.ridge), 0);
+  assert.equal(actOpacity(0.38, ACTS.ridge), 1);
 });
 
 test("ride act stays fully visible through p=1", () => {
@@ -104,7 +106,7 @@ test("canScrub gates on motion, data saver, connection and memory", () => {
   );
 });
 
-test("splashRate scales with velocity and peaks in the river window", () => {
+test("splashRate scales with velocity and peaks in the mid-act window", () => {
   assert.equal(splashRate(0, 0.5), 0);
   assert.ok(splashRate(0.5, 0.5) > splashRate(0.5, 0.05));
   assert.ok(splashRate(0.5, 0.5) > splashRate(0.1, 0.5));
@@ -118,7 +120,7 @@ test("activeChapter boundaries", () => {
   assert.equal(activeChapter(0.68), 2);
 });
 
-test("nearestSnap targets river and ride, never the first chapter", () => {
+test("nearestSnap targets ridge and ride, never the first chapter", () => {
   assert.equal(nearestSnap(0.45, 0), 0.5);
   assert.equal(nearestSnap(0.55, 0), 0.5);
   assert.equal(nearestSnap(0.82, 0), 0.86);
@@ -158,4 +160,33 @@ test("smoothVelocity is frame-rate independent and never negative", () => {
   assert.ok(v < SNAP_MAX_VELOCITY);
   assert.ok(smoothVelocity(0, 0, 0.016) >= 0);
   assert.ok(smoothVelocity(0.1, -5, 0.5) >= 0);
+});
+
+test("v2 shot crossfades sit at the midpoint of each act hand-off", () => {
+  const order = [ACTS.intro, ACTS.ridge, ACTS.ride];
+  HERO_SEGMENT_BOUNDARIES.forEach((b, i) => {
+    const out = order[i]!;
+    const into = order[i + 1]!;
+    // the overlap where one act fades out while the next fades in
+    assert.ok(into.start < out.end);
+    assert.ok(Math.abs(b - (into.start + out.end) / 2) < 1e-9);
+    // and the chapter rail flips within that same overlap
+    assert.equal(activeChapter(into.start), i);
+    assert.equal(activeChapter(out.end), i + 1);
+  });
+});
+
+test("chapters are shouf, ridge, ride in order", () => {
+  assert.deepEqual(
+    CHAPTERS.map((c) => c.id),
+    ["shouf", "ridge", "ride"],
+  );
+});
+
+test("dustRate drifts at rest and thickens with speed in the mid act", () => {
+  assert.ok(dustRate(0, 0.1) > 0);
+  assert.equal(dustRate(0, 0.1), dustRate(0, 0.5));
+  assert.ok(dustRate(0.5, 0.5) > dustRate(0.5, 0.1));
+  assert.ok(dustRate(0.5, 0.5) > dustRate(0, 0.5));
+  assert.ok(dustRate(99, 0.5) <= dustRate(0.5, 0.5));
 });

@@ -1,4 +1,4 @@
-export type ActName = "intro" | "river" | "ride";
+export type ActName = "intro" | "ridge" | "ride";
 
 export interface ActWindow {
   start: number;
@@ -10,12 +10,19 @@ export interface ActWindow {
 
 export const ACTS: Record<ActName, ActWindow> = {
   intro: { start: 0, end: 0.34, fade: 0.08, fadeIn: false, fadeOut: true },
-  river: { start: 0.3, end: 0.7, fade: 0.08, fadeIn: true, fadeOut: true },
+  ridge: { start: 0.3, end: 0.7, fade: 0.08, fadeIn: true, fadeOut: true },
   ride: { start: 0.66, end: 1, fade: 0.08, fadeIn: true, fadeOut: false },
 };
 
+/**
+ * Scroll progress at which the v2 scrub crossfades from one shot to the next. Each sits at
+ * the midpoint of an act hand-off overlap, so the picture changes as the copy does.
+ * scripts/encode-hero-v2.sh solves its segment lengths for exactly these values.
+ */
+export const HERO_SEGMENT_BOUNDARIES = [0.32, 0.68] as const;
+
 export interface Chapter {
-  id: "shouf" | "river" | "ride";
+  id: "shouf" | "ridge" | "ride";
   act: ActName;
   /** Scroll progress the chapter link scrolls to / the snap target. */
   p: number;
@@ -23,7 +30,7 @@ export interface Chapter {
 
 export const CHAPTERS: readonly Chapter[] = [
   { id: "shouf", act: "intro", p: 0.12 },
-  { id: "river", act: "river", p: 0.5 },
+  { id: "ridge", act: "ridge", p: 0.5 },
   { id: "ride", act: "ride", p: 0.86 },
 ];
 
@@ -34,6 +41,7 @@ export const SNAP_MAX_VELOCITY = 0.02;
 /** Time constant (s) of the scroll-velocity low-pass filter. */
 export const VELOCITY_TAU = 0.08;
 const SPLASH_WINDOW: readonly [number, number] = [0.3, 0.8];
+const DUST_IDLE = 4;
 
 export function clamp01(n: number): number {
   return Math.min(1, Math.max(0, n));
@@ -128,9 +136,19 @@ export function canScrub(env: CapabilityEnv): boolean {
   return true;
 }
 
-/** Droplets per second for a scroll velocity (progress/second) at progress `p`. */
+/** v1 water droplets per second for a scroll velocity (progress/second) at progress `p`. */
 export function splashRate(velocity: number, p: number): number {
   const v = clamp01(velocity / 0.5);
-  const inRiver = p >= SPLASH_WINDOW[0] && p <= SPLASH_WINDOW[1];
-  return (inRiver ? 90 : 12) * v;
+  const inMidAct = p >= SPLASH_WINDOW[0] && p <= SPLASH_WINDOW[1];
+  return (inMidAct ? 90 : 12) * v;
+}
+
+/**
+ * v2 dust motes per second: a faint constant drift (golden-hour air) that thickens with
+ * scroll speed, most of all over the gallop shot in the middle act.
+ */
+export function dustRate(velocity: number, p: number): number {
+  const v = clamp01(velocity / 0.5);
+  const inMidAct = p >= SPLASH_WINDOW[0] && p <= SPLASH_WINDOW[1];
+  return DUST_IDLE + (inMidAct ? 48 : 20) * v;
 }

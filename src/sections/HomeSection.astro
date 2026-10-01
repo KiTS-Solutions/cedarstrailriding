@@ -11,6 +11,8 @@ import FaqAccordion from "../components/FaqAccordion.astro";
 import WhatsAppButton from "../components/WhatsAppButton.astro";
 import BookingForm from "../components/BookingForm.astro";
 import ScrollHero from "../components/ScrollHero.astro";
+import AmbientVideo from "../components/AmbientVideo.astro";
+import { v2Clips } from "../data/heroMedia";
 
 interface Props {
   locale: Locale;
@@ -70,28 +72,42 @@ const horseSlots = horses.length > 0 ? horses : Array.from({ length: HORSE_PLACE
 </section>
 
 <section id="treks" class="bg-cedar-deep px-4 py-16 text-warm-white sm:px-6">
-  <div class="mx-auto max-w-3xl text-center">
-    <h2 class="font-display text-3xl font-semibold">{t("home.treksHeading")}</h2>
-    <p class="mt-4 text-warm-white/85">{t("home.treksLead")}</p>
-    <div class="mt-6">
-      <a href={path("/treks/", locale)} class="btn-primary">{t("cta.learnMore")}</a>
+  <div class="mx-auto grid max-w-5xl items-center gap-10 md:grid-cols-[1fr_auto]">
+    <div class="text-center md:text-start">
+      <h2 class="font-display text-3xl font-semibold">{t("home.treksHeading")}</h2>
+      <p class="mt-4 text-warm-white/85">{t("home.treksLead")}</p>
+      <div class="mt-6">
+        <a href={path("/treks/", locale)} class="btn-primary">{t("cta.learnMore")}</a>
+      </div>
     </div>
+    <AmbientVideo
+      video={v2Clips.ridge.video}
+      poster={v2Clips.ridge.poster}
+      class="mx-auto aspect-[4/5] w-full max-w-sm rounded-2xl shadow-2xl md:aspect-[9/16] md:w-72"
+    />
   </div>
 </section>
 
 <section id="groups" class="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16">
   <h2 class="text-center font-display text-3xl font-semibold text-cedar-deep">{t("home.groupsHeading")}</h2>
-  <div class="mt-8 grid gap-6 sm:grid-cols-3">
-    <article class="card p-6">
-      <h3 class="font-display text-lg font-semibold text-cedar-deep">{t("groups.hiking")}</h3>
-      <p class="mt-2 text-sm text-ink/80">{t("groups.hikingNote")}</p>
-    </article>
-    <article class="card p-6">
-      <h3 class="font-display text-lg font-semibold text-cedar-deep">{t("groups.business")}</h3>
-    </article>
-    <article class="card p-6">
-      <h3 class="font-display text-lg font-semibold text-cedar-deep">{t("groups.custom")}</h3>
-    </article>
+  <div class="mt-8 grid items-center gap-6 md:grid-cols-[18rem_1fr] md:gap-10">
+    <AmbientVideo
+      video={v2Clips.group.video}
+      poster={v2Clips.group.poster}
+      class="mx-auto aspect-[4/5] w-full max-w-sm rounded-2xl md:aspect-[9/16] md:w-72"
+    />
+    <div class="grid gap-6 sm:grid-cols-3 md:grid-cols-1">
+      <article class="card p-6">
+        <h3 class="font-display text-lg font-semibold text-cedar-deep">{t("groups.hiking")}</h3>
+        <p class="mt-2 text-sm text-ink/80">{t("groups.hikingNote")}</p>
+      </article>
+      <article class="card p-6">
+        <h3 class="font-display text-lg font-semibold text-cedar-deep">{t("groups.business")}</h3>
+      </article>
+      <article class="card p-6">
+        <h3 class="font-display text-lg font-semibold text-cedar-deep">{t("groups.custom")}</h3>
+      </article>
+    </div>
   </div>
   <div class="mt-6 text-center">
     <a href={path("/contact/", locale)} class="btn-secondary">{t("cta.tellUsYourIdea")}</a>

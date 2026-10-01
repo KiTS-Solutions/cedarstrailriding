@@ -10,7 +10,7 @@ set -euo pipefail
 SRC="${1:?usage: encode-hero.sh <master.mp4> [crop_x0] [crop_x1]}"
 X0="${2:-0.5}"
 X1="${3:-0.5}"
-OUT="public/images/hero"
+OUT="public/images/hero/v1" # v1 = the AI-generated landscape clip, kept as a fallback (src/data/heroMedia.ts)
 mkdir -p "$OUT"
 
 DUR="$(ffprobe -v error -show_entries format=duration -of csv=p=0 "$SRC")"

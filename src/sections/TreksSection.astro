@@ -2,6 +2,9 @@
 import { useTranslations, path, type Locale } from "../i18n";
 import { trails } from "../data/trails";
 import TrailCard from "../components/TrailCard.astro";
+import AmbientVideo from "../components/AmbientVideo.astro";
+import AmbientBackdrop from "../components/AmbientBackdrop.astro";
+import { v2Clips } from "../data/heroMedia";
 
 interface Props {
   locale: Locale;
@@ -12,10 +15,21 @@ const t = useTranslations(locale);
 const multiDayTrails = trails.filter((trail) => trail.duration);
 ---
 
-<section class="bg-cedar-deep px-4 py-16 text-warm-white sm:px-6">
-  <div class="mx-auto max-w-3xl text-center">
-    <h1 class="font-display text-4xl font-semibold">{t("home.treksHeading")}</h1>
-    <p class="mt-4 text-warm-white/85">{t("home.treksLead")}</p>
+<section
+  class="relative isolate overflow-hidden bg-cedar-deep px-4 py-16 text-warm-white sm:px-6"
+  data-ambient-scope
+>
+  <AmbientBackdrop poster={v2Clips.ridge.poster} />
+  <div class="mx-auto grid max-w-5xl items-center gap-10 md:grid-cols-[1fr_auto]">
+    <div class="text-center md:text-start">
+      <h1 class="font-display text-4xl font-semibold">{t("home.treksHeading")}</h1>
+      <p class="mt-4 text-warm-white/85">{t("home.treksLead")}</p>
+    </div>
+    <AmbientVideo
+      video={v2Clips.ridge.video}
+      poster={v2Clips.ridge.poster}
+      class="mx-auto aspect-[4/5] w-full max-w-sm rounded-2xl shadow-2xl md:aspect-[9/16] md:w-72"
+    />
   </div>
 </section>
 
