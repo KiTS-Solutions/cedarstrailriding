@@ -166,6 +166,32 @@ test.describe("Scroll hero", () => {
     expect(media.some((u) => u.includes("ride-mobile.mp4"))).toBe(false);
   });
 
+  test("a 3g connection estimate still scrubs, on the lighter 540p clip", async ({
+    page,
+  }) => {
+    // Chrome reports "3g" for ordinary high-RTT broadband (e.g. 350 ms in Lebanon).
+    await page.addInitScript(() =>
+      Object.defineProperty(navigator, "connection", {
+        value: { effectiveType: "3g", saveData: false },
+      }),
+    );
+    const media: string[] = [];
+    page.on("request", (r) => {
+      if (/\.mp4(\?|$)/.test(r.url())) media.push(r.url());
+    });
+    await page.goto("/");
+    await expect(page.locator("[data-hero]")).toHaveAttribute(
+      "data-mode",
+      "scrub",
+    );
+    await expect(page.locator("[data-hero]")).toHaveAttribute(
+      "data-ready",
+      "true",
+    );
+    expect(media.some((u) => u.includes("ride-mobile.mp4"))).toBe(true);
+    expect(media.some((u) => u.includes("ride-hd.mp4"))).toBe(false);
+  });
+
   test("scrolling reveals the ridge act and advances the rail", async ({
     page,
   }) => {

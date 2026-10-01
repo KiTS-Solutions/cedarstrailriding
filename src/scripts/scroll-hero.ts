@@ -4,6 +4,7 @@ import {
   actOpacity,
   activeChapter,
   canScrub,
+  liteVideo,
   nearestSnap,
   progressToScrollY,
   scrollProgress,
@@ -168,11 +169,16 @@ function upgrade(root: HTMLElement): void {
   const smallLandscape = matchMedia(
     "(max-height: 500px) and (pointer: coarse)",
   ).matches;
+  const lite = liteVideo(
+    (navigator as NavigatorWithHints).connection?.effectiveType,
+  );
   const src = portrait
     ? root.dataset.videoMobile
     : smallLandscape
       ? (root.dataset.videoCompact ?? root.dataset.videoDesktop)
-      : root.dataset.videoDesktop;
+      : lite
+        ? root.dataset.videoMobile
+        : root.dataset.videoDesktop;
   if (!src) throw new HeroError("missing data-video-* source");
 
   const video = document.createElement("video");

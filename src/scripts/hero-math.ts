@@ -127,13 +127,21 @@ export interface CapabilityEnv {
   deviceMemory?: number;
 }
 
+// "3g" is not excluded: Chrome reports it for any RTT over ~270 ms, which is ordinary
+// broadband in Lebanon (measured 350 ms / 1.45 Mb/s) and kept the hero static for most of
+// its audience. The clip is fetched whole before scrubbing, so a slow link only delays it.
 export function canScrub(env: CapabilityEnv): boolean {
   if (env.reducedMotion || env.saveData) return false;
-  if (env.effectiveType && /^(slow-2g|2g|3g)$/.test(env.effectiveType))
+  if (env.effectiveType && /^(slow-2g|2g)$/.test(env.effectiveType))
     return false;
   if (typeof env.deviceMemory === "number" && env.deviceMemory < 4)
     return false;
   return true;
+}
+
+/** On a "3g" estimate the desktop panel takes the 540p clip (half the bytes of the 720p one). */
+export function liteVideo(effectiveType: string | undefined): boolean {
+  return effectiveType === "3g";
 }
 
 /** v1 water droplets per second for a scroll velocity (progress/second) at progress `p`. */

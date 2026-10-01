@@ -6,6 +6,7 @@ import {
   actOpacity,
   activeChapter,
   canScrub,
+  liteVideo,
   clamp01,
   dustRate,
   HERO_SEGMENT_BOUNDARIES,
@@ -84,12 +85,27 @@ test("nearestSnap only snaps when nearly still and close to a chapter", () => {
   assert.equal(nearestSnap(0.99, 0), null); // ...or the very end
 });
 
+test("liteVideo picks the lighter clip only on a 3g estimate", () => {
+  assert.equal(liteVideo("3g"), true);
+  assert.equal(liteVideo("4g"), false);
+  assert.equal(liteVideo(undefined), false);
+});
+
 test("canScrub gates on motion, data saver, connection and memory", () => {
   assert.equal(canScrub({ reducedMotion: false, saveData: false }), true);
   assert.equal(canScrub({ reducedMotion: true, saveData: false }), false);
   assert.equal(canScrub({ reducedMotion: false, saveData: true }), false);
+  // Chrome reports "3g" for any RTT over ~270 ms, i.e. ordinary broadband in Lebanon.
   assert.equal(
     canScrub({ reducedMotion: false, saveData: false, effectiveType: "3g" }),
+    true,
+  );
+  assert.equal(
+    canScrub({ reducedMotion: false, saveData: false, effectiveType: "2g" }),
+    false,
+  );
+  assert.equal(
+    canScrub({ reducedMotion: false, saveData: false, effectiveType: "slow-2g" }),
     false,
   );
   assert.equal(
