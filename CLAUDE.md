@@ -65,6 +65,10 @@ backend, deployed to Vercel. Full context: `brief/README.md` and `brief/HANDOFF.
   pin at the base coords, plus a brand-family strip rendering real logos for 4 confirmed brands
   (`siteSettings.brandFamily` — Cedars Trail Riding, Cedars Xtreme, Cedars Cycling, Cedars
   Outdoors; the latter two have no confirmed URL yet, so they render unlinked).
+  Below the copyright row sits a collapsed, low-contrast agency credit
+  (`src/components/SiteCredit.astro`, data in `src/data/developer.ts` — kept out of the client's
+  `05_site_facts.json`). It must stay visually subordinate to the client's brand; KiTS
+  Instagram/Facebook render only once their URLs are set there.
 - **Logo:** a real transparent logo is in use (`public/images/brand/ctr-logo.webp`, referenced via
   `siteSettings.logoSrc`) — received directly into the project rather than scraped, since the
   live site is Cloudflare-gated. All 4 brand-family logos live in `public/images/brand/` (served,

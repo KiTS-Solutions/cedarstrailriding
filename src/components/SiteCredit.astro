@@ -1,0 +1,62 @@
+---
+import { useTranslations, withBase, type Locale } from "../i18n";
+import { developer } from "../data/developer";
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const t = useTranslations(locale);
+
+const socials = [
+  { label: "Instagram", href: developer.instagram },
+  { label: "Facebook", href: developer.facebook },
+].filter((s): s is { label: string; href: string } => s.href !== null);
+---
+
+<!-- Agency credit: deliberately low-contrast and collapsed by default so it never competes
+     with the client's brand. Native <details> = keyboard accessible with zero JS. -->
+<details class="group mx-auto w-fit max-w-full text-center text-warm-white/65">
+  <summary
+    class="mx-auto flex min-h-11 w-fit cursor-pointer list-none items-center gap-1.5 rounded-md px-2 text-[11px] tracking-wide transition-colors hover:text-warm-white/85 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold [&::-webkit-details-marker]:hidden"
+  >
+    <span>{t("footer.credit.by")}</span>
+    <img
+      src={withBase(developer.logoSrc)}
+      alt=""
+      width="14"
+      height="14"
+      loading="lazy"
+      decoding="async"
+      class="h-3.5 w-3.5 opacity-70 transition-opacity group-hover:opacity-100 group-open:opacity-100"
+    />
+    <span class="font-semibold">{developer.name}</span>
+    <svg aria-hidden="true" viewBox="0 0 12 12" class="h-2.5 w-2.5 transition-transform group-open:rotate-180">
+      <path d="M2 4.5 6 8l4-3.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+    </svg>
+  </summary>
+
+  <div class="mx-auto mt-2 max-w-sm rounded-lg border border-warm-white/10 bg-warm-white/5 px-4 py-3 text-xs text-warm-white/75">
+    <p>{t("footer.credit.pitch")}</p>
+    <ul class="mt-2 flex flex-wrap items-center justify-center gap-x-4">
+      <li>
+        <a href={developer.whatsapp} target="_blank" rel="noopener noreferrer" class="footer-link">
+          {t("footer.credit.whatsapp")}:{" "}<bdi dir="ltr">{developer.phone}</bdi>
+        </a>
+      </li>
+      <li>
+        <a href={`mailto:${developer.email}`} class="footer-link"><bdi dir="ltr">{developer.email}</bdi></a>
+      </li>
+      {
+        socials.map((s) => (
+          <li>
+            <a href={s.href} target="_blank" rel="noopener noreferrer" class="footer-link">
+              {s.label}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</details>

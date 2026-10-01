@@ -1022,3 +1022,26 @@ test.describe("Hero panel layout (v2 vertical footage)", () => {
     expect(box.width).toBeGreaterThanOrEqual(374);
   });
 });
+
+test.describe("Site credit", () => {
+  test("agency credit is collapsed by default and reveals contact on click", async ({ page }) => {
+    await page.goto("/");
+    const credit = page.locator("footer details").filter({ hasText: "KiTS" });
+    const whatsapp = credit.getByRole("link", { name: /WhatsApp/ });
+    await expect(credit).not.toHaveAttribute("open", "");
+    await expect(whatsapp).toBeHidden();
+
+    await credit.locator("summary").click();
+    await expect(whatsapp).toBeVisible();
+    await expect(whatsapp).toHaveAttribute("href", "https://wa.me/96181290662");
+    await expect(credit.getByRole("link", { name: "kits.tech.co@gmail.com" })).toHaveAttribute(
+      "href",
+      "mailto:kits.tech.co@gmail.com",
+    );
+  });
+
+  test("credit is translated on /ar/", async ({ page }) => {
+    await page.goto("/ar/");
+    await expect(page.locator("footer summary").filter({ hasText: "KiTS" })).toContainText("تصميم وتطوير وصيانة");
+  });
+});
