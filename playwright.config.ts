@@ -1,7 +1,8 @@
 import { defineConfig, devices } from "@playwright/test";
 
-// Override to dodge a busy 4321: `PORT=4399 npm run test:e2e`.
-const PORT = Number(process.env.PORT ?? 4321);
+// Deliberately not Astro's 4321: with reuseExistingServer, a running `astro dev` there would be
+// tested instead of dist/ (dev toolbar and all). Override with `PORT=… npm run test:e2e`.
+const PORT = Number(process.env.PORT ?? 4399);
 
 export default defineConfig({
   testDir: "./tests",

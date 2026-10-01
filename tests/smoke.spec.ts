@@ -971,19 +971,24 @@ test.describe("Welcome loader", () => {
       Math.max(0, 5100 - (await sinceNavigation(page))),
     );
     await page.mouse.wheel(0, 100);
-    await expect(loader(page)).toHaveCount(0, { timeout: 2500 });
+    await expect(loader(page)).toHaveAttribute("data-state", "out", {
+      timeout: 1000,
+    });
+    // Removal follows the 1.25 s CSS exit on a timer; leave headroom for parallel workers.
+    await expect(loader(page)).toHaveCount(0, { timeout: 6000 });
   });
 
   test("Skip dismisses it at any time", async ({ page }) => {
     await page.goto("/");
     await loader(page).getByRole("button").click();
     await expect(loader(page)).toHaveAttribute("data-state", "out");
-    await expect(loader(page)).toHaveCount(0, { timeout: 2000 });
+    await expect(loader(page)).toHaveCount(0, { timeout: 6000 });
   });
 
   test("is shown once per session", async ({ page }) => {
     await page.goto("/");
-    await expect(loader(page)).toHaveCount(0, { timeout: 11000 });
+    // Only waits out the first visit (8 s cap + 1.25 s exit); the cap itself is tested above.
+    await expect(loader(page)).toHaveCount(0, { timeout: 15000 });
     await page.goto("/fr/");
     await expect(page.locator("html")).not.toHaveAttribute(
       "data-welcome",

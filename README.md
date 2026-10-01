@@ -104,8 +104,9 @@ maths `src/scripts/hero-math.ts`; the file names predate the switch from scroll-
   (writes to `public/images/hero/v1/`). That master lives outside the repo as
   `horse-hero/assets/horse-river-original.mp4` in the client's working copy.
 - **Tests:** `npm run test:unit` (hero maths), `npm run test:e2e` (hero smoke tests in `tests/smoke.spec.ts`).
-  If port 4321 is busy (e.g. a running `astro dev`), use `PORT=4399 npm run test:e2e` — the
-  Playwright config builds and serves `dist/` on that port instead.
+  The e2e suite builds and serves `dist/` on port 4399 (override with `PORT=…`), not Astro's
+  4321, because Playwright reuses whatever already answers on its port — a running `astro dev`
+  there would be tested instead of the production build.
 - **Capability gate:** `prefers-reduced-motion`, Save-Data, a 2g effective connection, or
   `deviceMemory < 4` get the static hero (poster + Act I, no video request); everyone else gets
   play mode. A "3g" estimate is *not* excluded — Chrome reports it for any RTT over ~270 ms, which
