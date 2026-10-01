@@ -5,16 +5,19 @@ interface Props {
   horse?: Horse;
   comingSoonLabel?: string;
   class?: string;
+  /** h2 when the card sits directly under the page's h1 (/horses/), h3 under a section h2. */
+  headingLevel?: 2 | 3;
 }
 
-const { horse, comingSoonLabel, class: className = "" } = Astro.props;
+const { horse, comingSoonLabel, class: className = "", headingLevel = 3 } = Astro.props;
+const Heading = headingLevel === 2 ? "h2" : "h3";
 ---
 
 {
   horse ? (
     <article class:list={["card flex flex-col gap-2 p-5", className]}>
       <div class="aspect-[4/5] rounded-xl bg-cedar-soft/20" />
-      <h3 class="font-display text-lg font-semibold text-cedar-deep">{horse.name}</h3>
+      <Heading class="font-display text-lg font-semibold text-cedar-deep">{horse.name}</Heading>
       {horse.personality && <p class="text-sm text-ink/80">{horse.personality}</p>}
     </article>
   ) : (

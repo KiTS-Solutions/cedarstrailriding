@@ -37,7 +37,7 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
 
   {
     !web3formsKey && (
-      <p class="rounded-lg bg-terracotta/10 p-3 text-sm text-terracotta col-span-2" role="note">
+      <p class="rounded-lg bg-terracotta/10 p-3 text-sm text-terracotta-deep col-span-2" role="note">
         Booking form is running without a Web3Forms access key yet (PUBLIC_WEB3FORMS_ACCESS_KEY) —
         submissions won't be delivered until it's set in .env.
       </p>
@@ -117,7 +117,7 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
     <span>{t("form.consent")}</span>
   </label>
 
-  <p class="form-note col-span-2 text-xs text-ink/60">{t("form.disclaimer")}</p>
+  <p class="form-note col-span-2 text-xs text-ink/70">{t("form.disclaimer")}</p>
 
   <button type="submit" class="btn-primary col-span-2 min-h-12 sm:w-fit">
     {t("form.send")}

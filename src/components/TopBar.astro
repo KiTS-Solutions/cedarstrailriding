@@ -28,25 +28,25 @@ const phone = contact.phones[0] ?? "";
     <div data-topbar class="hidden bg-cedar-deep text-warm-white lg:block">
       <div class="mx-auto flex max-w-7xl items-center justify-between gap-6 px-6 py-2 text-xs">
         <p class="flex items-center gap-1.5 text-warm-white/85">
-          <Icon name="pin" class="size-3.5 shrink-0 text-gold" />
+          <Icon name="pin" class="size-3.5 shrink-0 text-gold-bright" />
           {t("contact.basedIn")} · {t("contact.operate")}
         </p>
         <ul class="flex items-center gap-5">
           <li>
             <a
               href={`tel:${phone.replace(/\s+/g, "")}`}
-              class="inline-flex items-center gap-1.5 text-warm-white/85 transition-colors hover:text-gold"
+              class="inline-flex items-center gap-1.5 text-warm-white/85 transition-colors hover:text-gold-bright"
             >
-              <Icon name="phone" class="size-3.5 text-gold" />
+              <Icon name="phone" class="size-3.5 text-gold-bright" />
               <bdi dir="ltr">{phone}</bdi>
             </a>
           </li>
           <li>
             <a
               href={`mailto:${contact.email}`}
-              class="inline-flex items-center gap-1.5 text-warm-white/85 transition-colors hover:text-gold"
+              class="inline-flex items-center gap-1.5 text-warm-white/85 transition-colors hover:text-gold-bright"
             >
-              <Icon name="mail" class="size-3.5 text-gold" />
+              <Icon name="mail" class="size-3.5 text-gold-bright" />
               {contact.email}
             </a>
           </li>

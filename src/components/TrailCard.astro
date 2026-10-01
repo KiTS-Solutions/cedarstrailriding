@@ -5,9 +5,12 @@ import type { Trail } from "../data/trails";
 interface Props {
   trail: Trail;
   locale: Locale;
+  /** h2 when the card sits directly under the page's h1 (/trails/), h3 under a section h2. */
+  headingLevel?: 2 | 3;
 }
 
-const { trail, locale } = Astro.props;
+const { trail, locale, headingLevel = 3 } = Astro.props;
+const Heading = headingLevel === 2 ? "h2" : "h3";
 const t = useTranslations(locale);
 
 const chipKey: Record<NonNullable<Trail["difficulty"]>, { label: string; class: string }> = {
@@ -25,7 +28,7 @@ const durationText = trail.duration ? (t(durationKey) !== durationKey ? t(durati
 
 <article class="card flex flex-col gap-3 p-5">
   <div class="flex items-center justify-between gap-2">
-    <h3 class="font-display text-lg font-semibold text-cedar-deep">{trail.name}</h3>
+    <Heading class="font-display text-lg font-semibold text-cedar-deep">{trail.name}</Heading>
     {trail.feature && <span class="chip bg-gold/20 text-cedar-deep">{t("chip.feature")}</span>}
   </div>
   {chip && <span class={chip.class}>{chip.label}</span>}

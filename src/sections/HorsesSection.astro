@@ -18,7 +18,7 @@ const horseSlots = horses.length > 0 ? horses : Array.from({ length: HORSE_PLACE
 
   <div class="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
     {horseSlots.map((horse, i) => (
-        <HorseCard horse={horse} comingSoonLabel={t("horses.comingSoon")} class={!horse && i > 0 ? "max-sm:hidden" : ""} />
+        <HorseCard horse={horse} headingLevel={2} comingSoonLabel={t("horses.comingSoon")} class={!horse && i > 0 ? "max-sm:hidden" : ""} />
       ))}
   </div>
 </section>
