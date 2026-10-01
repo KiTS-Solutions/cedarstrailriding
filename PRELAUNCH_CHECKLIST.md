@@ -6,7 +6,10 @@ and `brief/06_open_questions.md`). None of it blocks development or a staging de
 it should be resolved before the site goes live publicly.
 
 ## Credentials (site won't fully function without these)
-- [ ] `PUBLIC_WEB3FORMS_ACCESS_KEY` — create a free Web3Forms account, get the key. Until set,
+- [x] `PUBLIC_WEB3FORMS_ACCESS_KEY` — done 2026-10-02: Web3Forms form created under
+      `info@cedarstrailriding.com`; key set as repo variable; test booking from the Pages demo
+      arrived in the `admin@` inbox (not spam). Vercel copy of the key still pending — see Hosting.
+      Original note: create a free Web3Forms account, get the key. Until set,
       the booking form shows a visible dev-mode notice instead of delivering submissions.
       Register it to `info@cedarstrailriding.com` (HostGator alias forwarding to
       `admin@cedarstrailriding.com` — the key and every booking land in the admin mailbox).
@@ -146,7 +149,7 @@ it should be resolved before the site goes live publicly.
 - [ ] Install/authorize the Vercel GitHub app for `KiTS-Solutions`, then Project Settings -> Git -> connect the repo (or run `vercel login` locally and `vercel deploy`).
 - [ ] Set env vars in Vercel (Production + Preview): `PUBLIC_WEB3FORMS_ACCESS_KEY`, `PUBLIC_GA4_ID`, `PUBLIC_META_PIXEL_ID`, `PUBLIC_TURNSTILE_SITE_KEY`.
 - [ ] Attach `cedarstrailriding.com` once DNS access is confirmed; the project has Vercel Auth (SSO) protection on by default, so disable it for public launch.
-- [ ] `info@cedarstrailriding.com` exists in HostGator cPanel as a forwarder to
+- [x] (confirmed 2026-10-02 via the Web3Forms test booking) `info@cedarstrailriding.com` exists in HostGator cPanel as a forwarder to
       `admin@cedarstrailriding.com`, and a test email from an outside address (e.g. Gmail) arrives.
 - [ ] DNS stays at HostGator (site on Vercel, email on HostGator). In HostGator's zone editor change
       **only** the apex `A` record and the `www` `CNAME` to the values Vercel shows when the domain is
