@@ -1,10 +1,16 @@
 # Demo deployment to GitHub Pages (pre-production preview). Production stays on Vercel.
 # Demo builds are noindex/nofollow and use the github.io URL for canonicals.
+#
+# One Pages site per repo, and every deploy replaces the whole site, so each run builds BOTH:
+#   /cedarstrailriding/      <- main         (the approved v1 site)
+#   /cedarstrailriding/v2/   <- redesign/v2  (the redesign preview for the client, if the branch exists)
+# A push to either branch redeploys both, so neither can wipe the other. Keep this file identical
+# on main and redesign/v2. The github-pages environment allows deploys from both branches.
 name: Deploy demo to GitHub Pages
 
 on:
   push:
-    branches: [main]
+    branches: [main, redesign/v2]
   workflow_dispatch:
 
 permissions:
@@ -16,27 +22,57 @@ concurrency:
   group: pages
   cancel-in-progress: true
 
+env:
+  SITE_ORIGIN: https://kits-solutions.github.io
+  PUBLIC_NOINDEX: "true"
+  # Repo variable (Settings -> Secrets and variables -> Actions -> Variables). Public by
+  # design (it ships in the HTML); unset = form shows its dev-mode notice instead.
+  PUBLIC_WEB3FORMS_ACCESS_KEY: ${{ vars.PUBLIC_WEB3FORMS_ACCESS_KEY }}
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: main
+          path: v1
+      - id: v2
+        uses: actions/checkout@v4
+        continue-on-error: true # branch may not exist (before the redesign starts / after it merges)
+        with:
+          ref: redesign/v2
+          path: v2
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
-      - run: npm ci
-      - run: npm run build
+          cache-dependency-path: |
+            v1/package-lock.json
+            v2/package-lock.json
+
+      - name: Build v1 (main)
+        working-directory: v1
         env:
-          SITE_ORIGIN: https://kits-solutions.github.io
           SITE_BASE: /cedarstrailriding
-          PUBLIC_NOINDEX: "true"
-          # Repo variable (Settings -> Secrets and variables -> Actions -> Variables). Public by
-          # design (it ships in the HTML); unset = form shows its dev-mode notice instead.
-          PUBLIC_WEB3FORMS_ACCESS_KEY: ${{ vars.PUBLIC_WEB3FORMS_ACCESS_KEY }}
+        run: npm ci && npm run build
+
+      - name: Build v2 (redesign/v2)
+        if: steps.v2.outcome == 'success'
+        working-directory: v2
+        env:
+          SITE_BASE: /cedarstrailriding/v2
+        run: npm ci && npm run build
+
+      - name: Nest v2 under /v2/
+        if: steps.v2.outcome == 'success'
+        run: |
+          rm -rf v1/dist/v2
+          cp -r v2/dist v1/dist/v2
+
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: dist
+          path: v1/dist
 
   deploy:
     needs: build
