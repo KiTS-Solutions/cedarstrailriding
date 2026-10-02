@@ -1,6 +1,8 @@
 ---
 import { useTranslations, withBase, type Locale } from "../i18n";
-import { galleryImages, galleryPlaceholders } from "../data/gallery";
+import { galleryImages } from "../data/gallery";
+import { logoMarkSrc } from "../data/siteSettings";
+import PageBand from "../components/PageBand.astro";
 
 interface Props {
   locale: Locale;
@@ -10,29 +12,50 @@ const { locale } = Astro.props;
 const t = useTranslations(locale);
 ---
 
-<section class="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16">
-  <h1 class="text-center font-display text-4xl font-semibold text-cedar-deep">{t("gallery.heading")}</h1>
-  <p class="mx-auto mt-4 max-w-2xl text-center text-ink/80">{t("gallery.intro")}</p>
+<PageBand
+  locale={locale}
+  title={t("gallery.heading")}
+  crumb={t("nav.gallery")}
+  lead={t("gallery.intro")}
+  media={{ poster: "/images/hero/v2/poster-hd.webp" }}
+/>
 
-  <div class="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
+<section class="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16">
+  {/* Masonry via CSS columns: portrait stills and landscape photos keep their own aspect. */}
+  <ul class="columns-2 gap-3 sm:gap-4 md:columns-3" role="list">
     {
       galleryImages.map((image) => (
-        <img
-          src={withBase(image.src)}
-          alt={image.alt}
-          width="1440"
-          height="960"
-          loading="lazy"
-          class="aspect-square w-full rounded-xl object-cover"
-        />
+        <li class="mb-3 break-inside-avoid sm:mb-4">
+          <figure class="overflow-hidden rounded-2xl bg-cedar-deep">
+            <img
+              src={withBase(image.src)}
+              alt={t(image.altKey)}
+              width={image.width}
+              height={image.height}
+              loading="lazy"
+              decoding="async"
+              class="h-auto w-full"
+              data-gallery-image
+            />
+          </figure>
+        </li>
       ))
     }
-    {
-      galleryPlaceholders.map((placeholder) => (
-        <div class="flex aspect-square w-full items-center justify-center rounded-xl border-2 border-dashed border-cedar-soft/30 bg-sand p-3 text-center text-xs font-medium text-cedar-soft">
-          {placeholder.label}
-        </div>
-      ))
-    }
-  </div>
+    <li class="mb-3 break-inside-avoid sm:mb-4">
+      <div class="topo-bg flex aspect-[4/5] flex-col items-center justify-center gap-4 rounded-2xl bg-sand p-6 text-center text-cedar-deep">
+        <span class="soon-mark size-12 text-gold-deep" style={`--src: url(${withBase(logoMarkSrc)})`} aria-hidden="true"></span>
+        <span class="gold-rule mx-auto"></span>
+        <p class="max-w-[16ch] text-sm font-medium text-cedar-soft">{t("gallery.soon")}</p>
+      </div>
+    </li>
+  </ul>
 </section>
+
+<style>
+  .soon-mark {
+    display: block;
+    background-color: currentColor;
+    -webkit-mask: var(--src) center / contain no-repeat;
+    mask: var(--src) center / contain no-repeat;
+  }
+</style>

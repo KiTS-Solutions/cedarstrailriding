@@ -10,6 +10,8 @@ interface Props {
   heroCta?: string;
   /** Render just the WhatsApp glyph (label kept as the accessible name and tooltip), unstyled so the caller sizes it. */
   iconOnly?: boolean;
+  /** "button" (default): gold pill. "link": inline text link with the glyph and an arrow (cards). */
+  variant?: "button" | "link";
 }
 
 const {
@@ -18,7 +20,9 @@ const {
   class: className = "",
   heroCta,
   iconOnly = false,
+  variant = "button",
 } = Astro.props;
+const isLink = !iconOnly && variant === "link";
 
 const phoneDigits = contact.whatsapp.replace(/[^0-9]/g, "");
 const href = `https://wa.me/${phoneDigits}?text=${encodeURIComponent(message)}`;
@@ -30,10 +34,24 @@ const href = `https://wa.me/${phoneDigits}?text=${encodeURIComponent(message)}`;
   rel="noopener noreferrer"
   data-hero-cta={heroCta}
   title={iconOnly ? label : undefined}
-  class:list={[!iconOnly && "btn-primary", className]}
+  class:list={[
+    !iconOnly && !isLink && "btn-primary",
+    isLink &&
+      "group/wa inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-cedar-deep underline-offset-4 hover:underline",
+    className,
+  ]}
 >
   {
-    iconOnly ? (
+    isLink ? (
+      <>
+        <Icon name="whatsapp" class="size-4 text-cedar-soft" />
+        <span>{label}</span>
+        <Icon
+          name="arrow"
+          class="size-4 transition-transform duration-200 group-hover/wa:translate-x-0.5 rtl:-scale-x-100 rtl:group-hover/wa:-translate-x-0.5"
+        />
+      </>
+    ) : iconOnly ? (
       <>
         <Icon name="whatsapp" class="size-5" />
         <span class="sr-only">{label}</span>

@@ -100,6 +100,12 @@ backend, deployed to Vercel. Full context: `brief/README.md` and `brief/HANDOFF.
   sign-off. Client preview: GitHub Pages at `/cedarstrailriding/v2/` — `pages.yml` builds `main`
   at the root and `redesign/v2` under `/v2/` on every push to either (keep that workflow identical
   on both branches). Vercel stays dormant until a client-owned account exists.
+- **Inner page tops:** `src/components/PageBand.astro` on every inner page (breadcrumb, h1, gold rule,
+  lead) over a blurred v2 backdrop, with a sharp 9:16 panel on md+ (video loop or still). The clip
+  never loads on phones (panel hidden). Footage per page: trails=gallop, treks=ridge, groups=group,
+  about/contact=flag; horses/gallery/faq use stills. Swap in client photos via `media.poster`.
+- **Trail cards** (`TrailCard.astro`): until per-trail photos exist, a ridge silhouette generated
+  from the trail id (a drawing, never another trail's photo); `trail.image` replaces it when set.
 - **Hero:** src/components/ScrollHero.astro + src/scripts/{scroll-hero,hero-fx,hero-math}.ts — one-screen autoplaying video loop (acts cross-fade with the footage, pause button, rail jumps) with static fallback; the names predate the switch from scroll-scrubbing. Footage variant is `HERO_VARIANT` in `src/data/heroMedia.ts`: **v2** (live) = CTR's own vertical footage, portrait-panel layout on wide screens; **v1** = the old AI-generated landscape clip, kept as a fallback (git tag `hero-v1`). The v2 master (`horse-hero-v2/*.MOV`, git-ignored, ~150 MB) also feeds the `AmbientVideo.astro` / `AmbientBackdrop.astro` loops (the first-visit WelcomeLoader was removed in the redesign) — regenerate everything with `scripts/encode-hero-v2.sh`. See README.md § Hero.
 
 ## Non-negotiables

@@ -18,13 +18,23 @@ interface Props {
   video?: string;
   /** "side" darkens the inline-start text column most; "even" suits centered copy. */
   scrim?: "side" | "even";
+  /** Above the fold (page bands): the blurred poster is a large image, so it's an LCP candidate. */
+  eager?: boolean;
 }
 
-const { poster, video, scrim = "side" } = Astro.props;
+const { poster, video, scrim = "side", eager = false } = Astro.props;
 ---
 
 <div class="ambient-backdrop" aria-hidden="true">
-  <img src={withBase(poster)} alt="" width="54" height="96" loading="lazy" decoding="async" />
+  <img
+    src={withBase(poster)}
+    alt=""
+    width="54"
+    height="96"
+    loading={eager ? "eager" : "lazy"}
+    fetchpriority={eager ? "high" : undefined}
+    decoding="async"
+  />
   {
     video ? (
       <video

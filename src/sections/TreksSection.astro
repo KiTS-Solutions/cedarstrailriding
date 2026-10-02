@@ -2,8 +2,8 @@
 import { useTranslations, path, type Locale } from "../i18n";
 import { trails } from "../data/trails";
 import TrailCard from "../components/TrailCard.astro";
-import AmbientVideo from "../components/AmbientVideo.astro";
-import AmbientBackdrop from "../components/AmbientBackdrop.astro";
+import PageBand from "../components/PageBand.astro";
+import WhatsAppButton from "../components/WhatsAppButton.astro";
 import { v2Clips } from "../data/heroMedia";
 
 interface Props {
@@ -15,35 +15,30 @@ const t = useTranslations(locale);
 const multiDayTrails = trails.filter((trail) => trail.duration);
 ---
 
-<section
-  class="relative isolate overflow-hidden bg-cedar-deep px-4 py-16 text-warm-white sm:px-6"
-  data-ambient-scope
->
-  <AmbientBackdrop poster={v2Clips.ridge.poster} />
-  <div class="mx-auto grid max-w-5xl items-center gap-10 md:grid-cols-[1fr_auto]">
-    <div class="text-center md:text-start">
-      <h1 class="font-display text-4xl font-semibold">{t("home.treksHeading")}</h1>
-      <p class="mt-4">{t("home.treksLead")}</p>
-    </div>
-    <AmbientVideo
-      video={v2Clips.ridge.video}
-      poster={v2Clips.ridge.poster}
-      class="mx-auto aspect-[4/5] w-full max-w-sm rounded-2xl shadow-2xl md:aspect-[9/16] md:w-72"
-    />
-  </div>
-</section>
+<PageBand
+  locale={locale}
+  title={t("home.treksHeading")}
+  crumb={t("nav.treks")}
+  lead={t("home.treksLead")}
+  media={v2Clips.ridge}
+  transitionName="pathway-treks"
+/>
 
-<section class="mx-auto max-w-4xl px-4 py-12 sm:px-6 sm:py-16">
-  <article class="card p-8">
-    <h2 class="font-display text-2xl font-semibold text-cedar-deep">{t("treks.feature.title")}</h2>
-    <p class="mt-3 text-ink/80">{t("treks.feature.body")}</p>
+<section class="mx-auto max-w-5xl px-4 py-12 sm:px-6 sm:py-16">
+  <article class="card topo-bg grid gap-6 overflow-hidden p-8 text-cedar-deep sm:p-10 md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
+    <div>
+      <h2 class="font-display text-h2 font-semibold">{t("treks.feature.title")}</h2>
+      <span class="gold-rule mt-5"></span>
+      <p class="mt-5 max-w-xl text-ink/80">{t("treks.feature.body")}</p>
+    </div>
+    <WhatsAppButton label={t("cta.whatsapp")} message={t("trail.askMessage").replace("{trail}", t("treks.feature.title"))} />
   </article>
 
   <div class="mt-8 grid gap-6 sm:grid-cols-2">
     {multiDayTrails.map((trail) => <TrailCard trail={trail} locale={locale} />)}
   </div>
 
-  <div class="mt-8 rounded-2xl bg-sand p-6 text-sm text-ink/80">
+  <div class="mt-8 rounded-2xl border border-gold/40 bg-warm-white p-6 text-sm text-ink/80">
     <p class="font-semibold text-cedar-deep">{t("treks.inclusions")}</p>
     <p class="mt-2">{t("treks.inclusionsPending")}</p>
   </div>

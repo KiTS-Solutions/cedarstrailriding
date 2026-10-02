@@ -1,7 +1,7 @@
 ---
 import { useTranslations, path, type Locale } from "../i18n";
 import ExperienceCard from "../components/ExperienceCard.astro";
-import AmbientVideo from "../components/AmbientVideo.astro";
+import PageBand from "../components/PageBand.astro";
 import { v2Clips } from "../data/heroMedia";
 
 interface Props {
@@ -12,20 +12,20 @@ const { locale } = Astro.props;
 const t = useTranslations(locale);
 ---
 
-<section class="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16">
-  <h1 class="text-center font-display text-4xl font-semibold text-cedar-deep">{t("home.groupsHeading")}</h1>
+<PageBand
+  locale={locale}
+  title={t("home.groupsHeading")}
+  crumb={t("nav.groups")}
+  lead={t("nav.groupsDesc")}
+  media={v2Clips.group}
+  transitionName="pathway-groups"
+/>
 
-  <div class="mt-10 grid items-center gap-6 md:grid-cols-[18rem_1fr] md:gap-10">
-    <AmbientVideo
-      video={v2Clips.group.video}
-      poster={v2Clips.group.poster}
-      class="mx-auto aspect-[4/5] w-full max-w-sm rounded-2xl md:aspect-[9/16] md:w-72"
-    />
-    <div class="grid gap-6 sm:grid-cols-3 md:grid-cols-1">
-      <ExperienceCard name={t("groups.hiking")} audience={t("groups.hikingNote")} />
-      <ExperienceCard name={t("groups.business")} audience={t("groups.businessNote")} />
-      <ExperienceCard name={t("groups.custom")} audience="" />
-    </div>
+<section class="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16">
+  <div class="grid gap-6 sm:grid-cols-3">
+    <ExperienceCard index={1} name={t("groups.hiking")} audience={t("groups.hikingNote")} />
+    <ExperienceCard index={2} name={t("groups.business")} audience={t("groups.businessNote")} />
+    <ExperienceCard index={3} name={t("groups.custom")} />
   </div>
 
   <div class="mt-10 text-center">

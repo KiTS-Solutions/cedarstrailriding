@@ -11,9 +11,11 @@ interface Props {
   poster: string;
   /** Sizing/shape classes for the frame (aspect ratio, width, radius). */
   class?: string;
+  /** Above the fold (page bands): load the poster eagerly so it can't delay LCP. */
+  eager?: boolean;
 }
 
-const { video, poster, class: className = "" } = Astro.props;
+const { video, poster, class: className = "", eager = false } = Astro.props;
 ---
 
 <div class:list={["relative overflow-hidden bg-cedar-deep", className]} aria-hidden="true">
@@ -23,7 +25,7 @@ const { video, poster, class: className = "" } = Astro.props;
     alt=""
     width="540"
     height="960"
-    loading="lazy"
+    loading={eager ? "eager" : "lazy"}
     decoding="async"
     data-ambient-poster
   />

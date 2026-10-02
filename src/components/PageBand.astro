@@ -1,0 +1,101 @@
+---
+// Cinematic top band for inner pages: the same visual language as the home hero, at ~half the
+// height. A softened, darkened full-bleed backdrop carries the copy (breadcrumb, h1, gold rule,
+// lead); on md+ a sharp portrait panel shows the footage at its native 9:16 (the v2 masters are
+// vertical, so they can't be shown sharp full-bleed without upscaling).
+//
+// - `media.video` set: the panel is an AmbientVideo loop and the backdrop mirrors its frames
+//   (one clip fetch and decode). On phones the panel is hidden, so the clip never loads and the
+//   blurred poster stands alone: no video data on mobile.
+// - No video: a still poster panel over the same blurred backdrop.
+//
+// Swap in client photos later by passing a photo as `media.poster` (any aspect works: the panel
+// crops to 9:16).
+import { path, useTranslations, withBase, type Locale } from "../i18n";
+import AmbientVideo from "./AmbientVideo.astro";
+import AmbientBackdrop from "./AmbientBackdrop.astro";
+
+interface Props {
+  locale: Locale;
+  title: string;
+  /** Short page name for the breadcrumb (the nav label), e.g. "Trails". */
+  crumb: string;
+  lead?: string;
+  media: { poster: string; video?: string };
+  /** Phase 3 card→page morph: shared with the matching home pathway card's image. */
+  transitionName?: string;
+}
+
+const { locale, title, crumb, lead, media, transitionName } = Astro.props;
+const t = useTranslations(locale);
+const panelStyle = transitionName ? `view-transition-name: ${transitionName}` : undefined;
+// Some headings are "Name · descriptor" (e.g. home.trailsHeading). On a band the name carries
+// the h1 and the descriptor drops to a lighter line inside it, instead of a 4-line headline.
+const [titleMain, ...titleRest] = title.split(" · ");
+const titleSub = titleRest.join(" · ");
+---
+
+<section
+  class="page-band grain relative isolate overflow-hidden bg-cedar-deep text-warm-white"
+  data-ambient-scope
+  data-page-band
+>
+  <AmbientBackdrop poster={media.poster} eager />
+  <div
+    class="relative z-[2] mx-auto grid max-w-6xl items-end gap-10 px-4 pb-12 pt-10 sm:px-6 sm:pb-14 md:grid-cols-[minmax(0,1fr)_auto] md:pt-14 lg:pb-16"
+  >
+    <div class="max-w-2xl">
+      <nav aria-label={t("a11y.breadcrumb")}>
+        <ol class="flex flex-wrap items-center gap-2 text-sm text-warm-white/75">
+          <li>
+            <a href={path("/", locale)} class="underline-offset-4 hover:text-warm-white hover:underline">
+              {t("nav.home")}
+            </a>
+          </li>
+          <li aria-hidden="true" class="text-gold-bright">/</li>
+          <li><span aria-current="page" class="text-warm-white">{crumb}</span></li>
+        </ol>
+      </nav>
+      <h1
+        class="mt-5 font-display text-h1 font-semibold text-balance [text-shadow:0_1px_24px_rgb(28_36_31/0.35)]"
+      >
+        {titleMain}
+        {
+          titleSub && (
+            <span class="mt-3 block font-display text-xl font-normal italic text-warm-white/85 rtl:not-italic sm:text-2xl">
+              {titleSub}
+            </span>
+          )
+        }
+      </h1>
+      <span class="gold-rule mt-6" data-gold-rule></span>
+      {lead && <p dir="auto" class="mt-6 max-w-xl text-base text-warm-white/90 sm:text-lg">{lead}</p>}
+      <slot />
+    </div>
+
+    <div class="hidden md:block" style={panelStyle}>
+      {
+        media.video ? (
+          <AmbientVideo
+            video={media.video}
+            poster={media.poster}
+            eager
+            class="aspect-[9/16] w-44 rounded-2xl shadow-2xl ring-1 ring-warm-white/15 lg:w-52"
+          />
+        ) : (
+          <div class="aspect-[9/16] w-44 overflow-hidden rounded-2xl bg-cedar-deep shadow-2xl ring-1 ring-warm-white/15 lg:w-52">
+            <img
+              src={withBase(media.poster)}
+              alt=""
+              width="540"
+              height="960"
+              loading="eager"
+              decoding="async"
+              class="h-full w-full object-cover"
+            />
+          </div>
+        )
+      }
+    </div>
+  </div>
+</section>

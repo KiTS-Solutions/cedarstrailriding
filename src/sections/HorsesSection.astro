@@ -2,6 +2,8 @@
 import { useTranslations, type Locale } from "../i18n";
 import { horses, HORSE_PLACEHOLDER_COUNT } from "../data/horses";
 import HorseCard from "../components/HorseCard.astro";
+import PageBand from "../components/PageBand.astro";
+import { v2Clips } from "../data/heroMedia";
 
 interface Props {
   locale: Locale;
@@ -12,11 +14,16 @@ const t = useTranslations(locale);
 const horseSlots = horses.length > 0 ? horses : Array.from({ length: HORSE_PLACEHOLDER_COUNT }, () => undefined);
 ---
 
-<section class="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16 text-center">
-  <h1 class="font-display text-4xl font-semibold text-cedar-deep">{t("home.horsesHeading")}</h1>
-  <p class="mx-auto mt-4 max-w-2xl text-ink/80">{t("home.horsesIntro")}</p>
+<PageBand
+  locale={locale}
+  title={t("home.horsesHeading")}
+  crumb={t("nav.horsesShort")}
+  lead={t("home.horsesIntro")}
+  media={{ poster: v2Clips.group.poster }}
+/>
 
-  <div class="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+<section class="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16 text-center">
+  <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
     {horseSlots.map((horse, i) => (
         <HorseCard horse={horse} headingLevel={2} comingSoonLabel={t("horses.comingSoon")} class={!horse && i > 0 ? "max-sm:hidden" : ""} />
       ))}

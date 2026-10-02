@@ -1,13 +1,20 @@
 ---
 interface Props {
   name: string;
-  audience: string;
+  audience?: string;
+  /** Position in its list, shown as a small "01" index above the title. */
+  index?: number;
+  /** h2 when the card sits directly under the page's h1 (/groups/), h3 under a section h2. */
+  headingLevel?: 2 | 3;
 }
 
-const { name, audience } = Astro.props;
+const { name, audience, index, headingLevel = 2 } = Astro.props;
+const Heading = headingLevel === 2 ? "h2" : "h3";
 ---
 
-<article class="card flex flex-col gap-2 p-5">
-  <h2 class="font-display text-lg font-semibold text-cedar-deep">{name}</h2>
+<article class="card flex h-full flex-col gap-3 p-6">
+  {index !== undefined && <span class="font-display text-sm font-semibold text-gold-deep">{String(index).padStart(2, "0")}</span>}
+  <Heading class="font-display text-xl font-semibold text-cedar-deep">{name}</Heading>
+  <span class="gold-rule"></span>
   {audience && <p class="text-sm text-ink/80">{audience}</p>}
 </article>

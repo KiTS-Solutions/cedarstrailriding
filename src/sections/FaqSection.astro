@@ -2,6 +2,8 @@
 import { useTranslations, type Locale } from "../i18n";
 import { faqItems } from "../data/faq";
 import FaqAccordion from "../components/FaqAccordion.astro";
+import PageBand from "../components/PageBand.astro";
+import { v2Clips } from "../data/heroMedia";
 
 interface Props {
   locale: Locale;
@@ -19,9 +21,16 @@ const items = faqItems.map((_, index) => {
 });
 ---
 
+<PageBand
+  locale={locale}
+  title={t("faq.heading")}
+  crumb={t("nav.faq")}
+  lead={t("nav.faqDesc")}
+  media={{ poster: v2Clips.ridge.poster }}
+/>
+
 <section class="mx-auto max-w-3xl px-4 py-12 sm:px-6 sm:py-16">
-  <h1 class="text-center font-display text-4xl font-semibold text-cedar-deep">{t("faq.heading")}</h1>
-  <div class="mt-10">
+  <div>
     <FaqAccordion items={items} />
   </div>
 </section>
