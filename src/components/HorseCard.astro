@@ -1,5 +1,7 @@
 ---
 import type { Horse } from "../data/horses";
+import { withBase } from "../i18n";
+import { logoMarkSrc } from "../data/siteSettings";
 
 interface Props {
   horse?: Horse;
@@ -15,15 +17,47 @@ const Heading = headingLevel === 2 ? "h2" : "h3";
 
 {
   horse ? (
-    <article class:list={["card flex flex-col gap-2 p-5", className]}>
-      <div class="aspect-[4/5] rounded-xl bg-cedar-soft/20" />
-      <Heading class="font-display text-lg font-semibold text-cedar-deep">{horse.name}</Heading>
-      {horse.personality && <p class="text-sm text-ink/80">{horse.personality}</p>}
+    <article class:list={["card flex flex-col overflow-hidden", className]}>
+      <div class="aspect-[4/5] bg-cedar-soft/20">
+        {horse.image && (
+          <img
+            src={withBase(horse.image)}
+            alt=""
+            width="480"
+            height="600"
+            loading="lazy"
+            decoding="async"
+            class="h-full w-full object-cover"
+          />
+        )}
+      </div>
+      <div class="flex flex-col gap-2 p-5">
+        <Heading class="font-display text-xl font-semibold text-cedar-deep">{horse.name}</Heading>
+        {horse.personality && <p class="text-sm text-ink/80">{horse.personality}</p>}
+      </div>
     </article>
   ) : (
-    <article class:list={["card flex flex-col items-center justify-center gap-2 p-5 text-center", className]}>
-      <div class="aspect-[16/9] w-full rounded-xl bg-cedar-soft/10 sm:aspect-[4/5]" />
+    // Portrait not supplied yet (no names invented — brief/06_open_questions.md item 14): a
+    // designed slot with the brand's own horse mark instead of an empty grey box.
+    <article
+      class:list={["card topo-bg flex flex-col items-center justify-center gap-4 p-6 text-center text-cedar-deep", className]}
+    >
+      <div class="flex aspect-[16/9] w-full items-center justify-center sm:aspect-[4/5]">
+        <span class="grid size-28 place-items-center rounded-full ring-1 ring-gold/50 sm:size-32">
+          <span class="horse-mark size-16 text-gold-deep sm:size-20" style={`--src: url(${withBase(logoMarkSrc)})`} aria-hidden="true" />
+        </span>
+      </div>
+      <span class="gold-rule mx-auto"></span>
       <p class="text-sm font-medium text-cedar-soft">{comingSoonLabel}</p>
     </article>
   )
 }
+
+<style>
+  .horse-mark {
+    display: block;
+    background-color: currentColor;
+    -webkit-mask: var(--src) center / contain no-repeat;
+    mask: var(--src) center / contain no-repeat;
+  }
+</style>

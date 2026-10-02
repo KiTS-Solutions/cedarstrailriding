@@ -2,6 +2,8 @@
 import { useTranslations, path, type Locale } from "../i18n";
 import { trails } from "../data/trails";
 import TrailCard from "../components/TrailCard.astro";
+import PageBand from "../components/PageBand.astro";
+import { v2Clips } from "../data/heroMedia";
 
 interface Props {
   locale: Locale;
@@ -11,11 +13,17 @@ const { locale } = Astro.props;
 const t = useTranslations(locale);
 ---
 
-<section class="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16">
-  <h1 class="text-center font-display text-4xl font-semibold text-cedar-deep">{t("home.trailsHeading")}</h1>
-  <p dir="auto" class="mx-auto mt-4 max-w-2xl text-center text-ink/80">{t("trails.intro")}</p>
+<PageBand
+  locale={locale}
+  title={t("home.trailsHeading")}
+  crumb={t("nav.trails")}
+  lead={t("trails.intro")}
+  media={v2Clips.gallop}
+  transitionName="pathway-trails"
+/>
 
-  <div class="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+<section class="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16">
+  <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
     {trails.map((trail) => <TrailCard trail={trail} locale={locale} headingLevel={2} />)}
   </div>
 

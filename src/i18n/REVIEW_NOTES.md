@@ -57,3 +57,15 @@ files as the client approves more translated copy.
   wording); `horsesDesc` is the mobile-drawer line, trimmed from the approved `home.horsesIntro`.
   AR/FR `horsesDesc` are drafts.
 - Removed 2026-10-02: `loader.welcome`, `loader.skip` (welcome screen dropped in the redesign).
+- Redesign Phase 2 (EN/AR/FR, 2026-10-03) — **new EN copy needs client sign-off; all AR/FR are drafts**:
+  - `a11y.breadcrumb` (page-band breadcrumb label), `trail.ask`, `trail.askMessage` (per-trail
+    WhatsApp prefill, `{trail}` = trail name), `trail.level`, `trail.duration` (screen-reader labels).
+  - `about.valuesHeading` + `value.<slug>` ×7 — the brief's value list (05_site_facts.json `values`),
+    now translated instead of rendered in English on every locale. "inclusivity" → "Open to everyone",
+    "safety" → "Safety first" (EN wording is new).
+  - `gallery.soon`, `gallery.alt.*` ×8 — alt text moved from `src/data/gallery.ts` into i18n; the 5
+    footage stills are described from the frames themselves.
+  - `contact.mapTitle` — the map iframe title was hard-coded English.
+  - Rewritten (client-facing leaks): `gallery.intro` (said "More imagery is on the way from the
+    client") and `treks.feature.body` (said details were "being finalized with the client").
+

@@ -1150,3 +1150,57 @@ test.describe("Site credit", () => {
     await expect(page.locator("footer summary").filter({ hasText: "KiTS" })).toContainText("تصميم وتطوير وصيانة");
   });
 });
+
+test.describe("Page bands and cards", () => {
+  const innerPages = ["/trails/", "/treks/", "/groups/", "/horses/", "/about/", "/gallery/", "/faq/", "/contact/"];
+
+  for (const route of innerPages) {
+    test(`${route} opens with a page band: breadcrumb + h1`, async ({ page }) => {
+      await page.goto(route);
+      const band = page.locator("[data-page-band]");
+      await expect(band).toHaveCount(1);
+      await expect(band.getByRole("heading", { level: 1 })).toBeVisible();
+      await expect(band.getByRole("navigation", { name: "Breadcrumb" }).getByRole("link", { name: "Home" })).toBeVisible();
+      await expect(page.getByRole("heading", { level: 1 })).toHaveCount(1);
+    });
+  }
+
+  test("band clip stays off phones (panel hidden, no video fetched)", async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 812 });
+    const videos: string[] = [];
+    page.on("request", (r) => r.url().endsWith(".mp4") && videos.push(r.url()));
+    await page.goto("/about/");
+    await page.waitForTimeout(800);
+    expect(videos).toEqual([]);
+  });
+
+  test("trail cards: one per trail, each with a prefilled WhatsApp ask link", async ({ page }) => {
+    await page.goto("/trails/");
+    const cards = page.locator("[data-trail-card]");
+    await expect(cards).toHaveCount(7);
+    const href = await cards.filter({ hasText: "Pine Trail" }).getByRole("link", { name: "Ask about this trail" }).getAttribute("href");
+    expect(href).toMatch(/^https:\/\/wa\.me\/96170211041\?text=/);
+    expect(decodeURIComponent(href!.split("text=")[1])).toContain("Pine Trail");
+  });
+
+  test("no client- or developer-facing copy leaks onto pages", async ({ page }) => {
+    for (const route of ["/treks/", "/gallery/", "/ar/gallery/", "/fr/treks/"]) {
+      await page.goto(route);
+      const text = await page.locator("main").innerText();
+      expect(text, route).not.toMatch(/from the client|with the client|du client|avec le client|PUBLIC_WEB3FORMS/i);
+    }
+  });
+
+  test("gallery alt text is localized on /ar/", async ({ page }) => {
+    await page.goto("/ar/gallery/");
+    const alts = await page.locator("[data-gallery-image]").evaluateAll((imgs) => imgs.map((i) => i.getAttribute("alt") ?? ""));
+    expect(alts.length).toBeGreaterThan(5);
+    for (const alt of alts) expect(alt).toMatch(/[؀-ۿ]/);
+  });
+
+  test("about values are localized on /fr/", async ({ page }) => {
+    await page.goto("/fr/about/");
+    await expect(page.getByRole("listitem").filter({ hasText: "Écotourisme" })).toBeVisible();
+    await expect(page.getByText("eco-tourism", { exact: true })).toHaveCount(0);
+  });
+});

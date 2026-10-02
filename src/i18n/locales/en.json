@@ -91,7 +91,7 @@
   "chip.feature": "Feature",
 
   "treks.feature.title": "The 8-Day Trek",
-  "treks.feature.body": "Route and itinerary details are being finalized with the client — check back soon, or ask us directly on WhatsApp.",
+  "treks.feature.body": "Our signature eight-day crossing of Lebanon's mountains. Ask us on WhatsApp for the route, dates and what's included.",
   "treks.inclusions": "Trained guides · proper gear & helmets · safety briefing before every ride",
   "treks.inclusionsPending": "Meals and lodging details for multi-day treks — coming soon.",
 
@@ -113,7 +113,7 @@
   "about.storyPending": "Founder story — coming soon.",
 
   "gallery.heading": "Gallery",
-  "gallery.intro": "A first look at the trails, the herd, and the mountains. More imagery is on the way from the client.",
+  "gallery.intro": "Moments from the trail: riders, horses and the Shouf mountains through the seasons.",
 
   "faq.heading": "Frequently asked questions",
   "faq.1.q": "Do I need riding experience?",
@@ -180,5 +180,29 @@
   "trail.rocky-trail.descriptor": "Technical terrain for riders who want more.",
   "trail.custom-trails.descriptor": "Create your own full-day or multi-day trek.",
   "trail.marj-bisri-trail.duration": "1 to 3 days",
-  "trail.custom-trails.duration": "Flexible (full day or multi-day)"
+  "trail.custom-trails.duration": "Flexible (full day or multi-day)",
+
+  "a11y.breadcrumb": "Breadcrumb",
+  "trail.ask": "Ask about this trail",
+  "trail.askMessage": "Hello Cedars Trail Riding! I'd like to know more about: {trail}.",
+  "trail.level": "Level",
+  "trail.duration": "Duration",
+  "about.valuesHeading": "What we stand for",
+  "value.eco-tourism": "Eco-tourism",
+  "value.sustainability": "Sustainability",
+  "value.reconnect-with-nature": "Reconnecting with nature",
+  "value.support-local-communities": "Supporting local communities",
+  "value.confidence-through-bond-with-horses": "Confidence through a bond with horses",
+  "value.inclusivity": "Open to everyone",
+  "value.safety": "Safety first",
+  "gallery.soon": "More from the trails this season",
+  "gallery.alt.tripadvisor-01": "Riders on a trail in the Shouf mountains",
+  "gallery.alt.tripadvisor-02": "Guided horseback ride through Lebanon's countryside",
+  "gallery.alt.tripadvisor-03": "Cedars Trail Riding horseback tour",
+  "gallery.alt.flag-sunset": "A rider on a grey horse holds the Lebanese flag at sunset",
+  "gallery.alt.gallop": "A rider carrying the Lebanese flag canters down a mountain track at sunset",
+  "gallery.alt.ridge": "Riders with flags spread out along a ridge track as the sun sets",
+  "gallery.alt.group": "Following a line of riders up a mountain track at dusk",
+  "gallery.alt.aerial": "Aerial view of riders with flags crossing the hills",
+  "contact.mapTitle": "Map: Cedars Trail Riding, Samqaniyeh, Beiteddine"
 }
