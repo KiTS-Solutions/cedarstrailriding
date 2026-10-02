@@ -90,7 +90,15 @@ backend, deployed to Vercel. Full context: `brief/README.md` and `brief/HANDOFF.
   Lebanon" collision (`brief/04_seo_and_audit.md`).
 - **Accessibility:** WCAG AA target, native `<details>` FAQ accordion (keyboard-accessible by
   default), skip-to-content link, `lang`/`dir` set per locale.
-- **Hero:** src/components/ScrollHero.astro + src/scripts/{scroll-hero,hero-fx,hero-math}.ts — one-screen autoplaying video loop (acts cross-fade with the footage, pause button, rail jumps) with static fallback; the names predate the switch from scroll-scrubbing. Footage variant is `HERO_VARIANT` in `src/data/heroMedia.ts`: **v2** (live) = CTR's own vertical footage, portrait-panel layout on wide screens; **v1** = the old AI-generated landscape clip, kept as a fallback (git tag `hero-v1`). The v2 master (`horse-hero-v2/*.MOV`, git-ignored, ~150 MB) also feeds `WelcomeLoader.astro` (home only) and `AmbientVideo.astro` loops — regenerate everything with `scripts/encode-hero-v2.sh`. See README.md § Hero.
+- **Fonts:** self-hosted via the Astro Fonts API (`fonts` in `astro.config.mjs`, `<Font>` tags in
+  `BaseLayout.astro`, each locale preloads only its own script). Latin: Fraunces (display) + Inter
+  (body). Arabic: El Messiri (display) + IBM Plex Sans Arabic (body) — `html[dir="rtl"]` swaps the
+  `--font-display` / `--font-body` tokens in `global.css`, so components never need per-locale font
+  rules; always write against those tokens.
+- **Redesign branch:** the 2026-10 UI/UX redesign lives on `redesign/v2` (phase branches PR into
+  it, never into `main`); `main` stays the approved v1 site (tag `v1-baseline`) until client
+  sign-off. Previews: Vercel branch deploys of `redesign/v2` (noindex via `PUBLIC_NOINDEX`).
+- **Hero:** src/components/ScrollHero.astro + src/scripts/{scroll-hero,hero-fx,hero-math}.ts — one-screen autoplaying video loop (acts cross-fade with the footage, pause button, rail jumps) with static fallback; the names predate the switch from scroll-scrubbing. Footage variant is `HERO_VARIANT` in `src/data/heroMedia.ts`: **v2** (live) = CTR's own vertical footage, portrait-panel layout on wide screens; **v1** = the old AI-generated landscape clip, kept as a fallback (git tag `hero-v1`). The v2 master (`horse-hero-v2/*.MOV`, git-ignored, ~150 MB) also feeds the `AmbientVideo.astro` / `AmbientBackdrop.astro` loops (the first-visit WelcomeLoader was removed in the redesign) — regenerate everything with `scripts/encode-hero-v2.sh`. See README.md § Hero.
 
 ## Non-negotiables
 

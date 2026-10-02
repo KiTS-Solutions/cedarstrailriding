@@ -14,7 +14,7 @@ const t = useTranslations(locale);
   route={route}
   jsonLd={[localBusinessSchema(), touristTripSchema()]}
   breadcrumbs={[{ name: t("nav.home"), url: route }]}
-  welcome
+  heroPreload
 >
   <HomeSection locale={locale} />
 </BaseLayout>

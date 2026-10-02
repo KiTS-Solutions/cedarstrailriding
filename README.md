@@ -88,14 +88,13 @@ maths `src/scripts/hero-math.ts`; the file names predate the switch from scroll-
     Chapters Shouf → Ridge → Ride, golden-hour dust particles. Assets in `public/images/hero/v2/`.
   - **v1 (fallback, tag `hero-v1`):** the AI-generated landscape river clip, full-bleed everywhere,
     chapter "River", water-splash particles. Assets in `public/images/hero/v1/`, unchanged.
-- **The same v2 master also feeds** the first-visit welcome screen (`src/components/WelcomeLoader.astro`
-  + `src/scripts/welcome-loader.ts`, home pages only, once per session; plays at least 5 s with scrolling
-  held (Skip / Escape always work), leaves once the hero is ready (cap 8 s) with a staged 1.25 s
-  dissolve; skipped for reduced motion / Save-Data / 2G / deep links; CSS fail-safe fade at 8.7 s), two ambient loops
-  (`src/components/AmbientVideo.astro` + `src/scripts/ambient-video.ts`) in the Treks band and the
-  Groups block, on the home page and on `/treks/` and `/groups/`, and the gallop loop (the
-  flag-bearer sprinting at the camera) behind the home page's About band.
-- **Regenerate v2** (hero loop, loader loop, ambient loops, posters) from the master:
+- **The same v2 master also feeds** the ambient loops (`src/components/AmbientVideo.astro` +
+  `src/scripts/ambient-video.ts`) in the Treks band and the Groups block, on the home page and on
+  `/treks/` and `/groups/`, the gallop loop (the flag-bearer sprinting at the camera) behind the home
+  page's About band, and the flag close-up loop (`ambient-flag`, for the About / Contact page bands).
+  The first-visit welcome screen that used to play before the hero was removed in the redesign
+  (`redesign/v2`): the hero carries the first impression on its own.
+- **Regenerate v2** (hero loop, ambient loops, posters) from the master:
   `scripts/encode-hero-v2.sh horse-hero-v2/horse-lebflag.MOV`. The script documents the shot map
   (4 takes cut at 33.3 / 60.6 / 67.8 s → 6 clips) and solves the hero loop's segment lengths so each shot
   crossfade lands on an act hand-off; the loop's tail crossfades into frame 0 so it has no seam (`HERO_SEGMENT_BOUNDARIES` in `hero-math.ts`, unit-tested).

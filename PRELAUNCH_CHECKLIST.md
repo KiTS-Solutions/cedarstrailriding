@@ -58,18 +58,18 @@ it should be resolved before the site goes live publicly.
       currently falls back to English by design — extend those files as translations are approved.
 
 ## Hero video
-- [x] Real CTR footage — 2026-10-01: the v2 hero, welcome screen and ambient loops now use the
+- [x] Real CTR footage — 2026-10-01: the v2 hero and ambient loops now use the
       client's own vertical footage (`horse-hero-v2/horse-lebflag.MOV`, encoded by
       `scripts/encode-hero-v2.sh`). The AI clip below is kept as the v1 fallback only
       (`HERO_VARIANT` in `src/data/heroMedia.ts`, git tag `hero-v1`).
-- [ ] Written confirmation that every rider recognisable in the v2 footage (hero, welcome screen,
+- [ ] Written confirmation that every rider recognisable in the v2 footage (hero, flag close-up,
       Treks/Groups loops) consents to appearing on the site, and that CTR owns the footage rights.
 - [ ] Confirm the v2 footage location is the Shouf (assumed from the client's answer; the
       Act II copy says "across the Shouf").
 - [ ] Keep the 150 MB master `horse-hero-v2/horse-lebflag.MOV` somewhere durable — it is
       git-ignored (over GitHub's 100 MB limit) and is the only source for re-encoding v2.
-- [ ] Real-device check of the v2 welcome screen (iOS low-power mode refuses autoplay: the poster
-      should show instead) and of the ambient loops' play/pause on scroll.
+- [ ] Real-device check of the v2 hero (iOS low-power mode refuses autoplay: the poster should show
+      instead) and of the ambient loops' play/pause on scroll.
 - [ ] v1 fallback only — client sign-off on the hero clip: it is AI-generated ("Powerful Brown Horse Galloping
       Through a Sunlit River in a Forest" by AMRULQAYS, Pixabay id 230717). Re-verify the Pixabay
       Content License / attribution requirements at publish time and decide whether to disclose

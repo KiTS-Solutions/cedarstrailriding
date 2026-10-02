@@ -1,10 +1,10 @@
 ---
 import "../styles/global.css";
+import { Font } from "astro:assets";
 import { DIR, LOCALES, path, useTranslations, withBase, type Locale } from "../i18n";
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
 import StickyCta from "../components/StickyCta.astro";
-import WelcomeLoader from "../components/WelcomeLoader.astro";
 import JsonLd from "../components/JsonLd.astro";
 import { breadcrumbSchema } from "../data/jsonld";
 import { heroPosterPreloads } from "../data/heroMedia";
@@ -16,8 +16,8 @@ interface Props {
   description?: string;
   jsonLd?: Record<string, unknown>[];
   breadcrumbs?: { name: string; url: string }[];
-  /** Home pages: show the first-visit welcome screen and preload the hero poster (LCP). */
-  welcome?: boolean;
+  /** Home pages: preload the hero poster (LCP). */
+  heroPreload?: boolean;
 }
 
 const {
@@ -27,10 +27,11 @@ const {
   description,
   jsonLd = [],
   breadcrumbs,
-  welcome = false,
+  heroPreload = false,
 } = Astro.props;
 
 const t = useTranslations(locale);
+const isArabic = locale === "ar";
 const pageTitle = title ? `${title} — ${t("meta.title")}` : t("meta.title");
 const pageDescription = description ?? t("meta.desc");
 const canonicalURL = new URL(path(route, locale), Astro.site);
@@ -66,34 +67,17 @@ if (/tennessee/i.test(pageTitle) || /tennessee/i.test(pageDescription)) {
     <link rel="canonical" href={canonicalURL} />
     <title>{pageTitle}</title>
     {
-      welcome &&
+      heroPreload &&
         heroPosterPreloads.map((p) => (
           <link rel="preload" as="image" type="image/webp" href={withBase(p.href)} media={p.media} fetchpriority="high" />
         ))
     }
-    {
-      welcome && (
-        <script is:inline>
-          (function () {
-            // Decide before first paint so the welcome screen never flashes in or out.
-            try {
-              var c = navigator.connection;
-              if (
-                sessionStorage.getItem("ctr-welcome") ||
-                location.hash ||
-                matchMedia("(prefers-reduced-motion: reduce)").matches ||
-                (c && (c.saveData || /2g/.test(c.effectiveType || "")))
-              )
-                return;
-              sessionStorage.setItem("ctr-welcome", "1");
-              document.documentElement.dataset.welcome = "on";
-            } catch (e) {
-              // Storage blocked: skip the welcome rather than show it on every page view.
-            }
-          })();
-        </script>
-      )
-    }
+    {/* Every page gets all four @font-face sets (unicode-range keeps unused ones from
+        downloading); only the current script's display + body faces are preloaded. */}
+    <Font cssVariable="--font-fraunces" preload={isArabic ? false : [{ subset: "latin", style: "normal" }]} />
+    <Font cssVariable="--font-inter" preload={isArabic ? false : [{ subset: "latin" }]} />
+    <Font cssVariable="--font-el-messiri" preload={isArabic ? [{ subset: "arabic" }] : false} />
+    <Font cssVariable="--font-plex-arabic" preload={isArabic ? [{ subset: "arabic", weight: "400" }] : false} />
     <meta name="description" content={pageDescription} />
 
     {
@@ -161,7 +145,6 @@ if (/tennessee/i.test(pageTitle) || /tennessee/i.test(pageDescription)) {
     >
       {t("a11y.skip")}
     </a>
-    {welcome && <WelcomeLoader locale={locale} />}
     <Header locale={locale} route={route} />
     <main id="main" class="flex-1">
       <slot />

@@ -100,9 +100,6 @@ test.describe("Language switcher", () => {
 });
 
 test.describe("Header", () => {
-  test.beforeEach(async ({ page }) => {
-    await page.addInitScript(() => sessionStorage.setItem("ctr-welcome", "1"));
-  });
   const header = (page: Page) => page.locator("#site-header");
 
   test("marks the current page in the nav, and only that page", async ({
@@ -244,11 +241,6 @@ test.describe("Booking form", () => {
 });
 
 test.describe("Autoplay hero", () => {
-  // The welcome screen has its own suite; keep it out of the way of hero interactions.
-  test.beforeEach(async ({ page }) => {
-    await page.addInitScript(() => sessionStorage.setItem("ctr-welcome", "1"));
-  });
-
   const hero = (page: Page) => page.locator("[data-hero]");
   const heroVideo = (page: Page) => page.locator("[data-hero-video]");
   const playing = (page: Page) =>
@@ -933,105 +925,59 @@ test.describe("Mobile UX", () => {
   });
 });
 
-test.describe("Welcome loader", () => {
-  const loader = (page: Page) => page.locator("[data-loader]");
-
-  const sinceNavigation = (page: Page) =>
-    page.evaluate(() => performance.now());
-
-  test("plays for its minimum time, then leaves on its own within the cap", async ({
-    page,
-  }) => {
+test.describe("Design foundation", () => {
+  test("no blocking welcome screen on first visit", async ({ page }) => {
     await page.goto("/");
-    await expect(page.locator("html")).toHaveAttribute("data-welcome", "on");
-    await expect(loader(page)).toBeVisible();
-    await expect(loader(page).getByRole("button")).toHaveText("Skip");
-    // Still fully up just before the 5 s minimum, even though the hero is ready by then.
-    await page.waitForTimeout(
-      Math.max(0, 4700 - (await sinceNavigation(page))),
-    );
-    await expect(loader(page)).not.toHaveAttribute("data-state", "out");
-    // 8 s cap + 1.25 s staged exit, measured from navigation start.
-    await expect(loader(page)).toHaveCount(0, { timeout: 7000 });
-    await expect(page.locator("html")).toHaveAttribute("data-welcome", "done");
+    await expect(page.locator("[data-loader]")).toHaveCount(0);
+    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
   });
 
-  test("holds the page still before the minimum, then a scroll lets the visitor in", async ({
-    page,
-  }) => {
-    await page.goto("/");
-    await expect(loader(page)).toBeVisible();
-    await page.mouse.move(600, 400);
-    await page.mouse.wheel(0, 600);
-    await page.waitForTimeout(300);
-    expect(await page.evaluate(() => window.scrollY)).toBe(0);
-    await expect(loader(page)).not.toHaveAttribute("data-state", "out");
-    // Past the minimum the same gesture dismisses it.
-    await page.waitForTimeout(
-      Math.max(0, 5100 - (await sinceNavigation(page))),
-    );
-    await page.mouse.wheel(0, 100);
-    await expect(loader(page)).toHaveAttribute("data-state", "out", {
-      timeout: 1000,
-    });
-    // Removal follows the 1.25 s CSS exit on a timer; leave headroom for parallel workers.
-    await expect(loader(page)).toHaveCount(0, { timeout: 6000 });
-  });
-
-  test("Skip dismisses it at any time", async ({ page }) => {
-    await page.goto("/");
-    await loader(page).getByRole("button").click();
-    await expect(loader(page)).toHaveAttribute("data-state", "out");
-    await expect(loader(page)).toHaveCount(0, { timeout: 6000 });
-  });
-
-  test("is shown once per session", async ({ page }) => {
-    await page.goto("/");
-    // Only waits out the first visit (8 s cap + 1.25 s exit); the cap itself is tested above.
-    await expect(loader(page)).toHaveCount(0, { timeout: 15000 });
-    await page.goto("/fr/");
-    await expect(page.locator("html")).not.toHaveAttribute(
-      "data-welcome",
-      /.*/,
-    );
-    await expect(loader(page)).toHaveCount(0);
-  });
-
-  test("never appears on deep links or inner pages", async ({ page }) => {
-    await page.goto("/#trails");
-    await expect(loader(page)).toHaveCount(0);
+  test("brand fonts are self-hosted and load (Latin)", async ({ page }) => {
     await page.goto("/trails/");
-    await expect(loader(page)).toHaveCount(0);
+    await page.evaluate(() => document.fonts.ready);
+    const loaded = await page.evaluate(() =>
+      [...document.fonts].filter((f) => f.status === "loaded").map((f) => f.family),
+    );
+    expect(loaded.join("|")).toMatch(/Fraunces/);
+    expect(loaded.join("|")).toMatch(/Inter/);
+    const h1Font = await page
+      .getByRole("heading", { level: 1 })
+      .evaluate((el) => getComputedStyle(el).fontFamily);
+    expect(h1Font).toMatch(/Fraunces/);
   });
 
-  test("fades out by CSS alone if its script never runs", async ({ page }) => {
-    await page.route(/\.js(\?|$)/, (route) => route.abort());
+  test("Arabic pages use El Messiri headings and IBM Plex Sans Arabic body", async ({ page }) => {
+    await page.goto("/ar/trails/");
+    await page.evaluate(() => document.fonts.ready);
+    const h1Font = await page
+      .getByRole("heading", { level: 1 })
+      .evaluate((el) => getComputedStyle(el).fontFamily);
+    expect(h1Font).toMatch(/El Messiri/);
+    const bodyFont = await page.evaluate(() => getComputedStyle(document.body).fontFamily);
+    expect(bodyFont).toMatch(/IBM Plex Sans Arabic/);
+    const loaded = await page.evaluate(() =>
+      [...document.fonts].filter((f) => f.status === "loaded").map((f) => f.family),
+    );
+    expect(loaded.join("|")).toMatch(/El Messiri/);
+  });
+
+  test("Horses is in the primary nav", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
     await page.goto("/");
-    await expect(loader(page)).toBeVisible();
-    await expect(loader(page)).toBeHidden({ timeout: 11000 });
+    await expect(
+      page.getByRole("navigation", { name: "Primary" }).getByRole("link", { name: "Horses" }),
+    ).toHaveAttribute("href", /\/horses\/$/);
   });
 
-  test.describe("reduced motion", () => {
-    test.use({ reducedMotion: "reduce" });
-
-    test("is skipped and never fetches its clip", async ({ page }) => {
-      const media: string[] = [];
-      page.on("request", (r) => {
-        if (/\.mp4(\?|$)/.test(r.url())) media.push(r.url());
-      });
-      await page.goto("/");
-      await page.waitForLoadState("networkidle");
-      await expect(loader(page)).toHaveCount(0);
-      expect(media).toEqual([]);
-    });
+  test("contact email is a mailto link", async ({ page }) => {
+    await page.goto("/contact/");
+    await expect(
+      page.locator('main a[href="mailto:info@cedarstrailriding.com"]'),
+    ).toBeVisible();
   });
 });
 
 test.describe("Ambient clips", () => {
-  test.beforeEach(async ({ page }) => {
-    await page.addInitScript(() => sessionStorage.setItem("ctr-welcome", "1"));
-  });
-
   test("are decorative, fetch nothing until near, then play while visible", async ({
     page,
   }) => {
@@ -1139,10 +1085,6 @@ test.describe("Ambient clips", () => {
 });
 
 test.describe("Hero panel layout (v2 vertical footage)", () => {
-  test.beforeEach(async ({ page }) => {
-    await page.addInitScript(() => sessionStorage.setItem("ctr-welcome", "1"));
-  });
-
   const plateBox = async (page: Page, path: string) => {
     await page.goto(path);
     await expect(page.locator("[data-hero]")).toHaveAttribute(

@@ -4,6 +4,8 @@
   "nav.treks": "Multi-day Treks",
   "nav.groups": "Groups & Events",
   "nav.horses": "Meet the Horses",
+  "nav.horsesShort": "Horses",
+  "nav.horsesDesc": "Steady, well-trained horses, matched to your pace",
   "nav.about": "About",
   "nav.gallery": "Gallery",
   "nav.faq": "FAQ",
@@ -80,8 +82,6 @@
   "hero.play": "Play video",
   "hero.v2.chapter2": "Ridge",
   "hero.v2.act2.body": "Mountain ridges, open highlands and golden-hour trails across the Shouf, seen at a horse's pace.",
-  "loader.welcome": "Welcome",
-  "loader.skip": "Skip",
 
   "trails.intro": "Our trails are hand-picked for safety, beauty, and seasonal charm. Each trail is carefully studied to minimize environmental impact, foster a partnership with our horses, and support local communities.",
   "trails.customNote": "Custom trails available — create your own full-day or multi-day trek.",

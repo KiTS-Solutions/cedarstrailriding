@@ -142,7 +142,7 @@ const chapters = [
       </div>
     </div>
 
-    <p class="ctr-hero__coords" aria-hidden="true">{t("hero.location")} · {coords}</p>
+    <p class="ctr-hero__coords" aria-hidden="true">{t("hero.location")} · <bdi dir="ltr">{coords}</bdi></p>
 
     <!-- WCAG 2.2.2: motion that starts on its own and runs past 5 s needs a pause control. -->
     <button
@@ -327,6 +327,11 @@ const chapters = [
   :global(html[dir="rtl"]) .ctr-hero__eyebrow {
     letter-spacing: 0;
     text-transform: none;
+  }
+  /* El Messiri's Arabic forms need room; Latin's tight 0.96 would clip them. */
+  :global(html[dir="rtl"]) .ctr-hero__h1,
+  :global(html[dir="rtl"]) .ctr-hero__h2 {
+    line-height: 1.3;
   }
 
   .ctr-hero__skip {
