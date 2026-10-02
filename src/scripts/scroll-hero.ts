@@ -308,20 +308,11 @@ function upgrade(root: HTMLElement): void {
       if (err instanceof DOMException && err.name === "AbortError") return;
       // Autoplay refused (power saving, policy): keep the poster, offer the play button.
       setUserPaused(true);
-      announceReady();
     });
     if (!raf) {
       lastFrameAt = performance.now();
       raf = requestAnimationFrame(frame);
     }
-  };
-
-  // ---- Readiness (the welcome loader waits on this) ----
-  let announced = false;
-  const announceReady = (): void => {
-    if (announced) return;
-    announced = true;
-    root.dispatchEvent(new CustomEvent("ctr:hero-ready", { bubbles: true }));
   };
 
   video.addEventListener("loadedmetadata", () => {
@@ -331,7 +322,6 @@ function upgrade(root: HTMLElement): void {
   });
   video.addEventListener("playing", () => {
     if (!root.dataset.ready) root.dataset.ready = "true";
-    announceReady();
   });
   // Paused seeks (rail clicks, deep links) still have to update the copy and the backdrop.
   video.addEventListener("seeked", render);

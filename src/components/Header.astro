@@ -18,10 +18,12 @@ const t = useTranslations(locale);
 // overlays the content (transparent until the hero scrolls out from under it).
 const isHome = route === "/";
 
-const navItems: { key: string; route: string }[] = [
+// `short`: a tighter label for the desktop bar, where seven items share one row at lg.
+const navItems: { key: string; route: string; short?: string }[] = [
   { key: "trails", route: "/trails/" },
   { key: "treks", route: "/treks/" },
   { key: "groups", route: "/groups/" },
+  { key: "horses", route: "/horses/", short: "nav.horsesShort" },
   { key: "about", route: "/about/" },
   { key: "gallery", route: "/gallery/" },
   { key: "faq", route: "/faq/" },
@@ -50,7 +52,7 @@ const telHref = (phone: string) => `tel:${phone.replace(/\s+/g, "")}`;
         {
           navItems.map((item) => (
             <a href={path(item.route, locale)} class="nav-link" aria-current={current(item.route)}>
-              {t(`nav.${item.key}`)}
+              {t(item.short ?? `nav.${item.key}`)}
             </a>
           ))
         }

@@ -14,9 +14,29 @@
   --color-gold-deep: #806719; /* gold text on sand / warm-white: 4.73:1 / 5.07:1 */
   --color-terracotta-deep: #974726; /* terracotta text on terracotta/10–15 tints: ≥ 4.68:1 */
 
-  --font-display: "Fraunces", "Playfair Display", serif;
-  --font-body: "Inter", "Source Sans 3", system-ui, sans-serif;
-  --font-arabic: "IBM Plex Sans Arabic", "Noto Naskh Arabic", sans-serif;
+  /* Families come from the Astro Fonts API (astro.config.mjs), self-hosted with metric-matched
+     fallbacks. Arabic pages swap both tokens (see html[dir="rtl"] below), so anything written
+     against --font-display / --font-body — utilities, headings, scoped component styles —
+     follows the locale without per-component RTL font rules. */
+  --font-display: var(--font-fraunces);
+  --font-body: var(--font-inter);
+  --font-arabic: var(--font-plex-arabic);
+  --font-arabic-display: var(--font-el-messiri);
+
+  /* Type scale (fluid). Section/page headings use these rather than ad-hoc text-* sizes. */
+  --text-display: clamp(2.75rem, 1.6rem + 4.6vw, 5.5rem);
+  --text-display--line-height: 1;
+  --text-h1: clamp(2.25rem, 1.5rem + 3vw, 4rem);
+  --text-h1--line-height: 1.05;
+  --text-h2: clamp(1.875rem, 1.4rem + 1.9vw, 3rem);
+  --text-h2--line-height: 1.1;
+  --text-eyebrow: 0.75rem;
+  --text-eyebrow--line-height: 1.4;
+
+  /* Motion. One vocabulary for every transition on the site. */
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-dissolve: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 @layer base {
@@ -49,8 +69,24 @@
     font-family: var(--font-body);
   }
 
+  :root {
+    --dur-1: 160ms; /* hovers, colour changes */
+    --dur-2: 320ms; /* small moves: cards, drawers, accordions */
+    --dur-3: 700ms; /* reveals, page-level transitions */
+  }
+
+  html[dir="rtl"] {
+    --font-display: var(--font-arabic-display);
+    --font-body: var(--font-arabic);
+  }
+
+  /* Arabic script needs more vertical room than Latin: tall ascenders/descenders and marks. */
   html[dir="rtl"] body {
-    font-family: var(--font-arabic);
+    line-height: 1.8;
+  }
+  html[dir="rtl"] :is(h1, h2, h3, h4) {
+    line-height: 1.35;
+    letter-spacing: 0;
   }
 
   h1,
@@ -125,5 +161,63 @@
   }
   .snap-row:focus-visible {
     @apply outline-2 outline-offset-2 outline-cedar-deep;
+  }
+
+  /* Small uppercase label above section titles. Arabic has no case and suffers from
+     tracking, so RTL drops both. */
+  .eyebrow {
+    @apply inline-flex items-center gap-3 font-body text-eyebrow font-semibold tracking-[0.22em] uppercase text-gold-deep;
+  }
+  html[dir="rtl"] .eyebrow {
+    @apply tracking-normal normal-case;
+  }
+
+  /* Hairline gold divider (brief/14_design_direction.md). Grows from the inline start when it
+     scrolls into view (Phase 3 motion); fully drawn wherever that isn't supported. */
+  .gold-rule {
+    display: block;
+    width: 4.5rem;
+    height: 1px;
+    background: linear-gradient(to right, var(--color-gold), color-mix(in oklab, var(--color-gold) 30%, transparent));
+    transform-origin: left;
+  }
+  html[dir="rtl"] .gold-rule {
+    background: linear-gradient(to left, var(--color-gold), color-mix(in oklab, var(--color-gold) 30%, transparent));
+    transform-origin: right;
+  }
+
+  /* Film grain: a tiny inline SVG noise tile on a pseudo-element. Put on dark bands and photo
+     panels; the host needs position: relative (set here) and its content sits above (z-index). */
+  .grain {
+    position: relative;
+    isolation: isolate;
+  }
+  .grain::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    opacity: 0.09;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* Topographic contour lines (Shouf ridges, stylised). Low-contrast texture for sand sections
+     and the footer; tint follows currentColor via the mask. */
+  .topo-bg {
+    position: relative;
+    isolation: isolate;
+  }
+  .topo-bg::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background-color: currentColor;
+    opacity: 0.07;
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='400' viewBox='0 0 600 400' fill='none' stroke='%23000' stroke-width='1.2'%3E%3Cpath d='M-20 330c80-40 140-10 210-50s120-110 210-90 150 70 220 40'/%3E%3Cpath d='M-20 300c90-45 150-15 215-55s115-100 205-80 145 60 220 30'/%3E%3Cpath d='M-20 270c95-50 160-20 220-60s110-90 200-70 140 50 220 20'/%3E%3Cpath d='M30 240c70-35 120-20 170-55s95-75 170-60 120 40 200 10'/%3E%3Cpath d='M90 210c55-25 95-15 135-45s80-60 140-50 100 30 175 5'/%3E%3Cpath d='M160 180c40-18 70-12 100-35s60-45 105-38 80 22 150 2'/%3E%3Cpath d='M240 150c28-12 50-8 70-25s45-30 75-25 60 15 115 0'/%3E%3Cpath d='M-20 380c100-30 170-5 240-40s130-90 220-75 120 50 180 30'/%3E%3Cpath d='M-20 90c60 20 110 5 160-20s100-40 160-20'/%3E%3Cpath d='M-20 60c70 22 120 8 170-18s105-45 170-22'/%3E%3Cpath d='M-20 30c80 25 130 10 180-15s110-50 180-25'/%3E%3C/svg%3E") center / 600px 400px repeat;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='400' viewBox='0 0 600 400' fill='none' stroke='%23000' stroke-width='1.2'%3E%3Cpath d='M-20 330c80-40 140-10 210-50s120-110 210-90 150 70 220 40'/%3E%3Cpath d='M-20 300c90-45 150-15 215-55s115-100 205-80 145 60 220 30'/%3E%3Cpath d='M-20 270c95-50 160-20 220-60s110-90 200-70 140 50 220 20'/%3E%3Cpath d='M30 240c70-35 120-20 170-55s95-75 170-60 120 40 200 10'/%3E%3Cpath d='M90 210c55-25 95-15 135-45s80-60 140-50 100 30 175 5'/%3E%3Cpath d='M160 180c40-18 70-12 100-35s60-45 105-38 80 22 150 2'/%3E%3Cpath d='M240 150c28-12 50-8 70-25s45-30 75-25 60 15 115 0'/%3E%3Cpath d='M-20 380c100-30 170-5 240-40s130-90 220-75 120 50 180 30'/%3E%3Cpath d='M-20 90c60 20 110 5 160-20s100-40 160-20'/%3E%3Cpath d='M-20 60c70 22 120 8 170-18s105-45 170-22'/%3E%3Cpath d='M-20 30c80 25 130 10 180-15s110-50 180-25'/%3E%3C/svg%3E") center / 600px 400px repeat;
   }
 }

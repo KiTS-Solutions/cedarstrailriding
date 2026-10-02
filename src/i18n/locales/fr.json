@@ -4,6 +4,8 @@
   "nav.treks": "Treks de plusieurs jours",
   "nav.groups": "Groupes & Événements",
   "nav.horses": "Nos chevaux",
+  "nav.horsesShort": "Nos chevaux",
+  "nav.horsesDesc": "Des chevaux calmes et bien dressés, choisis selon votre rythme",
   "nav.about": "À propos",
   "nav.gallery": "Galerie",
   "nav.faq": "FAQ",
@@ -69,8 +71,6 @@
   "hero.play": "Lire la vidéo",
   "hero.v2.chapter2": "Crêtes",
   "hero.v2.act2.body": "Crêtes de montagne, hauts plateaux et pistes à l'heure dorée dans le Chouf, au rythme du cheval.",
-  "loader.welcome": "Bienvenue",
-  "loader.skip": "Passer",
 
   "chip.beginner": "Adapté aux débutants",
   "chip.scenic": "Balade panoramique",

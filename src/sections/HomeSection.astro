@@ -1,5 +1,5 @@
 ---
-import { useTranslations, path, type Locale } from "../i18n";
+import { useTranslations, path, withBase, type Locale } from "../i18n";
 import { trails } from "../data/trails";
 import { testimonials } from "../data/testimonials";
 import { faqItems } from "../data/faq";
@@ -50,7 +50,7 @@ const horseSlots =horses.length > 0 ? horses : Array.from({ length: HORSE_PLACEH
           <article class="group card relative flex h-full overflow-hidden has-[a:focus-visible]:outline-2 has-[a:focus-visible]:outline-offset-2 has-[a:focus-visible]:outline-cedar-deep md:flex-col">
             <div class="relative w-28 shrink-0 overflow-hidden bg-cedar-deep sm:w-44 md:aspect-[4/3] md:w-auto">
               <img
-                src={pathway.image}
+                src={withBase(pathway.image)}
                 alt=""
                 width="540"
                 height="960"

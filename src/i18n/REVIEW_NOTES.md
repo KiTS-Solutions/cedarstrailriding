@@ -52,3 +52,8 @@ files as the client approves more translated copy.
   **Approved 2026-10-01** (EN copy and AR/FR wording) — no further review needed for these six keys.
 - `cta.exploreTreks` (EN/AR/FR, 2026-10-01) — replaces the home treks band's generic "Learn more"
   (Lighthouse link-text). Built from the existing `nav.treks` wording; AR/FR are drafts.
+- `nav.horsesShort`, `nav.horsesDesc` (EN/AR/FR, 2026-10-02, redesign Phase 1) — Horses added to the
+  main nav. `horsesShort` is the compact desktop label (AR/FR reuse the approved `nav.horses`
+  wording); `horsesDesc` is the mobile-drawer line, trimmed from the approved `home.horsesIntro`.
+  AR/FR `horsesDesc` are drafts.
+- Removed 2026-10-02: `loader.welcome`, `loader.skip` (welcome screen dropped in the redesign).

@@ -8,7 +8,7 @@
 #                  hand-off (0.32 and 0.68 of the loop, HERO_SEGMENT_BOUNDARIES in
 #                  src/scripts/hero-math.ts), and the tail crossfades into the head so the loop
 #                  has no visible seam.
-#   loader       = clip 2 flag close-up, seamless loop
+#   ambient-flag = clip 2 (flag close-up), seamless loop — About / Contact page band
 #   ambient-group= clip 4 (riding behind the group), seamless loop
 #   ambient-ridge= clip 5 (wide sunset ridge), seamless loop
 #   ambient-gallop= clip 3 (flag-bearer sprinting at the camera), seamless loop — About backdrop
@@ -92,7 +92,7 @@ hero 720 1280 "${HD_CRF:-30}" "$OUT/play-hd.mp4"
 hero 540 960 "${MOBILE_CRF:-31}" "$OUT/play-mobile.mp4"
 hero 360 640 "${COMPACT_CRF:-31}" "$OUT/play-compact.mp4"
 
-loop 21.5 4.0 0.6 540 960 "${LOOP_CRF:-28}" "$OUT/loader.mp4"
+loop 21.5 4.0 0.6 540 960 "${LOOP_CRF:-28}" "$OUT/ambient-flag.mp4"
 loop 60.7 6.0 0.8 540 960 "${LOOP_CRF:-28}" "$OUT/ambient-group.mp4"
 loop 72.0 7.0 0.8 540 960 "${LOOP_CRF:-28}" "$OUT/ambient-ridge.mp4"
 loop 52.6 6.0 0.8 540 960 "${LOOP_CRF:-28}" "$OUT/ambient-gallop.mp4"
@@ -100,8 +100,7 @@ loop 52.6 6.0 0.8 540 960 "${LOOP_CRF:-28}" "$OUT/ambient-gallop.mp4"
 # Posters = frame 0 so the poster -> video swap is seamless.
 still "$OUT/play-hd.mp4" "$OUT/poster-hd.webp" "gblur=sigma=0.6" 68
 still "$OUT/play-mobile.mp4" "$OUT/poster-mobile.webp" "gblur=sigma=0.7" 65
-# The loader still is only a backdrop for the first moments before its clip plays.
-still "$OUT/loader.mp4" "$OUT/loader.webp" "scale=360:640:flags=lanczos,gblur=sigma=0.5" 62
+still "$OUT/ambient-flag.mp4" "$OUT/ambient-flag.webp"
 still "$OUT/ambient-group.mp4" "$OUT/ambient-group.webp"
 still "$OUT/ambient-ridge.mp4" "$OUT/ambient-ridge.webp"
 still "$OUT/ambient-gallop.mp4" "$OUT/ambient-gallop.webp"

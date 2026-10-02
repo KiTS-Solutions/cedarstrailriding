@@ -43,7 +43,7 @@ const mapSrc = `https://www.google.com/maps?q=${contact.coordinates.lat},${conta
       <div class="rounded-2xl bg-sand p-5 text-sm text-ink/80">
         <p class="font-semibold text-cedar-deep">{t("contact.basedIn")}</p>
         <p>{t("contact.operate")}</p>
-        <p class="mt-2">{contact.email}</p>
+        <p class="mt-2"><a href={`mailto:${contact.email}`} class="underline decoration-gold underline-offset-4 hover:text-cedar-deep">{contact.email}</a></p>
         <p class="mt-2">{t("contact.hours")}</p>
         <p class="mt-2">{t("contact.pickupNote")}</p>
       </div>

@@ -71,11 +71,11 @@ export const heroPosterPreloads = [
   },
 ];
 
-/** v2-only clips (welcome loader + ambient section loops), same encode script. */
+/** v2-only ambient section loops, same encode script. */
 export const v2Clips = {
-  loader: {
-    video: "/images/hero/v2/loader.mp4",
-    poster: "/images/hero/v2/loader.webp",
+  flag: {
+    video: "/images/hero/v2/ambient-flag.mp4",
+    poster: "/images/hero/v2/ambient-flag.webp",
   },
   group: {
     video: "/images/hero/v2/ambient-group.mp4",
